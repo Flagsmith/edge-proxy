@@ -1,0 +1,7 @@
+pylint
+pep8
+autopep8
+black
+pip-tools
+pre-commit
+flake8

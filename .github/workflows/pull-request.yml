@@ -1,13 +1,12 @@
 name: Pull Request
 
 on:
-    push: #todo - remove
+    push:
         branches:
-            - main
+            - main #todo - remove
     pull_request:
         types: [opened, synchronize, reopened, ready_for_review]
 
-# Todo: add unit tests when written
 jobs:
     test:
         if: github.event.pull_request.draft == false

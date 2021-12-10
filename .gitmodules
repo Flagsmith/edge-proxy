@@ -1,0 +1,3 @@
+[submodule "src/edge-api"]
+	path = src/edge-api
+	url = git@github.com:Flagsmith/edge-api.git

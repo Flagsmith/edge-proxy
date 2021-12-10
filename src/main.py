@@ -4,8 +4,8 @@ import os
 from fastapi import FastAPI, Header
 from fastapi.responses import JSONResponse
 
-from cache import CacheService
-from models import IdentityWithTraits
+from .cache import CacheService
+from .models import IdentityWithTraits
 
 app = FastAPI()
 # TODO: should we move fast api to edge api?
@@ -23,11 +23,11 @@ class LambdaStub:
         pass
 
 
-environment = importlib.import_module("edge-api.src.environment")
+environment = importlib.import_module(".edge-api.src.environment", package="src")
 
 environment_service = environment.EnvironmentService(cache_service, LambdaStub())
 
-identity = importlib.import_module("edge-api.src.identity")
+identity = importlib.import_module(".edge-api.src.identity", package="src")
 
 identity_service = identity.IdentityService(cache_service, LambdaStub())
 

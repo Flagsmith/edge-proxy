@@ -1,3 +1,4 @@
+import logging
 import requests
 from datetime import datetime
 
@@ -27,13 +28,17 @@ class CacheService:
             url,
             headers=headers,
         )
+
         # TODO handle retry and error
+        if not response.status_code == 200:
+            logging.error(f"received non 200 response for {api_key}")
+            return {}
+
         return response.json()
 
     def _refresh_cache(self):
         for api_key in self.api_keys:
             self._cache[api_key] = self._fetch_document(api_key)
-        print(self._cache)
         self._last_refreshed = datetime.now()
         # maybe assign timestamp to each document?
 

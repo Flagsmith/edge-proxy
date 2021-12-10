@@ -1,3 +1,4 @@
+import os
 import importlib
 from fastapi import FastAPI, Header, Request
 from fastapi.responses import JSONResponse
@@ -5,15 +6,14 @@ from fastapi.responses import JSONResponse
 from models import IdentityWithTraits
 from cache import CacheService
 
-
 app = FastAPI()
 # TODO: should we move fast api to edge api?
 # should we create a diff repo for service of edge-api?
 cache_service = CacheService(
-    api_url="http://localhost:8000/api/v1",
-    api_token="e58e63a45fdf84cae69ff585e28ebacf06cc696d",
-    api_keys=["Jx59xuJKBqhkJb9X95rSnj"],
-    poll_frequency=10,
+    api_url=os.environ.get("FLAGSMITH_API_URL"),
+    api_token=os.environ.get("FLAGSMITH_API_TOKEN"),
+    api_keys=os.environ.get("ENVIRONMENT_API_KEYS").split(","),
+    poll_frequency=int(os.environ.get("API_POLL_FREQUENCY", 10)),
 )
 
 

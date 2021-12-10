@@ -55,7 +55,7 @@ class RequestEventStub:
         return {"feature_name": self.feature_name}
 
 
-@app.get("/api/v1/flags")
+@app.get("/api/v1/flags/")
 def flags(feature_name: str = None, x_environment_key: str = Header(None)):
     # print(x_environment_key)
     request_wrapper = RequestEventStub(x_environment_key, feature_name=feature_name)
@@ -63,7 +63,7 @@ def flags(feature_name: str = None, x_environment_key: str = Header(None)):
     return JSONResponse(content=data)
 
 
-@app.post("/api/v1/identities")
+@app.post("/api/v1/identities/")
 def identity(
     input_data: IdentityWithTraits,
     feature_name: str = None,

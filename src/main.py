@@ -1,10 +1,11 @@
-import os
 import importlib
-from fastapi import FastAPI, Header, Request
+import os
+
+from fastapi import FastAPI, Header
 from fastapi.responses import JSONResponse
 
-from models import IdentityWithTraits
 from cache import CacheService
+from models import IdentityWithTraits
 
 app = FastAPI()
 # TODO: should we move fast api to edge api?

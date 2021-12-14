@@ -2,8 +2,6 @@ import logging
 
 import requests
 
-import requests
-
 
 class CacheService:
     def __init__(self, api_url: str, api_token: str, api_keys: list):

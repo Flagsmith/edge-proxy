@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 
 from .cache import CacheService
 from .models import IdentityWithTraits
+from .task import repeat_every
 
 app = FastAPI()
 # TODO: should we move fast api to edge api?
@@ -14,7 +15,6 @@ cache_service = CacheService(
     api_url=os.environ.get("FLAGSMITH_API_URL"),
     api_token=os.environ.get("FLAGSMITH_API_TOKEN"),
     api_keys=os.environ.get("ENVIRONMENT_API_KEYS").split(","),
-    poll_frequency=int(os.environ.get("API_POLL_FREQUENCY", 10)),
 )
 
 
@@ -74,3 +74,11 @@ def identity(
         request_wrapper, input_data.identifier, traits=input_data.dict()["traits"]
     )
     return JSONResponse(content=data)
+
+
+@app.on_event("startup")
+@repeat_every(
+    seconds=int(os.environ.get("API_POLL_FREQUENCY", 10)), raise_exceptions=True
+)
+def refresh_cache():
+    cache_service.refresh()

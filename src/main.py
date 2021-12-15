@@ -13,7 +13,7 @@ from flag_engine.identities.models import IdentityModel
 from .cache import CacheService
 from .models import IdentityWithTraits
 from .schemas import APIFeatureStateSchema, APITraitSchema
-from .task import repeat_every
+from .utils.task import repeat_every
 
 fs_schema = APIFeatureStateSchema(exclude=["multivariate_feature_state_values"])
 app = FastAPI()

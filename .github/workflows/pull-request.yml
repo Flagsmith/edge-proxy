@@ -45,3 +45,6 @@ jobs:
 
             - name: Check isort imports
               run: isort --check .
+
+            - name: Run Tests
+              run: pytest -p no:warnings

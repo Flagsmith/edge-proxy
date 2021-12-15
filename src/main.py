@@ -46,7 +46,6 @@ def flags(feature: str = None, x_environment_key: str = Header(None)):
 
 def _get_fs_schema(identity_model: IdentityModel):
     return APIFeatureStateSchema(
-        # exclude=["multivariate_feature_state_values"],
         context={"identity_identifier": identity_model.identifier},
     )
 

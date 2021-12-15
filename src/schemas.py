@@ -5,14 +5,20 @@ from flag_engine.features.schemas import FeatureStateSchema
 from flag_engine.identities.schemas import TraitSchema
 from marshmallow import ValidationError, fields, validates
 
-# from .constants import ACCEPTED_TRAIT_VALUE_TYPES, TRAIT_STRING_VALUE_MAX_LENGTH
-
-ACCEPTED_TRAIT_VALUE_TYPES = [int, str, bool, float]
-TRAIT_STRING_VALUE_MAX_LENGTH = 2000
+from .constants import (
+    ACCEPTED_TRAIT_VALUE_TYPES,
+    TRAIT_STRING_VALUE_MAX_LENGTH,
+)
 
 
 class APIFeatureStateSchema(FeatureStateSchema):
     feature_state_value = fields.Method(serialize="serialize_feature_state_value")
+
+    class Meta:
+        exclude = (
+            "multivariate_feature_state_values",
+            "featurestate_uuid",
+        )
 
     def serialize_feature_state_value(self, instance: FeatureStateModel) -> typing.Any:
         return instance.get_value(identity_id=self.context.get("identity_identifier"))

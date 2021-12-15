@@ -15,8 +15,10 @@ from .models import IdentityWithTraits
 from .schemas import APIFeatureStateSchema, APITraitSchema
 from .utils.tasks import repeat_every
 
-fs_schema = APIFeatureStateSchema(exclude=["multivariate_feature_state_values"])
+fs_schema = APIFeatureStateSchema()
+
 app = FastAPI()
+
 cache_service = CacheService(
     api_url=os.environ.get("FLAGSMITH_API_URL"),
     api_token=os.environ.get("FLAGSMITH_API_TOKEN"),
@@ -44,7 +46,7 @@ def flags(feature: str = None, x_environment_key: str = Header(None)):
 
 def _get_fs_schema(identity_model: IdentityModel):
     return APIFeatureStateSchema(
-        exclude=["multivariate_feature_state_values"],
+        # exclude=["multivariate_feature_state_values"],
         context={"identity_identifier": identity_model.identifier},
     )
 

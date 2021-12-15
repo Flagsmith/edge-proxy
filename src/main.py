@@ -3,11 +3,20 @@ import os
 
 from fastapi import FastAPI, Header
 from fastapi.responses import JSONResponse
+from flag_engine.engine import (
+    get_environment_feature_state,
+    get_environment_feature_states,
+    get_identity_feature_states,
+)
+from flag_engine.environments.builders import build_environment_model
+from flag_engine.identities.models import IdentityModel
 
 from .cache import CacheService
 from .models import IdentityWithTraits
+from .schemas import APIFeatureStateSchema, APITraitSchema
 from .task import repeat_every
 
+fs_schema = APIFeatureStateSchema(exclude=["multivariate_feature_state_values"])
 app = FastAPI()
 # TODO: should we move fast api to edge api?
 # should we create a diff repo for service of edge-api?
@@ -30,6 +39,7 @@ environment_service = environment.EnvironmentService(cache_service, LambdaStub()
 identity = importlib.import_module(".edge-api.src.identity", package="src")
 
 identity_service = identity.IdentityService(cache_service, LambdaStub())
+trait_schema = APITraitSchema()
 
 
 class RequestEventStub:
@@ -56,11 +66,25 @@ class RequestEventStub:
 
 
 @app.get("/api/v1/flags/")
-def flags(feature_name: str = None, x_environment_key: str = Header(None)):
-    # print(x_environment_key)
-    request_wrapper = RequestEventStub(x_environment_key, feature_name=feature_name)
-    data = environment_service.get_flags_response(request_wrapper)
+def flags(feature: str = None, x_environment_key: str = Header(None)):
+    environment_document = cache_service.get_environment(x_environment_key)
+    environment = build_environment_model(environment_document)
+
+    if feature:
+        feature_state = get_environment_feature_state(environment, feature)
+        data = fs_schema.dump(feature_state)
+    else:
+        feature_states = get_environment_feature_states(environment)
+        data = fs_schema.dump(feature_states, many=True)
+
     return JSONResponse(content=data)
+
+
+def _get_fs_schema(identity_model: IdentityModel):
+    return APIFeatureStateSchema(
+        exclude=["multivariate_feature_state_values"],
+        context={"identity_identifier": identity_model.identifier},
+    )
 
 
 @app.post("/api/v1/identities/")
@@ -69,10 +93,22 @@ def identity(
     feature_name: str = None,
     x_environment_key: str = Header(None),
 ):
-    request_wrapper = RequestEventStub(x_environment_key)
-    data = identity_service.get_identify_with_traits_response(
-        request_wrapper, input_data.identifier, traits=input_data.dict()["traits"]
+    environment_document = cache_service.get_environment(x_environment_key)
+    environment = build_environment_model(environment_document)
+    identity = IdentityModel(
+        identifier=input_data.identifier, environment_api_key=x_environment_key
     )
+    traits = input_data.dict()["traits"]
+    trait_models = trait_schema.load(traits, many=True)
+    fs_schema = _get_fs_schema(identity)
+    flags = get_identity_feature_states(
+        environment, identity, override_traits=trait_models
+    )
+    data = {
+        "identifier": identity.identifier,
+        "traits": trait_schema.dump(trait_models, many=True),
+        "flags": fs_schema.dump(flags, many=True),
+    }
     return JSONResponse(content=data)
 
 

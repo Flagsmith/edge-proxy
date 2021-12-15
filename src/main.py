@@ -22,7 +22,7 @@ app = FastAPI()
 cache_service = CacheService(
     api_url=os.environ.get("FLAGSMITH_API_URL"),
     api_token=os.environ.get("FLAGSMITH_API_TOKEN"),
-    api_keys=os.environ.get("ENVIRONMENT_API_KEYS").split(","),
+    api_keys=os.environ.get("ENVIRONMENT_API_KEYS", "").split(","),
 )
 
 

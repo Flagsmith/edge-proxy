@@ -1,4 +1,3 @@
-import importlib
 import os
 
 from fastapi import FastAPI, Header
@@ -18,8 +17,6 @@ from .task import repeat_every
 
 fs_schema = APIFeatureStateSchema(exclude=["multivariate_feature_state_values"])
 app = FastAPI()
-# TODO: should we move fast api to edge api?
-# should we create a diff repo for service of edge-api?
 cache_service = CacheService(
     api_url=os.environ.get("FLAGSMITH_API_URL"),
     api_token=os.environ.get("FLAGSMITH_API_TOKEN"),
@@ -27,42 +24,7 @@ cache_service = CacheService(
 )
 
 
-class LambdaStub:
-    def track_api_usage(*args, **kwargs):
-        pass
-
-
-environment = importlib.import_module(".edge-api.src.environment", package="src")
-
-environment_service = environment.EnvironmentService(cache_service, LambdaStub())
-
-identity = importlib.import_module(".edge-api.src.identity", package="src")
-
-identity_service = identity.IdentityService(cache_service, LambdaStub())
 trait_schema = APITraitSchema()
-
-
-class RequestEventStub:
-    def __init__(self, api_key: str, feature_name: str = None, host: str = None):
-        self.api_key = api_key
-        self.feature_name = feature_name
-        self._host = host  # for some reason I can't use host
-
-    @property
-    def environment_key(self):
-        return self.api_key
-
-    @property
-    def resource(self):
-        return ""
-
-    @property
-    def host(self):
-        return self._host
-
-    @property
-    def query_params(self):
-        return {"feature_name": self.feature_name}
 
 
 @app.get("/api/v1/flags/")

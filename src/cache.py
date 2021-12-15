@@ -36,10 +36,3 @@ class CacheService:
 
     def get_environment(self, api_key):
         return self._cache[api_key]
-
-    # interface for dynamodb
-    def update_identity(self, identity_dict: dict):
-        pass
-
-    def get_environment_and_identity(self, api_key, *args):
-        return self.get_environment(api_key), None

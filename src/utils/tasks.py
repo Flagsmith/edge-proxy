@@ -14,7 +14,7 @@ NoArgsNoReturnDecorator = Callable[
 ]
 
 
-def repeat_every(
+def repeat_every(  # noqa: C901
     *,
     seconds: float,
     wait_first: bool = False,

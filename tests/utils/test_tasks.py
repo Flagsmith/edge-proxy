@@ -24,51 +24,64 @@ def setup_event_loop(event_loop: AbstractEventLoop) -> None:
 
 @pytest.mark.asyncio
 async def test_repeat_print_delay(capsys: CaptureFixture) -> None:
+    # Given
     @repeat_every(seconds=0.07)
     def repeatedly_print_hello() -> None:
         print("hello")
 
+    # When
     await repeatedly_print_hello()
     await asyncio.sleep(0.1)
     out, err = capsys.readouterr()
+
+    # Then
     assert out == "hello\n" * 2
     assert err == ""
 
 
 @pytest.mark.asyncio
 async def test_repeat_print_wait(capsys: CaptureFixture) -> None:
+    # Given
     @repeat_every(seconds=0.07, wait_first=True)
     def repeatedly_print_hello() -> None:
         print("hello")
 
+    # When
     await repeatedly_print_hello()
     await asyncio.sleep(0.1)
     out, err = capsys.readouterr()
+
+    # Then
     assert out == "hello\n" * 1
     assert err == ""
 
 
 @pytest.mark.asyncio
 async def test_repeat_unlogged_error(caplog: LogCaptureFixture) -> None:
+    # Given
     @repeat_every(seconds=0.07)
     def log_exc() -> NoReturn:
         raise ValueError("repeat")
 
+    # When
     await log_exc()
     await asyncio.sleep(0.1)
+
+    # Then
     record_tuples = [x for x in caplog.record_tuples if x[0] == __name__]
-    print(caplog.record_tuples)
     assert len(record_tuples) == 0
 
 
 @pytest.mark.asyncio
 async def test_repeat_log_error(caplog: LogCaptureFixture) -> None:
+    # Given
     logger = logging.getLogger(__name__)
 
     @repeat_every(seconds=0.1, logger=logger)
     def log_exc() -> NoReturn:
         raise ValueError("repeat")
 
+    # When
     await log_exc()
     n_record_tuples = 0
     record_tuples: List[Tuple[Any, ...]] = []
@@ -79,6 +92,8 @@ async def test_repeat_log_error(caplog: LogCaptureFixture) -> None:
             print(record_tuples)
             assert False, "Test timed out"
         await asyncio.sleep(0.05)
+
+        # Then
         record_tuples = [x for x in caplog.record_tuples if x[0] == __name__]
         n_record_tuples = len(record_tuples)
 
@@ -87,17 +102,21 @@ async def test_repeat_log_error(caplog: LogCaptureFixture) -> None:
 async def test_repeat_raise_error(
     caplog: LogCaptureFixture, capsys: CaptureFixture
 ) -> None:
+
+    # Given
     logger = logging.getLogger(__name__)
 
     @repeat_every(seconds=0.07, raise_exceptions=True, logger=logger)
     def raise_exc() -> NoReturn:
         raise ValueError("repeat")
 
+    # When
     await raise_exc()
     await asyncio.sleep(0.1)
     out, err = capsys.readouterr()
+
+    # Then
     assert out == ""
     assert err == ""
     record_tuples = [x for x in caplog.record_tuples if x[0] == __name__]
-    print(caplog.record_tuples)
     assert len(record_tuples) == 1

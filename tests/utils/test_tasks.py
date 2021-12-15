@@ -23,40 +23,6 @@ def setup_event_loop(event_loop: AbstractEventLoop) -> None:
 
 
 @pytest.mark.asyncio
-async def test_repeat_print_delay(capsys: CaptureFixture) -> None:
-    # Given
-    @repeat_every(seconds=0.07)
-    def repeatedly_print_hello() -> None:
-        print("hello")
-
-    # When
-    await repeatedly_print_hello()
-    await asyncio.sleep(0.1)
-    out, err = capsys.readouterr()
-
-    # Then
-    assert out == "hello\n" * 2
-    assert err == ""
-
-
-@pytest.mark.asyncio
-async def test_repeat_print_wait(capsys: CaptureFixture) -> None:
-    # Given
-    @repeat_every(seconds=0.07, wait_first=True)
-    def repeatedly_print_hello() -> None:
-        print("hello")
-
-    # When
-    await repeatedly_print_hello()
-    await asyncio.sleep(0.1)
-    out, err = capsys.readouterr()
-
-    # Then
-    assert out == "hello\n" * 1
-    assert err == ""
-
-
-@pytest.mark.asyncio
 async def test_repeat_unlogged_error(caplog: LogCaptureFixture) -> None:
     # Given
     @repeat_every(seconds=0.07)

@@ -8,21 +8,14 @@ class CacheService:
         self.api_url = api_url
         self.api_token = api_token
         self.api_keys = api_keys
+        self._session = requests.Session()
+        self._session.headers.update({"Authorization": f"Token {self.api_token}"})
 
         self._cache = {}
 
     def _fetch_document(self, api_key):
         url = f"{self.api_url}/environments/{api_key}/document/"
-        headers = {
-            "Authorization": f"Token {self.api_token}",
-            "Content-Type": "application/json",
-        }
-        session = requests.Session()
-        session.headers.update(headers)
-        response = session.get(
-            url,
-            headers=headers,
-        )
+        response = self._session.get(url)
         response.raise_for_status()
         return response.json()
 

@@ -84,7 +84,9 @@ async def test_repeat_log_error(caplog: LogCaptureFixture) -> None:
 
 
 @pytest.mark.asyncio
-async def test_repeat_raise_error(caplog: LogCaptureFixture, capsys: CaptureFixture) -> None:
+async def test_repeat_raise_error(
+    caplog: LogCaptureFixture, capsys: CaptureFixture
+) -> None:
     logger = logging.getLogger(__name__)
 
     @repeat_every(seconds=0.07, raise_exceptions=True, logger=logger)

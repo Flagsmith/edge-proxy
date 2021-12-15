@@ -17,22 +17,21 @@ class CacheService:
             "Authorization": f"Token {self.api_token}",
             "Content-Type": "application/json",
         }
-        response = requests.request(
-            "GET",
+        session = requests.Session()
+        session.headers.update(headers)
+        response = session.get(
             url,
             headers=headers,
         )
-
-        # TODO handle retry and error
-        if not response.status_code == 200:
-            logging.error(f"received non 200 response for {api_key}")
-            return {}
-
+        response.raise_for_status()
         return response.json()
 
     def refresh(self):
         for api_key in self.api_keys:
-            self._cache[api_key] = self._fetch_document(api_key)
+            try:
+                self._cache[api_key] = self._fetch_document(api_key)
+            except requests.exceptions.HTTPError:
+                logging.error(f"received non 200 response for {api_key}")
 
     def get_environment(self, api_key):
         return self._cache[api_key]

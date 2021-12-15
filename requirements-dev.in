@@ -5,3 +5,5 @@ black
 pip-tools
 pre-commit
 flake8
+pytest
+pytest-asyncio

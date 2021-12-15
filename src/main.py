@@ -13,7 +13,7 @@ from flag_engine.identities.models import IdentityModel
 from .cache import CacheService
 from .models import IdentityWithTraits
 from .schemas import APIFeatureStateSchema, APITraitSchema
-from .utils.task import repeat_every
+from .utils.tasks import repeat_every
 
 fs_schema = APIFeatureStateSchema(exclude=["multivariate_feature_state_values"])
 app = FastAPI()
@@ -52,7 +52,6 @@ def _get_fs_schema(identity_model: IdentityModel):
 @app.post("/api/v1/identities/")
 def identity(
     input_data: IdentityWithTraits,
-    feature_name: str = None,
     x_environment_key: str = Header(None),
 ):
     environment_document = cache_service.get_environment(x_environment_key)
@@ -60,8 +59,7 @@ def identity(
     identity = IdentityModel(
         identifier=input_data.identifier, environment_api_key=x_environment_key
     )
-    traits = input_data.dict()["traits"]
-    trait_models = trait_schema.load(traits, many=True)
+    trait_models = trait_schema.load(input_data.dict()["traits"], many=True)
     fs_schema = _get_fs_schema(identity)
     flags = get_identity_feature_states(
         environment, identity, override_traits=trait_models

@@ -54,20 +54,21 @@ def repeat_every(
             async def loop() -> None:
                 if wait_first:
                     await asyncio.sleep(seconds)
-                try:
-                    if is_coroutine:
-                        await func()  # type: ignore
-                    else:
-                        await run_in_threadpool(func)
-                except Exception as exc:
-                    if logger is not None:
-                        formatted_exception = "".join(
-                            format_exception(type(exc), exc, exc.__traceback__)
-                        )
-                        logger.error(formatted_exception)
-                    if raise_exceptions:
-                        raise exc
-                await asyncio.sleep(seconds)
+                while True:
+                    try:
+                        if is_coroutine:
+                            await func()  # type: ignore
+                        else:
+                            await run_in_threadpool(func)
+                    except Exception as exc:
+                        if logger is not None:
+                            formatted_exception = "".join(
+                                format_exception(type(exc), exc, exc.__traceback__)
+                            )
+                            logger.error(formatted_exception)
+                        if raise_exceptions:
+                            raise exc
+                    await asyncio.sleep(seconds)
 
             ensure_future(loop())
 

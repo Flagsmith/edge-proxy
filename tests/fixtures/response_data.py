@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-_segment_override_feature_state_document = {
+_segment_override_feature_state = {
     "multivariate_feature_state_values": [],
     "feature_state_value": "segment_override",
     "feature": {
@@ -12,7 +12,7 @@ _segment_override_feature_state_document = {
 }
 
 
-_environment_feature_state_1_document = {
+_environment_feature_state_1 = {
     "multivariate_feature_state_values": [],
     "feature_state_value": "feature_1_value",
     "feature": {
@@ -24,7 +24,7 @@ _environment_feature_state_1_document = {
 }
 
 
-_environment_feature_state_2_document = {
+_environment_feature_state_2 = {
     "multivariate_feature_state_values": [],
     "feature_state_value": "2.3",
     "feature": {
@@ -36,7 +36,7 @@ _environment_feature_state_2_document = {
 }
 
 
-_environment_feature_state_3_document = {
+_environment_feature_state_3 = {
     "multivariate_feature_state_values": [],
     "feature_state_value": None,
     "feature": {
@@ -48,7 +48,7 @@ _environment_feature_state_3_document = {
 }
 
 
-_segment_1_document = {
+_segment_1 = {
     "name": "segment_1",
     "rules": [
         {
@@ -70,11 +70,11 @@ _segment_1_document = {
         }
     ],
     "id": Decimal("1"),
-    "feature_states": [_segment_override_feature_state_document],
+    "feature_states": [_segment_override_feature_state],
 }
 
 
-_project_1_document = {
+_project_1 = {
     "name": "project-1",
     "organisation": {
         "feature_analytics": False,
@@ -85,17 +85,17 @@ _project_1_document = {
     },
     "id": 1,
     "hide_disabled_flags": False,
-    "segments": [_segment_1_document],
+    "segments": [_segment_1],
 }
 
 
-environment_1_document = {
+environment_1 = {
     "feature_states": [
-        _environment_feature_state_1_document,
-        _environment_feature_state_2_document,
-        _environment_feature_state_3_document,
+        _environment_feature_state_1,
+        _environment_feature_state_2,
+        _environment_feature_state_3,
     ],
     "api_key": "environment_1_api_key",
-    "project": _project_1_document,
+    "project": _project_1,
     "id": Decimal("1"),
 }

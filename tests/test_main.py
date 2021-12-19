@@ -4,7 +4,7 @@ from fastapi.testclient import TestClient
 
 from src.main import app
 
-from .fixtures.dynamodb import environment_1_document
+from .fixtures.response_data import environment_1
 
 client = TestClient(app)
 
@@ -12,7 +12,7 @@ client = TestClient(app)
 def test_get_flags(mocker, environment_1_feature_states_response_list):
     environment_key = "test_environment_key"
     mocked_cache_service = mocker.patch("src.main.cache_service")
-    mocked_cache_service.get_environment.return_value = environment_1_document
+    mocked_cache_service.get_environment.return_value = environment_1
     response = client.get(
         "/api/v1/flags", headers={"X-Environment-Key": environment_key}
     )
@@ -23,7 +23,7 @@ def test_get_flags(mocker, environment_1_feature_states_response_list):
 def test_get_flags_single_feature(mocker, environment_1_feature_states_response_list):
     environment_key = "test_environment_key"
     mocked_cache_service = mocker.patch("src.main.cache_service")
-    mocked_cache_service.get_environment.return_value = environment_1_document
+    mocked_cache_service.get_environment.return_value = environment_1
     response = client.get(
         "/api/v1/flags",
         headers={"X-Environment-Key": environment_key},
@@ -38,7 +38,7 @@ def test_post_identity_with_traits(
 ):
     environment_key = "test_environment_key"
     mocked_cache_service = mocker.patch("src.main.cache_service")
-    mocked_cache_service.get_environment.return_value = environment_1_document
+    mocked_cache_service.get_environment.return_value = environment_1
     data = {
         "traits": [{"trait_value": "test", "trait_key": "first_name"}],
         "identifier": "do_it_all_in_one_go_identity",

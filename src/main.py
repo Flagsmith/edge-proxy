@@ -1,5 +1,3 @@
-import os
-
 from fastapi import FastAPI, Header
 from fastapi.responses import JSONResponse
 from flag_engine.engine import (

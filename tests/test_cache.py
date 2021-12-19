@@ -7,21 +7,19 @@ api_keys = ["test_env_key_1", "test_env_key2"]
 
 def test_refresh_makes_correct_http_call(mocker):
     # Given
-    mocked_session = mocker.MagicMock()
-    mocker.patch("src.cache.requests.Session", return_value=mocked_session)
-
+    mocked_session = mocker.patch("src.cache.requests.Session")
     cache_service = CacheService(api_url, api_token, api_keys)
 
     # When
     cache_service.refresh()
     # Then
-    mocked_session.get.assert_has_calls(
+    mocked_session.return_value.get.assert_has_calls(
         [mocker.call(f"{api_url}/environments/{api_keys[0]}/document/")],
         [mocker.call(f"{api_url}/environments/{api_keys[1]}/document/")],
     )
 
 
-def test_initializing_cache_service_sets_the_uthorization_header(mocker):
+def test_initializing_cache_service_sets_the_authorization_header(mocker):
     # Given
     mocked_session = mocker.MagicMock()
     mocker.patch("src.cache.requests.Session", return_value=mocked_session)

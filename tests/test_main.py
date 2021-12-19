@@ -51,6 +51,5 @@ def test_post_identity_with_traits(
     assert response.json() == {
         "flags": environment_1_feature_states_response_list_response_with_segment_override,
         "traits": data["traits"],
-        "identifier": data["identifier"],
     }
     mocked_cache_service.get_environment.assert_called_with(environment_key)

@@ -15,8 +15,6 @@ from .models import IdentityWithTraits
 from .schemas import APIFeatureStateSchema, APITraitSchema
 from .utils.tasks import repeat_every
 
-fs_schema = APIFeatureStateSchema()
-
 app = FastAPI()
 
 cache_service = CacheService(
@@ -26,6 +24,7 @@ cache_service = CacheService(
 )
 
 
+fs_schema = APIFeatureStateSchema()
 trait_schema = APITraitSchema()
 
 
@@ -66,7 +65,6 @@ def identity(
         environment, identity, override_traits=trait_models
     )
     data = {
-        "identifier": identity.identifier,
         "traits": trait_schema.dump(trait_models, many=True),
         "flags": fs_schema.dump(flags, many=True),
     }

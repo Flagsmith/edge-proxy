@@ -39,11 +39,19 @@ def test_get_environment_works_correctly(mocker):
     doc_2 = {"key2": "value2"}
 
     # patch the _fetch_document to populate the cache
-    mocker.patch.object(cache_service, "_fetch_document", side_effect=[doc_1, doc_2])
+    mocked_fetch_document = mocker.patch.object(
+        cache_service, "_fetch_document", side_effect=[doc_1, doc_2]
+    )
 
     # When
     cache_service.refresh()
 
-    # Then
+    # Next, test that get environment return correct document
     cache_service.get_environment(api_keys[0]) == doc_1
     cache_service.get_environment(api_keys[1]) == doc_2
+    assert mocked_fetch_document.call_count == 2
+
+    # Next, let's verify that any additional call to get_environment does not call fetch document
+    cache_service.get_environment(api_keys[0])
+    cache_service.get_environment(api_keys[1])
+    assert mocked_fetch_document.call_count == 2

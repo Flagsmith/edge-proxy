@@ -12,6 +12,10 @@ jobs:
         if: github.event.pull_request.draft == false
         runs-on: ubuntu-latest
         name: Unit Tests and Linting
+        env:
+            FLAGSMITH_API_URL: https://api.flagsmith.com/api/v1
+            FLAGSMITH_API_TOKEN: test_token
+            ENVIRONMENT_API_KEYS: placeholder_key1
 
         strategy:
             max-parallel: 4
@@ -45,3 +49,6 @@ jobs:
 
             - name: Check isort imports
               run: isort --check .
+
+            - name: Run Tests
+              run: pytest -p no:warnings

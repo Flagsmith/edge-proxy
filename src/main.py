@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Header
 from fastapi.responses import JSONResponse
+from fastapi_utils.tasks import repeat_every
 from flag_engine.engine import (
     get_environment_feature_state,
     get_environment_feature_states,
@@ -7,8 +8,6 @@ from flag_engine.engine import (
 )
 from flag_engine.environments.builders import build_environment_model
 from flag_engine.identities.models import IdentityModel
-
-from fastapi_utils.tasks import repeat_every
 
 from . import settings
 from .cache import CacheService
@@ -19,7 +18,7 @@ app = FastAPI()
 
 cache_service = CacheService(
     api_url=settings.FLAGSMITH_API_URL,
-    api_token=settings.FLAGSMITH_API_TOKEN,
+    server_side_keys=settings.SERVER_SIDE_ENVIRONMENT_KEYS,
     api_keys=settings.ENVIRONMENT_API_KEYS,
 )
 

@@ -1,10 +1,40 @@
-from decouple import Csv, config
-from dotenv import load_dotenv
+import json
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
 
-load_dotenv()
+from pydantic import BaseModel, BaseSettings, HttpUrl
+from pydantic.env_settings import SettingsSourceCallable
 
 
-FLAGSMITH_API_URL = config("FLAGSMITH_API_URL")
-SERVER_SIDE_ENVIRONMENT_KEYS = config("SERVER_SIDE_ENVIRONMENT_KEYS", cast=Csv())
-ENVIRONMENT_API_KEYS = config("ENVIRONMENT_API_KEYS", cast=Csv())
-API_POLL_FREQUENCY = config("API_POLL_FREQUENCY", cast=int, default=10)
+def json_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
+    """
+    A simple settings source that loads variables from a JSON file
+    at the project's root.
+    """
+    encoding = settings.__config__.env_file_encoding
+    env_file = settings.__config__.env_file
+    return json.loads(Path(env_file).read_text(encoding))
+
+
+class EnvironmentKeyPair(BaseModel):
+    server_side_key: str
+    client_side_key: str
+
+
+class Settings(BaseSettings):
+    environment_key_pair: List[EnvironmentKeyPair]
+    api_url: HttpUrl = "https://api.flagsmith.com/api/v1/"
+    api_poll_frequency: int = 10
+
+    class Config:
+        env_file = "config.json"
+        env_file_encoding = "utf-8"
+
+        @classmethod
+        def customise_sources(
+            cls,
+            init_settings: SettingsSourceCallable,
+            env_settings: SettingsSourceCallable,
+            file_secret_settings: SettingsSourceCallable,
+        ) -> Tuple[SettingsSourceCallable, ...]:
+            return init_settings, env_settings, json_config_settings_source

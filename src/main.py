@@ -9,17 +9,18 @@ from flag_engine.engine import (
 from flag_engine.environments.builders import build_environment_model
 from flag_engine.identities.models import IdentityModel
 
-from . import settings
 from .cache import CacheService
 from .models import IdentityWithTraits
 from .schemas import APIFeatureStateSchema, APITraitSchema
+from .settings import Settings
 
 app = FastAPI()
-
+settings = Settings()
 cache_service = CacheService(
-    api_url=settings.FLAGSMITH_API_URL,
-    server_side_keys=settings.SERVER_SIDE_ENVIRONMENT_KEYS,
-    api_keys=settings.ENVIRONMENT_API_KEYS,
+    settings
+    # api_url=settings.FLAGSMITH_API_URL,
+    # server_side_keys=settings.SERVER_SIDE_ENVIRONMENT_KEYS,
+    # api_keys=settings.ENVIRONMENT_API_KEYS,
 )
 
 
@@ -71,6 +72,6 @@ def identity(
 
 
 @app.on_event("startup")
-@repeat_every(seconds=settings.API_POLL_FREQUENCY, raise_exceptions=True)
+@repeat_every(seconds=settings.api_poll_frequency, raise_exceptions=True)
 def refresh_cache():
     cache_service.refresh()

@@ -1,0 +1,3 @@
+{
+    "environment_key_pair":[{"server_side_key":"your_server_side_environment_key", "client_side_key":"your_client_side_environment_key"}]
+}

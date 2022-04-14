@@ -1,14 +1,19 @@
 from src.cache import CacheService
+from src.settings import Settings
 
-api_url = "https://localhost/api/v1"
-server_side_keys = ["ser.key1", "ser.key2"]
-api_keys = ["test_env_key_1", "test_env_key2"]
+settings = Settings(
+    api_url="http://127.0.0.1:8000/api/v1",
+    environment_key_pair=[
+        {"server_side_key": "ser.key1", "client_side_key": "test_env_key_1"},
+        {"server_side_key": "ser.key2", "client_side_key": "test_env_key_2"},
+    ],
+)
 
 
 def test_refresh_makes_correct_http_call(mocker):
     # Given
     mocked_session = mocker.patch("src.cache.requests.Session")
-    cache_service = CacheService(api_url, server_side_keys, api_keys)
+    cache_service = CacheService(settings)
 
     # When
     cache_service.refresh()
@@ -16,14 +21,22 @@ def test_refresh_makes_correct_http_call(mocker):
     mocked_session.return_value.get.assert_has_calls(
         [
             mocker.call(
-                f"{api_url}/environment-document/",
-                headers={"X-Environment-Key": server_side_keys[0]},
+                f"{settings.api_url}/environment-document/",
+                headers={
+                    "X-Environment-Key": settings.environment_key_pair[
+                        0
+                    ].server_side_key
+                },
             )
         ],
         [
             mocker.call(
-                f"{api_url}/environment-document/",
-                headers={"X-Environment-Key": server_side_keys[1]},
+                f"{settings.api_url}/environment-document/",
+                headers={
+                    "X-Environment-Key": settings.environment_key_pair[
+                        1
+                    ].server_side_key
+                },
             )
         ],
     )
@@ -31,7 +44,7 @@ def test_refresh_makes_correct_http_call(mocker):
 
 def test_get_environment_works_correctly(mocker):
     # Given
-    cache_service = CacheService(api_url, server_side_keys, api_keys)
+    cache_service = CacheService(settings)
     doc_1 = {"key1": "value1"}
     doc_2 = {"key2": "value2"}
 
@@ -44,11 +57,15 @@ def test_get_environment_works_correctly(mocker):
     cache_service.refresh()
 
     # Next, test that get environment return correct document
-    cache_service.get_environment(api_keys[0]) == doc_1
-    cache_service.get_environment(api_keys[1]) == doc_2
+    cache_service.get_environment(
+        settings.environment_key_pair[0].client_side_key
+    ) == doc_1
+    cache_service.get_environment(
+        settings.environment_key_pair[1].client_side_key
+    ) == doc_2
     assert mocked_fetch_document.call_count == 2
 
     # Next, let's verify that any additional call to get_environment does not call fetch document
-    cache_service.get_environment(api_keys[0])
-    cache_service.get_environment(api_keys[1])
+    cache_service.get_environment(settings.environment_key_pair[0].client_side_key)
+    cache_service.get_environment(settings.environment_key_pair[1].client_side_key)
     assert mocked_fetch_document.call_count == 2

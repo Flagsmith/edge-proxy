@@ -16,12 +16,7 @@ from .settings import Settings
 
 app = FastAPI()
 settings = Settings()
-cache_service = CacheService(
-    settings
-    # api_url=settings.FLAGSMITH_API_URL,
-    # server_side_keys=settings.SERVER_SIDE_ENVIRONMENT_KEYS,
-    # api_keys=settings.ENVIRONMENT_API_KEYS,
-)
+cache_service = CacheService(settings)
 
 
 fs_schema = APIFeatureStateSchema()

@@ -2,9 +2,8 @@ import json
 
 from fastapi.testclient import TestClient
 
-from src.main import app
-
 from .fixtures.response_data import environment_1
+from src.main import app
 
 client = TestClient(app)
 

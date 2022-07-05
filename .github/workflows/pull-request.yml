@@ -47,8 +47,8 @@ jobs:
             - name: Check flake8 linting
               run: flake8 --config=.flake8 .
 
-            - name: Check isort imports
-              run: isort --check .
+            - name: Check import order
+              run: pre-commit run reorder-python-imports --all-files
 
             - name: Run Tests
               run: pytest -p no:warnings

@@ -2,7 +2,11 @@ import asyncio
 import logging
 import time
 from asyncio import AbstractEventLoop
-from typing import Any, Dict, List, NoReturn, Tuple
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import NoReturn
+from typing import Tuple
 
 import pytest
 from _pytest.capture import CaptureFixture

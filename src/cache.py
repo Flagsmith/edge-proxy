@@ -20,7 +20,7 @@ class CacheService:
         return response.json()
 
     def refresh(self):
-        for key_pair in self.settings.environment_key_pair:
+        for key_pair in self.settings.environment_key_pairs:
             try:
                 self._cache[key_pair.client_side_key] = self._fetch_document(
                     key_pair.server_side_key

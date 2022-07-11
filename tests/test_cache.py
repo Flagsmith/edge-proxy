@@ -3,7 +3,7 @@ from src.settings import Settings
 
 settings = Settings(
     api_url="http://127.0.0.1:8000/api/v1",
-    environment_key_pair=[
+    environment_key_pairs=[
         {"server_side_key": "ser.key1", "client_side_key": "test_env_key_1"},
         {"server_side_key": "ser.key2", "client_side_key": "test_env_key_2"},
     ],
@@ -23,7 +23,7 @@ def test_refresh_makes_correct_http_call(mocker):
             mocker.call(
                 f"{settings.api_url}/environment-document/",
                 headers={
-                    "X-Environment-Key": settings.environment_key_pair[
+                    "X-Environment-Key": settings.environment_key_pairs[
                         0
                     ].server_side_key
                 },
@@ -33,7 +33,7 @@ def test_refresh_makes_correct_http_call(mocker):
             mocker.call(
                 f"{settings.api_url}/environment-document/",
                 headers={
-                    "X-Environment-Key": settings.environment_key_pair[
+                    "X-Environment-Key": settings.environment_key_pairs[
                         1
                     ].server_side_key
                 },
@@ -58,14 +58,14 @@ def test_get_environment_works_correctly(mocker):
 
     # Next, test that get environment return correct document
     cache_service.get_environment(
-        settings.environment_key_pair[0].client_side_key
+        settings.environment_key_pairs[0].client_side_key
     ) == doc_1
     cache_service.get_environment(
-        settings.environment_key_pair[1].client_side_key
+        settings.environment_key_pairs[1].client_side_key
     ) == doc_2
     assert mocked_fetch_document.call_count == 2
 
     # Next, let's verify that any additional call to get_environment does not call fetch document
-    cache_service.get_environment(settings.environment_key_pair[0].client_side_key)
-    cache_service.get_environment(settings.environment_key_pair[1].client_side_key)
+    cache_service.get_environment(settings.environment_key_pairs[0].client_side_key)
+    cache_service.get_environment(settings.environment_key_pairs[1].client_side_key)
     assert mocked_fetch_document.call_count == 2

@@ -2,6 +2,10 @@
 
 https://docs.flagsmith.com/advanced-use/edge-proxy
 
+
+## Configuration
+Edge proxy can be configured using the `config.json` file located at the root.
+
 ## Load Testing
 
 You can send post request with `wrk` like this:

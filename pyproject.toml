@@ -5,7 +5,7 @@
 
 [tool.black]
 line-length = 88
-target-version = ['py36', 'py37', 'py38', 'py39', 'py10']
+target-version = ['py36', 'py37', 'py38', 'py39', 'py310']
 include = '\.pyi?$'
 exclude = '''
 /(
@@ -28,4 +28,3 @@ use_parentheses=true
 multi_line_output=3
 include_trailing_comma=true
 line_length=79
-skip = ['migrations']

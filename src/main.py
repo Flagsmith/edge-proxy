@@ -1,20 +1,18 @@
 from fastapi import FastAPI
 from fastapi import Header
 from fastapi.responses import JSONResponse
-
 from flag_engine.engine import get_environment_feature_state
 from flag_engine.engine import get_environment_feature_states
 from flag_engine.engine import get_identity_feature_states
 from flag_engine.environments.builders import build_environment_model
 from flag_engine.identities.models import IdentityModel
 
-from . import settings
 from .cache import CacheService
 from .models import IdentityWithTraits
 from .schemas import APIFeatureStateSchema
 from .schemas import APITraitSchema
+from .settings import Settings
 from fastapi_utils.tasks import repeat_every
-
 
 app = FastAPI()
 settings = Settings()

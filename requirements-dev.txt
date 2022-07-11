@@ -14,7 +14,7 @@ autopep8==1.6.0
     # via -r requirements-dev.in
 backports-entry-points-selectable==1.1.1
     # via virtualenv
-black==21.11b1
+black==22.6.0
     # via -r requirements-dev.in
 cfgv==3.3.1
     # via pre-commit
@@ -80,8 +80,6 @@ pytest-mock==3.6.1
     # via -r requirements-dev.in
 pyyaml==6.0
     # via pre-commit
-regex==2021.11.10
-    # via black
 reorder-python-imports==3.0.1
     # via -r requirements-dev.in
 six==1.16.0
@@ -92,10 +90,6 @@ toml==0.10.2
     #   pre-commit
     #   pylint
     #   pytest
-tomli==1.2.2
-    # via black
-typing-extensions==4.0.1
-    # via black
 virtualenv==20.10.0
     # via pre-commit
 wrapt==1.13.3

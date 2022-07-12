@@ -5,4 +5,4 @@ marshmallow
 flagsmith-flag-engine
 python-decouple
 python-dotenv
-
+pydantic

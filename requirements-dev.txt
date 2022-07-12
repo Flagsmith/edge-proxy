@@ -14,14 +14,12 @@ autopep8==1.6.0
     # via -r requirements-dev.in
 backports-entry-points-selectable==1.1.1
     # via virtualenv
-black==21.11b1
+black==22.6.0
     # via -r requirements-dev.in
 cfgv==3.3.1
     # via pre-commit
 click==8.0.3
-    # via
-    #   black
-    #   pip-tools
+    # via black
 distlib==0.3.3
     # via virtualenv
 filelock==3.4.0
@@ -48,11 +46,7 @@ packaging==21.3
     # via pytest
 pathspec==0.9.0
     # via black
-pep517==0.12.0
-    # via pip-tools
 pep8==1.7.1
-    # via -r requirements-dev.in
-pip-tools==6.6.0
     # via -r requirements-dev.in
 platformdirs==2.4.0
     # via
@@ -61,7 +55,7 @@ platformdirs==2.4.0
     #   virtualenv
 pluggy==1.0.0
     # via pytest
-pre-commit==2.16.0
+pre-commit==2.20.0
     # via -r requirements-dev.in
 py==1.11.0
     # via pytest
@@ -86,8 +80,6 @@ pytest-mock==3.6.1
     # via -r requirements-dev.in
 pyyaml==6.0
     # via pre-commit
-regex==2021.11.10
-    # via black
 reorder-python-imports==3.0.1
     # via -r requirements-dev.in
 six==1.16.0
@@ -98,19 +90,10 @@ toml==0.10.2
     #   pre-commit
     #   pylint
     #   pytest
-tomli==1.2.2
-    # via
-    #   black
-    #   pep517
-typing-extensions==4.0.1
-    # via black
 virtualenv==20.10.0
     # via pre-commit
-wheel==0.37.0
-    # via pip-tools
 wrapt==1.13.3
     # via astroid
 
 # The following packages are considered to be unsafe in a requirements file:
-# pip
 # setuptools

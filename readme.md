@@ -5,6 +5,8 @@ https://docs.flagsmith.com/advanced-use/edge-proxy
 
 ## Configuration
 Edge proxy can be configured using the `config.json` file located at the root.
+* With docker run:
+ docker run -v  /<path-to-local>/config.json:/app/config.json flagsmith/edge-proxy:latest
 
 ## Load Testing
 

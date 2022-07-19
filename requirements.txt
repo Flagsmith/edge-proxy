@@ -38,8 +38,12 @@ requests==2.26.0
     # via -r requirements.in
 sniffio==1.2.0
     # via anyio
+sse-starlette==0.10.3
+    # via -r requirements.in
 starlette==0.16.0
-    # via fastapi
+    # via
+    #   fastapi
+    #   sse-starlette
 typing-extensions==4.0.1
     # via pydantic
 urllib3==1.26.7

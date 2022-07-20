@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi import Header
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from flag_engine.engine import get_environment_feature_state
 from flag_engine.engine import get_environment_feature_states
@@ -12,12 +13,12 @@ from .models import IdentityWithTraits
 from .schemas import APIFeatureStateSchema
 from .schemas import APITraitSchema
 from .settings import Settings
+from .sse import router as sse_router
 from fastapi_utils.tasks import repeat_every
 
 app = FastAPI()
 settings = Settings()
 cache_service = CacheService(settings)
-
 
 fs_schema = APIFeatureStateSchema()
 trait_schema = APITraitSchema()
@@ -70,3 +71,20 @@ def identity(
 @repeat_every(seconds=settings.api_poll_frequency, raise_exceptions=True)
 def refresh_cache():
     cache_service.refresh()
+
+
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.include_router(sse_router)

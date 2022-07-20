@@ -6,6 +6,8 @@
 #
 anyio==3.4.0
     # via starlette
+asyncio==3.4.3
+    # via -r requirements.in
 certifi==2021.10.8
     # via requests
 charset-normalizer==2.0.9

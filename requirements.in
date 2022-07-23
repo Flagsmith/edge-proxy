@@ -10,3 +10,4 @@ pydantic
 sse-starlette
 asyncio
 SQLAlchemy
+aiosqlite

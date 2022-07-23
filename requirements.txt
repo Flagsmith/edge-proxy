@@ -4,6 +4,8 @@
 #
 #    pip-compile requirements.in
 #
+aiosqlite==0.17.0
+    # via -r requirements.in
 anyio==3.4.0
     # via starlette
 asyncio==3.4.3
@@ -51,7 +53,9 @@ starlette==0.16.0
     #   fastapi
     #   sse-starlette
 typing-extensions==4.0.1
-    # via pydantic
+    # via
+    #   aiosqlite
+    #   pydantic
 urllib3==1.26.7
     # via requests
 uvicorn==0.18.2

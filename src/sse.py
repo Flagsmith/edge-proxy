@@ -1,98 +1,74 @@
 import asyncio
 import sqlite3
+from datetime import datetime
 
 from fastapi import APIRouter
 from fastapi import Request
-from fastapi.responses import HTMLResponse
 from fastapi.responses import JSONResponse
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine
 from sse_starlette.sse import EventSourceResponse
 
+from .sse_models import Base
 from .sse_models import Environment
-from .sse_models import mapper_registry
 
-engine = create_engine("sqlite+pysqlite:///:memory:", echo=True, future=True)
-mapper_registry.metadata.create_all(engine)
+engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=True, future=True)
 
 router = APIRouter()
 db = sqlite3.connect("sse.db")
 
 
+@router.on_event("startup")
+async def migrate_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
 @router.post("/environments/{environment_key}/queue-change")
 async def environment_updated(environment_key: str):
-    session = Session(engine, autoflush=True)
-    environment = Environment(key=environment_key)
-    session.add(environment)
-    session.commit()
-    session.close()
-
+    async with AsyncSession(engine) as session:
+        environment = Environment(key=environment_key)
+        await session.merge(environment)
+        await session.commit()
     return JSONResponse(status_code=200)
-
-
-@router.get("/home", response_class=HTMLResponse)
-async def read_items():
-
-    html_sse = """
-        <html>
-        <body>
-            <h1>Response from server:</h1>
-            <div id="response"></div>
-            <script>
-                let environment_key = prompt("paste Environment Key");
-                document.getElementById('response').innerText = 'Hello World!';
-                var evtSource = new EventSource("/stream?environment_key=" + environment_key);
-                console.log("evtSource: ", evtSource);
-                evtSource.onmessage = function(e) {
-                    document.getElementById('response').innerText = e.data;
-                    console.log(e);
-                    if (e.data == 20) {
-                        console.log("Closing connection after 20 numbers.")
-                        evtSource.close()
-                    }
-                }
-            </script>
-        </body>
-    </html>
-    """
-    return HTMLResponse(content=html_sse, status_code=200)
 
 
 STREAM_DELAY = 1  # second
 RETRY_TIMEOUT = 15000  # milisecond
+MAX_AGE = 30
 
 
 @router.get("/environments/{environment_key}/stream")
 async def message_stream(request: Request, environment_key: str):
-    session = Session(engine, autoflush=True)
+    session = AsyncSession(engine)
+    started_at = datetime.now()
 
     async def new_messages():
         environment_updated = False
-        environment = session.get(Environment, environment_key)
+        environment = await session.get(Environment, environment_key)
         if environment:
             environment_updated = True
-            session.delete(environment)
+            await session.delete(environment)
 
-        session.commit()
+        await session.commit()
         return environment_updated
 
     async def event_generator():
-        count = 0
         while True:
-            # If client closes connection, stop sending events
-            if await request.is_disconnected():
-                session.close()
-                print("Streaming stopped")
+            # If client closes connection, or the stream is open for more than `MAX_AGE` seconds
+            # stop sending events
+            if (
+                await request.is_disconnected()
+                or (datetime.now() - started_at).total_seconds() > MAX_AGE
+            ):
+                await session.close()
                 break
             # Checks for new messages and return them to client if any
             if await new_messages():
                 yield {
-                    "event": "message",
-                    "id": "message_id",
+                    "event": "environment_updated",
                     "retry": RETRY_TIMEOUT,
-                    "data": f"message_content {count}, for environment_key: {environment_key}",
                 }
-                count = count + 1
 
             await asyncio.sleep(STREAM_DELAY)
 

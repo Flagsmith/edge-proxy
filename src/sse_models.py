@@ -1,9 +1,9 @@
 from sqlalchemy import Column
 from sqlalchemy import String
-from sqlalchemy.orm import registry
+from sqlalchemy.orm import declarative_base
 
-mapper_registry = registry()
-Base = mapper_registry.generate_base()
+
+Base = declarative_base()
 
 
 class Environment(Base):

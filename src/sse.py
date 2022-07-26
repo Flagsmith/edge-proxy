@@ -34,11 +34,11 @@ async def queue_environment_changes(environment_key: str):
 
 
 @router.get("/sse/environments/{environment_key}/stream")
-async def message_stream(request: Request, environment_key: str):
+async def stream_environment_changes(request: Request, environment_key: str):
     session = AsyncSession(engine)
     started_at = datetime.now()
 
-    async def new_messages():
+    async def did_environment_change():
         environment_updated = False
         environment = await session.get(Environment, environment_key)
         if environment:
@@ -59,8 +59,8 @@ async def message_stream(request: Request, environment_key: str):
             ):
                 await session.close()
                 break
-            # Checks for new messages and return them to client if any
-            if await new_messages():
+
+            if await did_environment_change():
                 yield {
                     "event": "environment_updated",
                     "retry": settings.retry_timeout,

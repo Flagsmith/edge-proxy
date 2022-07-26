@@ -72,4 +72,6 @@ async def message_stream(request: Request, environment_key: str):
 
             await asyncio.sleep(STREAM_DELAY)
 
-    return EventSourceResponse(event_generator())
+    return EventSourceResponse(
+        event_generator(), headers={"Cache-Control": "public, max-age=29"}
+    )

@@ -1,5 +1,4 @@
 import asyncio
-import sqlite3
 from datetime import datetime
 
 from fastapi import APIRouter
@@ -15,7 +14,6 @@ from .sse_models import Environment
 engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=True, future=True)
 
 router = APIRouter()
-db = sqlite3.connect("sse.db")
 
 
 @router.on_event("startup")

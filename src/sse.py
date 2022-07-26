@@ -25,7 +25,7 @@ async def migrate_db():
 
 
 @router.post("/sse/environments/{environment_key}/queue-change")
-async def environment_updated(environment_key: str):
+async def queue_environment_changes(environment_key: str):
     async with AsyncSession(engine) as session:
         environment = Environment(key=environment_key)
         await session.merge(environment)

@@ -13,7 +13,7 @@ from .sse_models import Base
 from .sse_models import Environment
 
 settings = Settings()
-engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=True, future=True)
+engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
 
 router = APIRouter()
 

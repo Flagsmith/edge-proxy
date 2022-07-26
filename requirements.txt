@@ -46,7 +46,7 @@ sniffio==1.2.0
     # via anyio
 sqlalchemy==1.4.39
     # via -r requirements.in
-sse-starlette==0.10.3
+sse-starlette==1.1.1
     # via -r requirements.in
 starlette==0.16.0
     # via

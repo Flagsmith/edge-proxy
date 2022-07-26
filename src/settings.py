@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     api_url: HttpUrl = "https://edge.api.flagsmith.com/api/v1"
     api_poll_frequency: int = 10
 
+    # sse settings
+    stream_delay: int = 1  # seconds
+    retry_timeout: int = 15000  # milliseconds
+    max_stream_age = 30  # seconds
+
     class Config:
         env_file = "config.json"
         env_file_encoding = "utf-8"

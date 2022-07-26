@@ -34,7 +34,8 @@ class Settings(BaseSettings):
     # sse settings
     stream_delay: int = 1  # seconds
     retry_timeout: int = 15000  # milliseconds
-    max_stream_age = 30  # seconds
+    max_stream_age: int = 30  # seconds
+    allow_origins: List[str] = ["*"]
 
     class Config:
         env_file = "config.json"

@@ -12,8 +12,13 @@ aspy-refactor-imports==3.0.1
     # via reorder-python-imports
 astroid==2.9.0
     # via pylint
+async-generator==1.10
+    # via trio
 attrs==21.2.0
-    # via pytest
+    # via
+    #   outcome
+    #   pytest
+    #   trio
 autopep8==1.6.0
     # via -r requirements-dev.in
 backports-entry-points-selectable==1.1.1
@@ -46,6 +51,7 @@ idna==3.3
     # via
     #   anyio
     #   rfc3986
+    #   trio
 iniconfig==1.1.1
     # via pytest
 isort==5.10.1
@@ -60,6 +66,8 @@ mypy-extensions==0.4.3
     # via black
 nodeenv==1.6.0
     # via pre-commit
+outcome==1.2.0
+    # via trio
 packaging==21.3
     # via pytest
 pathspec==0.9.0
@@ -106,12 +114,17 @@ sniffio==1.2.0
     #   anyio
     #   httpcore
     #   httpx
+    #   trio
+sortedcontainers==2.4.0
+    # via trio
 toml==0.10.2
     # via
     #   autopep8
     #   pre-commit
     #   pylint
     #   pytest
+trio==0.21.0
+    # via -r requirements-dev.in
 virtualenv==20.10.0
     # via pre-commit
 wrapt==1.13.3

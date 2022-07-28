@@ -9,3 +9,4 @@ anyio
 pytest-mock
 reorder-python-imports
 httpx
+trio

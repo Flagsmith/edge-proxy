@@ -4,6 +4,8 @@
 #
 #    pip-compile requirements-dev.in
 #
+anyio==3.6.1
+    # via httpcore
 aspy-refactor-imports==3.0.1
     # via reorder-python-imports
 astroid==2.9.0
@@ -16,6 +18,10 @@ backports-entry-points-selectable==1.1.1
     # via virtualenv
 black==22.6.0
     # via -r requirements-dev.in
+certifi==2022.6.15
+    # via
+    #   httpcore
+    #   httpx
 cfgv==3.3.1
     # via pre-commit
 click==8.0.3
@@ -26,8 +32,18 @@ filelock==3.4.0
     # via virtualenv
 flake8==4.0.1
     # via -r requirements-dev.in
+h11==0.12.0
+    # via httpcore
+httpcore==0.15.0
+    # via httpx
+httpx==0.23.0
+    # via -r requirements-dev.in
 identify==2.4.0
     # via pre-commit
+idna==3.3
+    # via
+    #   anyio
+    #   rfc3986
 iniconfig==1.1.1
     # via pytest
 isort==5.10.1
@@ -82,8 +98,15 @@ pyyaml==6.0
     # via pre-commit
 reorder-python-imports==3.0.1
     # via -r requirements-dev.in
+rfc3986[idna2008]==1.5.0
+    # via httpx
 six==1.16.0
     # via virtualenv
+sniffio==1.2.0
+    # via
+    #   anyio
+    #   httpcore
+    #   httpx
 toml==0.10.2
     # via
     #   autopep8

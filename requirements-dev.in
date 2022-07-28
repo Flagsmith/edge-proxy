@@ -5,8 +5,7 @@ black
 pre-commit
 flake8
 pytest
-anyio
+pytest-asyncio
 pytest-mock
 reorder-python-imports
 httpx
-trio

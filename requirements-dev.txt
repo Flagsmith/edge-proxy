@@ -5,7 +5,9 @@
 #    pip-compile requirements-dev.in
 #
 anyio==3.6.1
-    # via httpcore
+    # via
+    #   -r requirements-dev.in
+    #   httpcore
 aspy-refactor-imports==3.0.1
     # via reorder-python-imports
 astroid==2.9.0
@@ -88,10 +90,7 @@ pyparsing==3.0.6
 pytest==6.2.5
     # via
     #   -r requirements-dev.in
-    #   pytest-asyncio
     #   pytest-mock
-pytest-asyncio==0.16.0
-    # via -r requirements-dev.in
 pytest-mock==3.6.1
     # via -r requirements-dev.in
 pyyaml==6.0

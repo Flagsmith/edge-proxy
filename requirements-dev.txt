@@ -4,8 +4,10 @@
 #
 #    pip-compile requirements-dev.in
 #
-anyio==3.6.1
-    # via httpcore
+anyio==3.4.0
+    # via
+    #   -r requirements-dev.in
+    #   httpcore
 aspy-refactor-imports==3.0.1
     # via reorder-python-imports
 astroid==2.9.0

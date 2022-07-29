@@ -1,40 +1,57 @@
 import asyncio
 from datetime import datetime
+from functools import lru_cache
 
 from fastapi import APIRouter
+from fastapi import Depends
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.sql import text
 from sse_starlette.sse import EventSourceResponse
 
 from .settings import Settings
 from .sse_models import Base
 from .sse_models import Environment
 
-settings = Settings()
 engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
 
 router = APIRouter()
 
 
+@lru_cache()
+def get_settings():
+    return Settings()
+
+
 @router.on_event("startup")
-async def migrate_db():
+async def create_schema():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
 
+@router.on_event("shutdown")
+async def drop_schema():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+
+
 @router.post("/sse/environments/{environment_key}/queue-change")
 async def queue_environment_changes(environment_key: str):
-    async with AsyncSession(engine) as session:
-        environment = Environment(key=environment_key)
-        await session.merge(environment)
+    async with AsyncSession(engine, autoflush=True) as session:
+        statement = text(
+            """INSERT OR REPLACE INTO environment(key) VALUES(:environment_key)"""
+        )
+        await session.execute(statement, {"environment_key": environment_key})
         await session.commit()
     return JSONResponse(status_code=200)
 
 
 @router.get("/sse/environments/{environment_key}/stream")
-async def stream_environment_changes(request: Request, environment_key: str):
+async def stream_environment_changes(
+    request: Request, environment_key: str, settings: Settings = Depends(get_settings)
+):
     session = AsyncSession(engine)
     started_at = datetime.now()
 
@@ -59,7 +76,6 @@ async def stream_environment_changes(request: Request, environment_key: str):
             ):
                 await session.close()
                 break
-
             if await did_environment_change():
                 yield {
                     "event": "environment_updated",

@@ -5,7 +5,6 @@ from functools import lru_cache
 from fastapi import APIRouter
 from fastapi import Depends
 from fastapi import Request
-from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.sql import text
@@ -45,7 +44,7 @@ async def queue_environment_changes(environment_key: str):
         )
         await session.execute(statement, {"environment_key": environment_key})
         await session.commit()
-    return JSONResponse(status_code=200)
+    return
 
 
 @router.get("/sse/environments/{environment_key}/stream")

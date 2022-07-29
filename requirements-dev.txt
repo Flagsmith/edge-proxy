@@ -20,8 +20,9 @@ backports-entry-points-selectable==1.1.1
     # via virtualenv
 black==22.6.0
     # via -r requirements-dev.in
-certifi==2022.6.15
+certifi==2021.10.8
     # via
+    #   -r requirements-dev.in
     #   httpcore
     #   httpx
 cfgv==3.3.1

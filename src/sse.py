@@ -51,38 +51,38 @@ async def queue_environment_changes(environment_key: str):
 async def stream_environment_changes(
     request: Request, environment_key: str, settings: Settings = Depends(get_settings)
 ):
-    session = AsyncSession(engine)
-    started_at = datetime.now()
+    async with AsyncSession(engine, autoflush=True) as session:
+        started_at = datetime.now()
 
-    async def did_environment_change():
-        environment_updated = False
-        environment = await session.get(Environment, environment_key)
-        if environment:
-            environment_updated = True
-            await session.delete(environment)
+        async def did_environment_change():
+            environment_updated = False
+            environment = await session.get(Environment, environment_key)
+            if environment:
+                environment_updated = True
+                await session.delete(environment)
 
-        await session.commit()
-        return environment_updated
+            await session.commit()
+            return environment_updated
 
-    async def event_generator():
-        while True:
-            # If client closes connection, or the stream is open for more than `MAX_AGE` seconds
-            # stop sending events
-            if (
-                await request.is_disconnected()
-                or (datetime.now() - started_at).total_seconds()
-                > settings.max_stream_age
-            ):
-                await session.close()
-                break
-            if await did_environment_change():
-                yield {
-                    "event": "environment_updated",
-                    "retry": settings.retry_timeout,
-                }
+        async def event_generator():
+            while True:
+                # If client closes connection, or the stream is open for more than `MAX_AGE` seconds
+                # stop sending events
+                if (
+                    await request.is_disconnected()
+                    or (datetime.now() - started_at).total_seconds()
+                    > settings.max_stream_age
+                ):
+                    await session.close()
+                    break
+                if await did_environment_change():
+                    yield {
+                        "event": "environment_updated",
+                        "retry": settings.retry_timeout,
+                    }
 
-            await asyncio.sleep(settings.stream_delay)
+                await asyncio.sleep(settings.stream_delay)
 
-    return EventSourceResponse(
-        event_generator(), headers={"Cache-Control": "public, max-age=29"}
-    )
+        return EventSourceResponse(
+            event_generator(), headers={"Cache-Control": "public, max-age=29"}
+        )

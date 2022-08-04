@@ -23,6 +23,11 @@ fs_schema = APIFeatureStateSchema()
 trait_schema = APITraitSchema()
 
 
+@app.get("/")
+def health_check():
+    return {"status": "ok"}
+
+
 @app.get("/api/v1/flags/")
 def flags(feature: str = None, x_environment_key: str = Header(None)):
     environment_document = cache_service.get_environment(x_environment_key)

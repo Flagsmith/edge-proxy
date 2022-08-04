@@ -8,6 +8,11 @@ from src.main import app
 client = TestClient(app)
 
 
+def test_health_check_returns_200():
+    response = client.get("/health")
+    assert response.status_code == 200
+
+
 def test_get_flags(mocker, environment_1_feature_states_response_list):
     environment_key = "test_environment_key"
     mocked_cache_service = mocker.patch("src.main.cache_service")

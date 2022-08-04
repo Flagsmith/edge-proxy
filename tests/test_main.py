@@ -9,7 +9,7 @@ client = TestClient(app)
 
 
 def test_health_check_returns_200():
-    response = client.get("/")
+    response = client.get("/health")
     assert response.status_code == 200
 
 

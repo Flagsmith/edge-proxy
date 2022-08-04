@@ -23,7 +23,7 @@ fs_schema = APIFeatureStateSchema()
 trait_schema = APITraitSchema()
 
 
-@app.get("/")
+@app.get("/health")
 def health_check():
     return {"status": "ok"}
 

@@ -1,0 +1,44 @@
+{
+    "family": "flagsmith-sse",
+    "networkMode": "awsvpc",
+    "executionRoleArn": "arn:aws:iam::302456015006:role/task-exec-role-sse-23514ac",
+    "taskRoleArn": "arn:aws:iam::302456015006:role/task-exec-role-sse-23514ac",
+    "containerDefinitions": [
+        {
+            "name": "flagsmith-sse",
+            "command": [
+                "uvicorn",
+                "src.main:app",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8000",
+                "--no-access-log"
+            ],
+            "cpu": 0,
+            "portMappings": [
+                {
+                    "containerPort": 8000,
+                    "hostPort": 8000,
+                    "protocol": "tcp"
+                }
+            ],
+            "essential": true,
+            "environment": [],
+            "secrets": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "flagsmith-sse-eu-west-2-4a10ba2",
+                    "awslogs-region": "eu-west-2",
+                    "awslogs-stream-prefix": "awslogs-flagsmith-sse"
+                }
+            }
+        }
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "1024",
+    "memory": "2048"
+}

@@ -1,0 +1,34 @@
+name: Deploy Sse to Staging ECS
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - "api/**"
+            - ".github/**"
+            - 'infrastructure/aws/staging/**'
+
+jobs:
+    deploy-staging-ecs:
+        runs-on: ubuntu-latest
+        name: Deploy Sse to Staging ECS
+        environment: staging
+
+        steps:
+            - name: Cloning repo
+              uses: actions/checkout@v2
+              with:
+                  fetch-depth: 0
+
+            - name: Deploy API to Staging
+              uses: ./.github/actions/sse-deploy-ecs
+              with:
+                aws_access_key_id: AKIAUM26IRCPASKFW2X5
+                aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                aws_ecs_cluster_name: flagsmith-api-cluster-eu-west-2-f241261
+                aws_ecs_cluster_arn: arn:aws:ecs:eu-west-2:302456015006:cluster/flagsmith-api-cluster-eu-west-2-f241261
+                aws_ecs_service_name: flagsmith-sse-svc-eu-west-2-0afbe7c
+                aws_ecr_repository_arn: 302456015006.dkr.ecr.eu-west-2.amazonaws.com/flagsmith-sse-ecr-fa16ac8
+                aws_task_definitions_directory_path: infrastructure/aws/staging
+

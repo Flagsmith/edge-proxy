@@ -3,7 +3,7 @@ name: Deploy Sse to Staging ECS
 on:
     push:
         branches:
-            - infra/add-deployment-ci
+            - infra-add-deployment-pipeline
         paths:
             - "api/**"
             - ".github/**"

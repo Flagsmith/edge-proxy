@@ -1,8 +1,8 @@
 {
     "family": "flagsmith-sse",
     "networkMode": "awsvpc",
-    "executionRoleArn": "arn:aws:iam::302456015006:role/task-exec-role-sse-23514ac",
-    "taskRoleArn": "arn:aws:iam::302456015006:role/task-exec-role-sse-23514ac",
+    "executionRoleArn": "arn:aws:iam::302456015006:role/task-sse-role-8474d2a",
+    "taskRoleArn": "arn:aws:iam::302456015006:role/task-sse-role-8474d2a",
     "containerDefinitions": [
         {
             "name": "flagsmith-sse",

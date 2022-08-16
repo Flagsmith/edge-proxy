@@ -50,7 +50,6 @@ runs:
         run: |
           echo "Building docker image with URL: "
           echo $ECR_REPOSITORY:$IMAGE_TAG
-          cd api
           docker build -t $ECR_REPOSITORY:$IMAGE_TAG -f Dockerfile .
           docker push $ECR_REPOSITORY:$IMAGE_TAG
           echo "::set-output name=image::$ECR_REPOSITORY:$IMAGE_TAG"

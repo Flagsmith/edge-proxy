@@ -24,7 +24,7 @@ jobs:
             - name: Deploy API to Staging
               uses: ./.github/actions/sse-deploy-ecs
               with:
-                aws_access_key_id: AKIAUM26IRCPASKFW2X5
+                aws_access_key_id: AKIAUM26IRCPH7BHBLVE
                 aws_secret_access_key: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
                 aws_ecs_cluster_name: flagsmith-api-cluster-eu-west-2-f241261
                 aws_ecs_cluster_arn: arn:aws:ecs:eu-west-2:302456015006:cluster/flagsmith-api-cluster-eu-west-2-f241261

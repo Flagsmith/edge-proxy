@@ -1,9 +1,9 @@
-name: Deploy Sse to Staging ECS
+name: Deploy SSE to Staging ECS
 
 on:
     push:
         branches:
-            - infra-add-deployment-pipeline
+            - main
         paths:
             - "api/**"
             - ".github/**"
@@ -12,7 +12,7 @@ on:
 jobs:
     deploy-staging-ecs:
         runs-on: ubuntu-latest
-        name: Deploy Sse to Staging ECS
+        name: Deploy SSE to Staging ECS
         environment: staging
 
         steps:
@@ -21,7 +21,7 @@ jobs:
               with:
                   fetch-depth: 0
 
-            - name: Deploy API to Staging
+            - name: Deploy SSE to Staging
               uses: ./.github/actions/sse-deploy-ecs
               with:
                 aws_access_key_id: AKIAUM26IRCPH7BHBLVE

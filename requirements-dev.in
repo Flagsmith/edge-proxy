@@ -8,3 +8,11 @@ pytest
 pytest-asyncio
 pytest-mock
 reorder-python-imports
+httpx
+# lock the version because `starlette`(from requirements.in) explicitly depends on it
+# but httpx tries to fetch the latest version causing conflict between
+# requirements.txt and requirements-dev.txt
+anyio==3.4.0
+
+# conflict between `requests` and httpx
+certifi==2021.10.8

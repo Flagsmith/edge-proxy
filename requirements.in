@@ -6,3 +6,8 @@ flagsmith-flag-engine
 python-decouple
 python-dotenv
 pydantic
+# sse-stuff
+sse-starlette
+asyncio
+SQLAlchemy
+aiosqlite

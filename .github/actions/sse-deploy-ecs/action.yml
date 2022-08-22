@@ -1,0 +1,75 @@
+name: Deploy SSE to ECS
+description: "Deploy the SSE service to ECS"
+
+inputs:
+  aws_access_key_id:
+    description: "The AWS access key ID to use for deploying to ECS."
+    required: true
+  aws_secret_access_key:
+    description: "The AWS secret access key to use for deploying to ECS."
+    required: true
+  aws_ecs_cluster_name:
+    description: "The name of the ECS cluster to deploy to."
+    required: true
+  aws_ecs_service_name:
+    description: "The name of the ECS service to deploy to."
+    required: true
+  aws_ecr_repository_arn:
+    description: "The ARN of the ECR repository to deploy docker image to."
+    required: true
+  aws_task_definitions_directory_path:
+    description: "The local path in the repository to the json file containing the task definition template"
+    required: true
+
+runs:
+    using: composite
+
+    steps:
+      - name: Set ECR tag
+        id: ecr-tag-variable
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+        shell: bash
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ inputs.aws_access_key_id }}
+          aws-secret-access-key: ${{ inputs.aws_secret_access_key }}
+          aws-region: eu-west-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          IMAGE_TAG: ${{ steps.ecr-tag-variable.outputs.tag }}
+          ECR_REPOSITORY: ${{ inputs.aws_ecr_repository_arn }}
+          DOCKER_BUILDKIT: "1"
+        run: |
+          echo "Building docker image with URL: "
+          echo $ECR_REPOSITORY:$IMAGE_TAG
+          docker build -t $ECR_REPOSITORY:$IMAGE_TAG -f Dockerfile .
+          docker push $ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REPOSITORY:$IMAGE_TAG"
+        shell: bash
+
+      - name: Fill in the new image ID in the Amazon SSE task definition
+        id: task-def-api
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ inputs.aws_task_definitions_directory_path }}/ecs-task-definition-sse.json
+          container-name: flagsmith-sse
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS SSE task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          cluster: ${{ inputs.aws_ecs_cluster_name }}
+          service: ${{ inputs.aws_ecs_service_name }}
+          task-definition: ${{ steps.task-def-api.outputs.task-definition }}
+
+      - name: Wait for service to be stable
+        run: aws ecs wait services-stable --cluster ${{ inputs.aws_ecs_cluster_name }} --services ${{ inputs.aws_ecs_service_name }}
+        shell: bash

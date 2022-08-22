@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi import Header
-from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from flag_engine.engine import get_environment_feature_state
 from flag_engine.engine import get_environment_feature_states
 from flag_engine.engine import get_identity_feature_states
@@ -12,12 +12,12 @@ from .models import IdentityWithTraits
 from .schemas import APIFeatureStateSchema
 from .schemas import APITraitSchema
 from .settings import Settings
+from .sse import router as sse_router
 from fastapi_utils.tasks import repeat_every
 
 app = FastAPI()
 settings = Settings()
 cache_service = CacheService(settings)
-
 
 fs_schema = APIFeatureStateSchema()
 trait_schema = APITraitSchema()
@@ -35,7 +35,7 @@ def flags(feature: str = None, x_environment_key: str = Header(None)):
         feature_states = get_environment_feature_states(environment)
         data = fs_schema.dump(feature_states, many=True)
 
-    return JSONResponse(content=data)
+    return data
 
 
 def _get_fs_schema(identity_model: IdentityModel):
@@ -63,10 +63,20 @@ def identity(
         "traits": trait_schema.dump(trait_models, many=True),
         "flags": fs_schema.dump(flags, many=True),
     }
-    return JSONResponse(content=data)
+    return data
 
 
 @app.on_event("startup")
 @repeat_every(seconds=settings.api_poll_frequency, raise_exceptions=True)
 def refresh_cache():
     cache_service.refresh()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.allow_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.include_router(sse_router)

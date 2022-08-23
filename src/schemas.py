@@ -18,6 +18,8 @@ class APIFeatureStateSchema(FeatureStateSchema):
         exclude = (
             "multivariate_feature_state_values",
             "featurestate_uuid",
+            "feature_segment",
+            "django_id",
         )
 
     def serialize_feature_state_value(self, instance: FeatureStateModel) -> typing.Any:

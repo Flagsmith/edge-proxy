@@ -17,7 +17,7 @@ def json_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
     at the project's root.
     """
     encoding = settings.__config__.env_file_encoding
-    env_file = settings.__config__.env_file
+    env_file = "config.json"
     return json.loads(Path(env_file).read_text(encoding))
 
 
@@ -38,7 +38,6 @@ class Settings(BaseSettings):
     allow_origins: List[str] = ["*"]
 
     class Config:
-        env_file = "config.json"
         env_file_encoding = "utf-8"
 
         @classmethod

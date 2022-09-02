@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime
 from functools import lru_cache
 from hashlib import sha1
+from typing import List
 
 from fastapi import APIRouter
 from fastapi import Body
@@ -89,7 +90,7 @@ async def stream_environment_changes(
     async with AsyncSession(engine, autoflush=True) as session:
         started_at = datetime.now()
 
-        async def did_environment_change():
+        async def did_environment_change() -> bool:
             environment_updated = False
             environment = await session.get(Environment, environment_key)
             if environment:
@@ -103,7 +104,7 @@ async def stream_environment_changes(
             await session.commit()
             return environment_updated
 
-        async def get_updated_identities():
+        async def get_updated_identities() -> List[str]:
             identities = await session.execute(
                 select(Identity.identifier).where(
                     Identity.environment_key == environment_key

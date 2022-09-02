@@ -6,6 +6,8 @@ from hashlib import sha1
 from fastapi import APIRouter
 from fastapi import Body
 from fastapi import Depends
+from fastapi import Header
+from fastapi import HTTPException
 from fastapi import Request
 from sqlalchemy import delete
 from sqlalchemy import select
@@ -29,6 +31,13 @@ def get_settings():
     return Settings()
 
 
+async def is_authenticated(
+    authorization: str = Header(), settings: Settings = Depends(get_settings)
+):
+    if authorization != f"Token {settings.authentication_token}":
+        raise HTTPException(status_code=401, detail="Invalid authorization header")
+
+
 @router.on_event("startup")
 async def create_schema():
     async with engine.begin() as conn:
@@ -41,7 +50,10 @@ async def drop_schema():
         await conn.run_sync(Base.metadata.drop_all)
 
 
-@router.post("/sse/environments/{environment_key}/queue-change")
+@router.post(
+    "/sse/environments/{environment_key}/queue-change",
+    dependencies=[Depends(is_authenticated)],
+)
 async def queue_environment_changes(environment_key: str):
     async with AsyncSession(engine, autoflush=True) as session:
         statement = text(
@@ -52,7 +64,10 @@ async def queue_environment_changes(environment_key: str):
     return
 
 
-@router.post("/sse/environments/{environment_key}/identities/queue-change")
+@router.post(
+    "/sse/environments/{environment_key}/identities/queue-change",
+    dependencies=[Depends(is_authenticated)],
+)
 async def queue_identity_changes(
     environment_key: str, identifier: str = Body(embed=True)
 ):

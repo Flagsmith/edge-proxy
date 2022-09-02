@@ -4,6 +4,7 @@ from functools import lru_cache
 from hashlib import sha1
 
 from fastapi import APIRouter
+from fastapi import Body
 from fastapi import Depends
 from fastapi import Request
 from sqlalchemy import delete
@@ -51,8 +52,10 @@ async def queue_environment_changes(environment_key: str):
     return
 
 
-@router.post("/sse/environments/{environment_key}/identities/{identifier}/queue-change")
-async def queue_identity_changes(environment_key: str, identifier: str):
+@router.post("/sse/environments/{environment_key}/identities/queue-change")
+async def queue_identity_changes(
+    environment_key: str, identifier: str = Body(embed=True)
+):
     async with AsyncSession(engine, autoflush=True) as session:
         statement = text(
             """INSERT OR REPLACE INTO identity(identifier, environment_key) VALUES(:identifier, :environment_key)"""

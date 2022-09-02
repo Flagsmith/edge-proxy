@@ -1,4 +1,5 @@
 import asyncio
+from hashlib import sha1
 
 import pytest
 from httpx import AsyncClient
@@ -9,6 +10,7 @@ from src.settings import Settings
 from src.sse import engine
 from src.sse import get_settings
 from src.sse_models import Environment
+from src.sse_models import Identity
 
 
 def get_settings_override():
@@ -35,9 +37,31 @@ async def test_queue_environment_changes_creates_environment_in_db(client):
 
 
 @pytest.mark.asyncio
-async def test_stream_environment_changes(client):
+async def test_queue_identity_changes_creates_identity_in_db(client):
     # Given
     environment_key = "some_key"
+    identifier = "some_identity"
+    # When
+    response = client.post(
+        f"/sse/environments/{environment_key}/identities/queue-change",
+        json={"identifier": identifier},
+    )
+
+    # Then
+    assert response.status_code == 200
+
+    async with AsyncSession(engine) as session:
+        identity = await session.get(Identity, identifier)
+        assert identity.identifier == identifier
+        assert identity.environment_key == environment_key
+
+
+@pytest.mark.asyncio
+async def test_stream_changes(client):
+    # Given
+    environment_key = "some_key"
+    identifier = "some_identity"
+
     async with AsyncClient(app=app, base_url="http://test") as ac:
         # First, let's create a task that makes a request to /stream endpoint
         stream_response_task = asyncio.create_task(
@@ -50,7 +74,15 @@ async def test_stream_environment_changes(client):
         await ac.post(f"/sse/environments/{environment_key}/queue-change")
 
         # Now, let's wait for the change to be streamed
-        await asyncio.sleep(2)
+        await asyncio.sleep(1)
+
+        # Next, let's update the identity
+        await ac.post(
+            f"/sse/environments/{environment_key}/identities/queue-change",
+            json={"identifier": identifier},
+        )
+        # again wait for it to be streamed
+        await asyncio.sleep(1)
 
         # Next, let's update the environment once again
         await ac.post(f"/sse/environments/{environment_key}/queue-change")
@@ -61,7 +93,9 @@ async def test_stream_environment_changes(client):
         # Then
         expected_response = (
             "event: environment_updated\r\ndata: None\r\nretry: 15000\r\n\r\nevent:"
+            " identity_updated\r\ndata: {'identifier_hash': '%s'}\r\n\r\nevent:"
             " environment_updated\r\ndata: None\r\nretry: 15000\r\n\r\n"
+            % sha1(identifier.encode()).hexdigest()
         )
 
     assert response.status_code == 200

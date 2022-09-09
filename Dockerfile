@@ -1,6 +1,10 @@
-FROM python:3.10.0-alpine
+FROM python:3.10-slim as application
 
 WORKDIR /app
+
+# arm architecture platform builds need postgres drivers installing via apt
+ARG TARGETARCH
+RUN if [ "${TARGETARCH}" != "amd64" ]; then apt-get update && apt-get install -y gcc libpq-dev && rm -rf /var/lib/apt/lists/*; fi;
 
 # Install python packages locally in a virtualenv
 ENV VIRTUAL_ENV=/opt/venv

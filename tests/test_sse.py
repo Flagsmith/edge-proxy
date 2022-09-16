@@ -133,7 +133,7 @@ async def test_stream_changes(client):
         # Then
         expected_response = (
             "event: environment_updated\r\ndata: None\r\nretry: 15000\r\n\r\nevent:"
-            " identity_updated\r\ndata: {'identifier_hash': '%s'}\r\n\r\nevent:"
+            " identity_updated\r\ndata: {'hashed_identifier': '%s'}\r\n\r\nevent:"
             " environment_updated\r\ndata: None\r\nretry: 15000\r\n\r\n"
             % sha1(identifier.encode()).hexdigest()
         )

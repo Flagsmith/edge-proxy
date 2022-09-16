@@ -62,7 +62,6 @@ async def queue_environment_changes(environment_key: str):
         )
         await session.execute(statement, {"environment_key": environment_key})
         await session.commit()
-    return
 
 
 @router.post(
@@ -80,7 +79,6 @@ async def queue_identity_changes(
             statement, {"identifier": identifier, "environment_key": environment_key}
         )
         await session.commit()
-    return
 
 
 @router.get("/sse/environments/{environment_key}/stream")
@@ -140,7 +138,7 @@ async def stream_environment_changes(
                     for identity in hashed_identities:
                         yield {
                             "event": "identity_updated",
-                            "data": {"identifier_hash": identity},
+                            "data": {"hashed_identifier": identity},
                         }
 
                 await asyncio.sleep(settings.stream_delay)

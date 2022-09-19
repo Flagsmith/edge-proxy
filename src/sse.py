@@ -53,7 +53,7 @@ async def drop_schema():
         await conn.run_sync(Base.metadata.drop_all)
 
 
-@router.get("/see/health")
+@router.get("/sse/health")
 async def health_check():
     async with AsyncSession(engine, autoflush=True) as session:
         stmt = select(Environment).limit(1)

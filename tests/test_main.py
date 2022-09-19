@@ -15,6 +15,14 @@ def test_health_check_returns_200_if_fetch_document_does_works(mocker):
     assert response.status_code == 200
 
 
+def test_health_check_deprecated_endpoint_returns_200_if_fetch_document_does_works(
+    mocker,
+):
+    mocker.patch("src.main.cache_service")
+    response = client.get("/health")
+    assert response.status_code == 200
+
+
 def test_health_check_returns_500_if_fetch_document_raises_error(mocker):
     mocker.patch(
         "src.main.cache_service",

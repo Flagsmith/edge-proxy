@@ -25,6 +25,7 @@ fs_schema = APIFeatureStateSchema()
 trait_schema = APITraitSchema()
 
 
+@app.get("/health", deprecated=True)
 @app.get("/proxy/health")
 def health_check():
     key_pair = settings.environment_key_pairs[0]

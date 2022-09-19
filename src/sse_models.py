@@ -12,3 +12,12 @@ class Environment(Base):
 
     def __repr__(self):
         return f"Environment(key={self.key!r})"
+
+
+class Identity(Base):
+    __tablename__ = "identity"
+    identifier = Column(String, primary_key=True)
+    environment_key = Column(String)
+
+    def __repr__(self):
+        return f"Identity(identifier={self.identifier!r})"

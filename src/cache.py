@@ -11,7 +11,7 @@ class CacheService:
         self._session = requests.Session()
         self._cache = {}
 
-    def _fetch_document(self, server_side_key):
+    def fetch_document(self, server_side_key):
         url = f"{self.settings.api_url}/environment-document/"
         response = self._session.get(
             url, headers={"X-Environment-Key": server_side_key}
@@ -22,7 +22,7 @@ class CacheService:
     def refresh(self):
         for key_pair in self.settings.environment_key_pairs:
             try:
-                self._cache[key_pair.client_side_key] = self._fetch_document(
+                self._cache[key_pair.client_side_key] = self.fetch_document(
                     key_pair.server_side_key
                 )
             except requests.exceptions.HTTPError:

@@ -50,7 +50,7 @@ def test_get_environment_works_correctly(mocker):
 
     # patch the _fetch_document to populate the cache
     mocked_fetch_document = mocker.patch.object(
-        cache_service, "_fetch_document", side_effect=[doc_1, doc_2]
+        cache_service, "fetch_document", side_effect=[doc_1, doc_2]
     )
 
     # When

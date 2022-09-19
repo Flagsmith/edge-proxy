@@ -1,5 +1,6 @@
 import json
 
+import requests
 from fastapi.testclient import TestClient
 
 from .fixtures.response_data import environment_1
@@ -8,9 +9,21 @@ from src.main import app
 client = TestClient(app)
 
 
-def test_health_check_returns_200():
-    response = client.get("/health")
+def test_health_check_returns_200_if_fetch_document_does_works(mocker):
+    mocker.patch("src.main.cache_service")
+    response = client.get("/proxy/health")
     assert response.status_code == 200
+
+
+def test_health_check_returns_500_if_fetch_document_raises_error(mocker):
+    mocker.patch(
+        "src.main.cache_service",
+        **{"fetch_document.side_effect": requests.exceptions.HTTPError()},
+    )
+
+    response = client.get("/proxy/health")
+    assert response.status_code == 500
+    assert response.json() == {"status": "error"}
 
 
 def test_get_flags(mocker, environment_1_feature_states_response_list):

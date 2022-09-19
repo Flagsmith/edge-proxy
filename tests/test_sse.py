@@ -2,6 +2,7 @@ import asyncio
 from hashlib import sha1
 
 import pytest
+from fastapi.testclient import TestClient
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,6 +22,19 @@ auth_token = "test_token"
 auth_header = {"authorization": f"Token {auth_token}"}
 
 app.dependency_overrides[get_settings] = get_settings_override
+
+
+def test_health_check_returns_200_if_db_is_configured(client):
+    response = client.get("/see/health")
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_health_check_returns_500_if_db_is_not_configured():
+    client = TestClient(app)
+    response = client.get("/see/health")
+    assert response.status_code == 500
+    assert response.json() == {"status": "error"}
 
 
 @pytest.mark.asyncio

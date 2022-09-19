@@ -11,7 +11,9 @@ from fastapi import Header
 from fastapi import HTTPException
 from fastapi import Request
 from sqlalchemy import delete
+from fastapi.responses import JSONResponse
 from sqlalchemy import select
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.sql import text
@@ -49,6 +51,17 @@ async def create_schema():
 async def drop_schema():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
+
+@router.get("/see/health")
+async def health_check():
+    async with AsyncSession(engine, autoflush=True) as session:
+        stmt = select(Environment).limit(1)
+        try:
+            await session.execute(stmt)
+        except OperationalError:
+            return JSONResponse(status_code=500, content={"status": "error"})
+        return {"status": "ok"}
 
 
 @router.post(

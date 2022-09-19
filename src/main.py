@@ -1,6 +1,8 @@
+import requests
 from fastapi import FastAPI
 from fastapi import Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from flag_engine.engine import get_environment_feature_state
 from flag_engine.engine import get_environment_feature_states
 from flag_engine.engine import get_identity_feature_states
@@ -23,8 +25,13 @@ fs_schema = APIFeatureStateSchema()
 trait_schema = APITraitSchema()
 
 
-@app.get("/health")
+@app.get("/proxy/health")
 def health_check():
+    key_pair = settings.environment_key_pairs[0]
+    try:
+        cache_service.fetch_document(key_pair.server_side_key)
+    except requests.exceptions.HTTPError:
+        return JSONResponse(status_code=500, content={"status": "error"})
     return {"status": "ok"}
 
 

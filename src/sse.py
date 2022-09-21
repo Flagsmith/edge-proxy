@@ -55,10 +55,13 @@ async def drop_schema():
 
 @router.get("/sse/health")
 async def health_check():
+    "Returns 200 if the database is properly configured(have required tables)"
     async with AsyncSession(engine, autoflush=True) as session:
-        stmt = select(Environment).limit(1)
+        environment_stmt = select(Environment).limit(1)
+        identity_stmt = select(Identity).limit(1)
         try:
-            await session.execute(stmt)
+            await session.execute(environment_stmt)
+            await session.execute(identity_stmt)
         except OperationalError:
             return JSONResponse(status_code=500, content={"status": "error"})
         return {"status": "ok"}

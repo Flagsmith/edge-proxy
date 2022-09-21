@@ -1,4 +1,6 @@
-import requests
+from contextlib import suppress
+from datetime import datetime
+
 from fastapi import FastAPI
 from fastapi import Header
 from fastapi.middleware.cors import CORSMiddleware
@@ -28,12 +30,13 @@ trait_schema = APITraitSchema()
 @app.get("/health", deprecated=True)
 @app.get("/proxy/health")
 def health_check():
-    key_pair = settings.environment_key_pairs[0]
-    try:
-        cache_service.fetch_document(key_pair.server_side_key)
-    except requests.exceptions.HTTPError:
-        return JSONResponse(status_code=500, content={"status": "error"})
-    return {"status": "ok"}
+    with suppress(TypeError):
+        if (
+            datetime.now() - cache_service.last_updated_at
+        ).total_seconds() < settings.api_poll_frequency:
+            return {"status": "ok"}
+
+    return JSONResponse(status_code=500, content={"status": "error"})
 
 
 @app.get("/api/v1/flags/")

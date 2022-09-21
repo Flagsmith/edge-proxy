@@ -7,7 +7,7 @@ on:
         paths:
             - "src/**"
             - ".github/**"
-            - 'infrastructure/aws/staging/**'
+            - "infrastructure/aws/staging/**"
 
 jobs:
     deploy-staging-ecs:

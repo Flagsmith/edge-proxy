@@ -33,7 +33,7 @@ def health_check():
     with suppress(TypeError):
         if (
             datetime.now() - cache_service.last_updated_at
-        ).total_seconds() < settings.api_poll_frequency:
+        ).total_seconds() <= settings.api_poll_frequency:
             return {"status": "ok"}
 
     return JSONResponse(status_code=500, content={"status": "error"})

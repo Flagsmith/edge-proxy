@@ -16,8 +16,8 @@ def json_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
     A simple settings source that loads variables from a JSON file
     at the project's root.
     """
-    encoding = settings.__config__.env_file_encoding
-    env_file = settings.__config__.env_file
+    encoding = "utf-8"
+    env_file = "config.json"
     return json.loads(Path(env_file).read_text(encoding))
 
 
@@ -38,9 +38,6 @@ class Settings(BaseSettings):
     allow_origins: List[str] = ["*"]
 
     class Config:
-        env_file = "config.json"
-        env_file_encoding = "utf-8"
-
         @classmethod
         def customise_sources(
             cls,

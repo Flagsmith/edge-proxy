@@ -5,9 +5,9 @@ on:
         branches:
             - main
         paths:
-            - "api/**"
+            - "src/**"
             - ".github/**"
-            - 'infrastructure/aws/staging/**'
+            - "infrastructure/aws/staging/**"
 
 jobs:
     deploy-staging-ecs:
@@ -24,8 +24,8 @@ jobs:
             - name: Deploy SSE to Staging
               uses: ./.github/actions/sse-deploy-ecs
               with:
-                aws_access_key_id: AKIAUM26IRCPH7BHBLVE
-                aws_secret_access_key: ${{ secrets.STAGING_AWS_SECRET_ACCESS_KEY }}
+                aws_access_key_id: AKIAUM26IRCPKP5BWQSJ
+                aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                 aws_ecs_cluster_name: flagsmith-api-cluster-eu-west-2-f241261
                 aws_ecs_service_name: flagsmith-sse-svc-eu-west-2-43f7af2
                 aws_ecr_repository_arn: 302456015006.dkr.ecr.eu-west-2.amazonaws.com/flagsmith-sse-ecr-fa16ac8

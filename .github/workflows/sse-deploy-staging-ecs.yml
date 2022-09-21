@@ -5,9 +5,9 @@ on:
         branches:
             - main
         paths:
-            - "api/**"
+            - "src/**"
             - ".github/**"
-            - 'infrastructure/aws/staging/**'
+            - "infrastructure/aws/staging/**"
 
 jobs:
     deploy-staging-ecs:

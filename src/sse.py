@@ -10,8 +10,10 @@ from fastapi import Depends
 from fastapi import Header
 from fastapi import HTTPException
 from fastapi import Request
+from fastapi.responses import JSONResponse
 from sqlalchemy import delete
 from sqlalchemy import select
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.sql import text
@@ -49,6 +51,20 @@ async def create_schema():
 async def drop_schema():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
+
+@router.get("/sse/health")
+async def health_check():
+    "Returns 200 if the database is properly configured(have required tables)"
+    async with AsyncSession(engine, autoflush=True) as session:
+        environment_stmt = select(Environment).limit(1)
+        identity_stmt = select(Identity).limit(1)
+        try:
+            await session.execute(environment_stmt)
+            await session.execute(identity_stmt)
+        except OperationalError:
+            return JSONResponse(status_code=500, content={"status": "error"})
+        return {"status": "ok"}
 
 
 @router.post(

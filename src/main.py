@@ -1,6 +1,10 @@
+from contextlib import suppress
+from datetime import datetime
+
 from fastapi import FastAPI
 from fastapi import Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from flag_engine.engine import get_environment_feature_state
 from flag_engine.engine import get_environment_feature_states
 from flag_engine.engine import get_identity_feature_states
@@ -23,9 +27,16 @@ fs_schema = APIFeatureStateSchema()
 trait_schema = APITraitSchema()
 
 
-@app.get("/health")
+@app.get("/health", deprecated=True)
+@app.get("/proxy/health")
 def health_check():
-    return {"status": "ok"}
+    with suppress(TypeError):
+        if (
+            datetime.now() - cache_service.last_updated_at
+        ).total_seconds() <= settings.api_poll_frequency:
+            return {"status": "ok"}
+
+    return JSONResponse(status_code=500, content={"status": "error"})
 
 
 @app.get("/api/v1/flags/")

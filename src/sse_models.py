@@ -26,17 +26,17 @@ class Identity(Base):
     def __repr__(self):
         return f"Identity(identifier={self.identifier!r})"
 
-
-async def put_identities(
-    engine: AsyncEngine, environment_key: str, identifiers: List[str]
-):
-    async with AsyncSession(engine, autoflush=True) as session:
-        statement = text(
-            """INSERT OR REPLACE INTO identity(identifier, environment_key) VALUES(:identifier, :environment_key)"""
-        )
-        for identifier in identifiers:
-            await session.execute(
-                statement,
-                {"identifier": identifier, "environment_key": environment_key},
+    @staticmethod
+    async def put_identities(
+        engine: AsyncEngine, environment_key: str, identifiers: List[str]
+    ):
+        async with AsyncSession(engine, autoflush=True) as session:
+            statement = text(
+                """INSERT OR REPLACE INTO identity(identifier, environment_key) VALUES(:identifier, :environment_key)"""
             )
-        await session.commit()
+            for identifier in identifiers:
+                await session.execute(
+                    statement,
+                    {"identifier": identifier, "environment_key": environment_key},
+                )
+            await session.commit()

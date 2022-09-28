@@ -1,7 +1,11 @@
+from typing import List
+
 from sqlalchemy import Column
 from sqlalchemy import String
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio.engine import AsyncEngine
 from sqlalchemy.orm import declarative_base
-
+from sqlalchemy.sql import text
 
 Base = declarative_base()
 
@@ -21,3 +25,18 @@ class Identity(Base):
 
     def __repr__(self):
         return f"Identity(identifier={self.identifier!r})"
+
+
+async def put_identities(
+    engine: AsyncEngine, environment_key: str, identifiers: List[str]
+):
+    async with AsyncSession(engine, autoflush=True) as session:
+        statement = text(
+            """INSERT OR REPLACE INTO identity(identifier, environment_key) VALUES(:identifier, :environment_key)"""
+        )
+        for identifier in identifiers:
+            await session.execute(
+                statement,
+                {"identifier": identifier, "environment_key": environment_key},
+            )
+        await session.commit()

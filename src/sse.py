@@ -23,6 +23,7 @@ from .settings import Settings
 from .sse_models import Base
 from .sse_models import Environment
 from .sse_models import Identity
+from .sse_models import put_identities
 
 engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
 
@@ -87,14 +88,18 @@ async def queue_environment_changes(environment_key: str):
 async def queue_identity_changes(
     environment_key: str, identifier: str = Body(embed=True)
 ):
-    async with AsyncSession(engine, autoflush=True) as session:
-        statement = text(
-            """INSERT OR REPLACE INTO identity(identifier, environment_key) VALUES(:identifier, :environment_key)"""
-        )
-        await session.execute(
-            statement, {"identifier": identifier, "environment_key": environment_key}
-        )
-        await session.commit()
+    await put_identities(engine, environment_key, [identifier])
+
+
+@router.post(
+    "/sse/environments/{environment_key}/identities/queue-change/bulk",
+    dependencies=[Depends(is_authenticated)],
+)
+async def queue_identity_changes_bulk(
+    environment_key: str, identifiers: List[str] = Body(embed=True)
+):
+
+    await put_identities(engine, environment_key, identifiers)
 
 
 @router.get("/sse/environments/{environment_key}/stream")

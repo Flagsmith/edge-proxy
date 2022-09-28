@@ -94,6 +94,34 @@ async def test_queue_identity_changes_creates_identity_in_db(client):
 
 
 @pytest.mark.asyncio
+async def test_queue_identity_changes_bulk_creates_identities_in_db(client):
+    # Given
+    environment_key = "some_key"
+    identifier_1 = "some_identity"
+    identifier_2 = "some_other_identity"
+    payload = {"identifiers": [identifier_1, identifier_2]}
+
+    # When
+    response = client.post(
+        f"/sse/environments/{environment_key}/identities/queue-change/bulk",
+        json=payload,
+        headers=auth_header,
+    )
+
+    # Then
+    assert response.status_code == 200
+
+    async with AsyncSession(engine) as session:
+        identity_1 = await session.get(Identity, identifier_1)
+        assert identity_1.identifier == identifier_1
+        assert identity_1.environment_key == environment_key
+
+        identity_2 = await session.get(Identity, identifier_2)
+        assert identity_2.identifier == identifier_2
+        assert identity_2.environment_key == environment_key
+
+
+@pytest.mark.asyncio
 async def test_queue_identity_changes_returns_401_if_token_is_not_valid(client):
     # Given
     environment_key = "some_key"

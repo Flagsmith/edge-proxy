@@ -28,7 +28,7 @@
             "secrets": [
                 {
                     "name": "SSE_AUTHENTICATION_TOKEN",
-                    "valueFrom": "arn:aws:secretsmanager:eu-west-2:302456015006:secret:ECS-API-heAdoB:SSE_AUTHENTICATION_TOKEN::"
+                    "valueFrom": "arn:aws:secretsmanager:eu-west-2:302456015006:secret:SSE-API-I6CYxC:SSE_AUTHENTICATION_TOKEN::"
                 }
             ],
             "logConfiguration": {

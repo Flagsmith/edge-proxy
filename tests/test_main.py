@@ -1,5 +1,8 @@
 import json
+from datetime import datetime
+from datetime import timedelta
 
+import pytest
 from fastapi.testclient import TestClient
 
 from .fixtures.response_data import environment_1
@@ -8,9 +11,27 @@ from src.main import app
 client = TestClient(app)
 
 
-def test_health_check_returns_200():
-    response = client.get("/health")
+@pytest.mark.parametrize("endpoint", ["/proxy/health", "/health"])
+def test_health_check_returns_200_if_cache_was_updated_recently(mocker, endpoint):
+    cache_service = mocker.patch("src.main.cache_service")
+    cache_service.last_updated_at = datetime.now()
+
+    response = client.get(endpoint)
     assert response.status_code == 200
+
+
+def test_health_check_returns_500_if_cache_was_not_updated(mocker):
+    response = client.get("/proxy/health")
+    assert response.status_code == 500
+    assert response.json() == {"status": "error"}
+
+
+def test_health_check_returns_500_if_cache_is_stale(mocker):
+    cache_service = mocker.patch("src.main.cache_service")
+    cache_service.last_updated_at = datetime.now() - timedelta(days=10)
+    response = client.get("/proxy/health")
+    assert response.status_code == 500
+    assert response.json() == {"status": "error"}
 
 
 def test_get_flags(mocker, environment_1_feature_states_response_list):

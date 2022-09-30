@@ -1,3 +1,5 @@
+import requests
+
 from src.cache import CacheService
 from src.settings import Settings
 
@@ -13,6 +15,7 @@ settings = Settings(
 def test_refresh_makes_correct_http_call(mocker):
     # Given
     mocked_session = mocker.patch("src.cache.requests.Session")
+    mocked_datetime = mocker.patch("src.cache.datetime")
     cache_service = CacheService(settings)
 
     # When
@@ -40,6 +43,23 @@ def test_refresh_makes_correct_http_call(mocker):
             )
         ],
     )
+    assert cache_service.last_updated_at == mocked_datetime.now.return_value
+
+
+def test_refresh_does_not_update_last_updated_at_if_any_request_fails(mocker):
+    # Given
+    mocked_session = mocker.patch("src.cache.requests.Session")
+    mocked_session.return_value.get.side_effect = [
+        mocker.MagicMock(),
+        requests.exceptions.HTTPError(),
+    ]
+    cache_service = CacheService(settings)
+
+    # When
+    cache_service.refresh()
+
+    # Then
+    assert cache_service.last_updated_at is None
 
 
 def test_get_environment_works_correctly(mocker):
@@ -50,7 +70,7 @@ def test_get_environment_works_correctly(mocker):
 
     # patch the _fetch_document to populate the cache
     mocked_fetch_document = mocker.patch.object(
-        cache_service, "_fetch_document", side_effect=[doc_1, doc_2]
+        cache_service, "fetch_document", side_effect=[doc_1, doc_2]
     )
 
     # When

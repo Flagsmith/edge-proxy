@@ -27,7 +27,7 @@
             "environment": [],
             "secrets": [
                 {
-                    "name": "SSE_AUTHENTICATION_TOKEN",
+                    "name": "authentication_token",
                     "valueFrom": "arn:aws:secretsmanager:eu-west-2:302456015006:secret:SSE-API-I6CYxC:SSE_AUTHENTICATION_TOKEN::"
                 }
             ],

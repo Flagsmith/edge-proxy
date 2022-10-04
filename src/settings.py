@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     retry_timeout: int = 15000  # milliseconds
     max_stream_age: int = 30  # seconds
     allow_origins: List[str] = ["*"]
-    authentication_token: str = ""
+    sse_authentication_token: str = ""
 
     class Config:
         @classmethod

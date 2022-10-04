@@ -15,7 +15,9 @@ from src.sse_models import Identity
 
 
 def get_settings_override():
-    return Settings(max_stream_age=5, stream_delay=1, authentication_token=auth_token)
+    return Settings(
+        max_stream_age=5, stream_delay=1, sse_authentication_token=auth_token
+    )
 
 
 auth_token = "test_token"

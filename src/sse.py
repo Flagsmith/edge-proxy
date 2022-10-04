@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from datetime import datetime
 from functools import lru_cache
 from hashlib import sha1
@@ -38,6 +39,11 @@ async def is_authenticated(
     authorization: str = Header(), settings: Settings = Depends(get_settings)
 ):
     if authorization != f"Token {settings.authentication_token}":
+        logging.error(
+            "Authentication failed, received %s; should be %s ",
+            authorization,
+            settings.authentication_token,
+        )
         raise HTTPException(status_code=401, detail="Invalid authorization header")
 
 

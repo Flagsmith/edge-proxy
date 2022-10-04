@@ -38,11 +38,11 @@ def get_settings():
 async def is_authenticated(
     authorization: str = Header(), settings: Settings = Depends(get_settings)
 ):
-    if authorization != f"Token {settings.authentication_token}":
+    if authorization != f"Token {settings.sse_authentication_token}":
         logging.error(
             "Authentication failed, received %s; should be %s ",
             authorization,
-            settings.authentication_token,
+            settings.sse_authentication_token,
         )
         raise HTTPException(status_code=401, detail="Invalid authorization header")
 

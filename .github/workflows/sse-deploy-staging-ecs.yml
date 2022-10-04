@@ -3,7 +3,7 @@ name: Deploy SSE to Staging ECS
 on:
     push:
         branches:
-            - fix/environment-variables
+            - debug/add-logging-for-auth-token
         paths:
             - "src/**"
             - ".github/**"

@@ -25,7 +25,12 @@
             ],
             "essential": true,
             "environment": [],
-            "secrets": [],
+            "secrets": [
+                {
+                    "name": "SSE_AUTHENTICATION_TOKEN",
+                    "valueFrom": "arn:aws:secretsmanager:eu-west-2:084060095745:secret:SSE-API-zt0nlB:SSE_AUTHENTICATION_TOKEN::"
+                }
+            ],
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {

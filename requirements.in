@@ -1,5 +1,6 @@
 fastapi
-uvicorn
+uvicorn[standard]
+gunicorn
 requests
 marshmallow
 flagsmith-flag-engine

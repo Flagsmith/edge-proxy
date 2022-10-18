@@ -70,7 +70,7 @@ typing-extensions==4.0.1
     #   pydantic
 urllib3==1.26.7
     # via requests
-uvicorn[standard]==0.18.2
+uvicorn[standard]==0.18.3
     # via -r requirements.in
 uvloop==0.17.0
     # via uvicorn

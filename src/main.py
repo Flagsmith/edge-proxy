@@ -1,6 +1,7 @@
 from contextlib import suppress
 from datetime import datetime
 
+import sentry_sdk
 from fastapi import FastAPI
 from fastapi import Header
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,12 +16,22 @@ from .cache import CacheService
 from .models import IdentityWithTraits
 from .schemas import APIFeatureStateSchema
 from .schemas import APITraitSchema
+from .sentry_sampler import traces_sampler
 from .settings import Settings
 from .sse import router as sse_router
 from fastapi_utils.tasks import repeat_every
 
-app = FastAPI()
 settings = Settings()
+
+if settings.sentry_dsn:
+    sentry_sdk.init(
+        dsn=settings.sentry_dsn,
+        debug=True,
+        traces_sampler=traces_sampler,
+        environment=f"sse_{settings.environment}",
+    )
+
+app = FastAPI()
 cache_service = CacheService(settings)
 
 fs_schema = APIFeatureStateSchema()
@@ -85,7 +96,8 @@ def identity(
 @app.on_event("startup")
 @repeat_every(seconds=settings.api_poll_frequency, raise_exceptions=True)
 def refresh_cache():
-    cache_service.refresh()
+    if settings.refresh_environment_cache:
+        cache_service.refresh()
 
 
 app.add_middleware(

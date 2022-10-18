@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     max_stream_age: int = 30  # seconds
     allow_origins: List[str] = ["*"]
     sse_authentication_token: str = ""
+    environment: str = "dev"
+    sentry_dsn: str = ""
+    refresh_environment_cache: bool = True
 
     class Config:
         @classmethod

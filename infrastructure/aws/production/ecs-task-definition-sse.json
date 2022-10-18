@@ -1,48 +1,61 @@
 {
-    "family": "flagsmith-sse",
-    "networkMode": "awsvpc",
-    "executionRoleArn": "arn:aws:iam::084060095745:role/task-sse-role-bb6bdb2",
-    "taskRoleArn": "arn:aws:iam::084060095745:role/task-sse-role-bb6bdb2",
-    "containerDefinitions": [
+  "family": "flagsmith-sse",
+  "networkMode": "awsvpc",
+  "executionRoleArn": "arn:aws:iam::084060095745:role/task-sse-role-bb6bdb2",
+  "taskRoleArn": "arn:aws:iam::084060095745:role/task-sse-role-bb6bdb2",
+  "containerDefinitions": [
+    {
+      "name": "flagsmith-sse",
+      "command": [
+        "uvicorn",
+        "src.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--no-access-log"
+      ],
+      "cpu": 0,
+      "portMappings": [
         {
-            "name": "flagsmith-sse",
-            "command": [
-                "uvicorn",
-                "src.main:app",
-                "--host",
-                "0.0.0.0",
-                "--port",
-                "8000"
-            ],
-            "cpu": 0,
-            "portMappings": [
-                {
-                    "containerPort": 8000,
-                    "hostPort": 8000,
-                    "protocol": "tcp"
-                }
-            ],
-            "essential": true,
-            "environment": [],
-            "secrets": [
-                {
-                    "name": "SSE_AUTHENTICATION_TOKEN",
-                    "valueFrom": "arn:aws:secretsmanager:eu-west-2:084060095745:secret:SSE-API-zt0nlB:SSE_AUTHENTICATION_TOKEN::"
-                }
-            ],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "flagsmith-sse-eu-west-2-0c3eaaf",
-                    "awslogs-region": "eu-west-2",
-                    "awslogs-stream-prefix": "awslogs-flagsmith-sse"
-                }
-            }
+          "containerPort": 8000,
+          "hostPort": 8000,
+          "protocol": "tcp"
         }
-    ],
-    "requiresCompatibilities": [
-        "FARGATE"
-    ],
-    "cpu": "1024",
-    "memory": "2048"
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "ENVIRONMENT",
+          "value": "production"
+        },
+        {
+          "name": "REFRESH_ENVIRONMENT_CACHE",
+          "value": "False"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "SSE_AUTHENTICATION_TOKEN",
+          "valueFrom": "arn:aws:secretsmanager:eu-west-2:084060095745:secret:SSE-API-zt0nlB:SSE_AUTHENTICATION_TOKEN::"
+        },
+
+        {
+          "name": "SENTRY_DSN",
+          "value": "arn:aws:secretsmanager:eu-west-2:084060095745:secret:SSE-API-zt0nlB:SENTRY_DSN::"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "flagsmith-sse-eu-west-2-0c3eaaf",
+          "awslogs-region": "eu-west-2",
+          "awslogs-stream-prefix": "awslogs-flagsmith-sse"
+        }
+      }
+    }
+  ],
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048"
 }

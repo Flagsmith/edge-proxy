@@ -39,4 +39,3 @@ class Identity(Base):
                     statement,
                     {"identifier": identifier, "environment_key": environment_key},
                 )
-            await session.commit()

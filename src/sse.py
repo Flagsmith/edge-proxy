@@ -26,6 +26,8 @@ from .sse_models import Identity
 
 engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
 
+engine.update_execution_options(isolation_level="AUTOCOMMIT")
+
 router = APIRouter()
 
 
@@ -77,7 +79,6 @@ async def queue_environment_changes(environment_key: str):
             """INSERT OR REPLACE INTO environment(key) VALUES(:environment_key)"""
         )
         await session.execute(statement, {"environment_key": environment_key})
-        await session.commit()
 
 
 @router.post(
@@ -119,7 +120,6 @@ async def stream_environment_changes(
                 await session.execute(
                     delete(Identity).where(Identity.environment_key == environment_key)
                 )
-            await session.commit()
             return environment_updated
 
         async def get_updated_identities() -> List[str]:
@@ -134,7 +134,6 @@ async def stream_environment_changes(
             await session.execute(
                 delete(Identity).where(Identity.environment_key == environment_key)
             )
-            await session.commit()
 
             return hashed_identities
 

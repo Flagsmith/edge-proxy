@@ -28,7 +28,7 @@ if settings.sentry_dsn:
         dsn=settings.sentry_dsn,
         debug=True,
         traces_sampler=traces_sampler,
-        environment=f"sse_{settings.environment}",
+        environment=settings.environment,
     )
 
 app = FastAPI()

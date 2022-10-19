@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     environment: str = "dev"
     sentry_dsn: str = ""
     refresh_environment_cache: bool = True
+    stream_endpoint_sample_rate: float = 1.0
 
     class Config:
         @classmethod

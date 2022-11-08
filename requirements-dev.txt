@@ -35,6 +35,8 @@ filelock==3.4.0
     # via virtualenv
 flake8==4.0.1
     # via -r requirements-dev.in
+freezegun==1.2.2
+    # via -r requirements-dev.in
 h11==0.12.0
     # via httpcore
 httpcore==0.15.0
@@ -97,6 +99,8 @@ pytest-asyncio==0.19.0
     # via -r requirements-dev.in
 pytest-mock==3.6.1
     # via -r requirements-dev.in
+python-dateutil==2.8.2
+    # via freezegun
 pyyaml==6.0
     # via pre-commit
 reorder-python-imports==3.0.1
@@ -104,7 +108,9 @@ reorder-python-imports==3.0.1
 rfc3986[idna2008]==1.5.0
     # via httpx
 six==1.16.0
-    # via virtualenv
+    # via
+    #   python-dateutil
+    #   virtualenv
 sniffio==1.2.0
     # via
     #   anyio

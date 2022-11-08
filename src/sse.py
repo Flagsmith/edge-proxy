@@ -11,7 +11,6 @@ from fastapi import Header
 from fastapi import HTTPException
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from sqlalchemy import delete
 from sqlalchemy import select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession

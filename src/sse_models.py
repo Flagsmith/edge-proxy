@@ -1,6 +1,7 @@
 from typing import List
 
 from sqlalchemy import Column
+from sqlalchemy import DateTime
 from sqlalchemy import String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio.engine import AsyncEngine
@@ -13,6 +14,10 @@ Base = declarative_base()
 class Environment(Base):
     __tablename__ = "environment"
     key = Column(String, primary_key=True)
+    last_updated_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
 
     def __repr__(self):
         return f"Environment(key={self.key!r})"

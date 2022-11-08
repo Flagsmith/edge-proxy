@@ -11,3 +11,4 @@ sse-starlette
 asyncio
 SQLAlchemy
 aiosqlite
+redis

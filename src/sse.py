@@ -1,8 +1,8 @@
 import asyncio
 from datetime import datetime
-from datetime import timezone
 from functools import lru_cache
 from typing import List
+from typing import Optional
 
 from fastapi import APIRouter
 from fastapi import Body
@@ -11,7 +11,6 @@ from fastapi import Header
 from fastapi import HTTPException
 from fastapi import Request
 from fastapi.responses import JSONResponse
-from sqlalchemy import delete
 from sqlalchemy import select
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -73,16 +72,18 @@ async def health_check():
     "/sse/environments/{environment_key}/queue-change",
     dependencies=[Depends(is_authenticated)],
 )
-async def queue_environment_changes(environment_key: str):
+async def queue_environment_changes(
+    environment_key: str, updated_at: datetime = Body(embed=True)
+):
     async with AsyncSession(engine, autoflush=True) as session:
         statement = text(
-            """INSERT OR REPLACE INTO environment(key, last_updated_at) VALUES(:environment_key, :last_updated_at)"""
+            """INSERT OR REPLACE INTO environment(key, updated_at) VALUES(:environment_key, :updated_at)"""
         )
         await session.execute(
             statement,
             {
                 "environment_key": environment_key,
-                "last_updated_at": datetime.now(tz=timezone.utc),
+                "updated_at": updated_at,
             },
         )
 
@@ -115,10 +116,10 @@ async def stream_environment_changes(
     async with AsyncSession(engine, autoflush=True) as session:
         started_at = datetime.now()
 
-        async def get_last_updated_at() -> int:  # optional
+        async def get_updated_at() -> Optional[int]:
             environment = await session.get(Environment, environment_key)
             if environment:
-                return environment.last_updated_at.timestamp()
+                return environment.updated_at.timestamp()
 
         async def event_generator():
             while True:
@@ -132,10 +133,10 @@ async def stream_environment_changes(
                     await session.close()
                     break
 
-                if last_updated_at := await get_last_updated_at():
+                if updated_at := await get_updated_at():
                     yield {
                         "event": "environment_updated",
-                        "data": {"last_updated_at": last_updated_at},
+                        "data": {"updated_at": updated_at},
                         "retry": settings.retry_timeout,
                     }
                 await asyncio.sleep(settings.stream_delay)

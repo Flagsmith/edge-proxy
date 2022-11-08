@@ -154,7 +154,6 @@ async def test_stream_changes(client):
         # Now, let's yield control back to event loop so that it can run our task
         await asyncio.sleep(0.1)
         first_last_updated_at = datetime.now()
-        print("first_last_updated_at", first_last_updated_at)
         with freeze_time(first_last_updated_at, ignore=["asyncio"]):
             # Next, let's update the environment
             await ac.post(f"/sse/environments/{environment_key}/queue-change")

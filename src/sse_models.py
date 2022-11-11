@@ -14,7 +14,7 @@ Base = declarative_base()
 class Environment(Base):
     __tablename__ = "environment"
     key = Column(String, primary_key=True)
-    last_updated_at = Column(
+    updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
     )

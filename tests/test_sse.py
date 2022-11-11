@@ -1,5 +1,6 @@
 import asyncio
 from datetime import datetime
+from datetime import timezone
 
 import pytest
 from fastapi.testclient import TestClient
@@ -44,11 +45,13 @@ async def test_health_check_returns_500_if_db_is_not_configured():
 async def test_queue_environment_changes_creates_environment_in_db(client):
     # Given
     environment_key = "some_key"
+    payload = {"updated_at": datetime.now(tz=timezone.utc).isoformat()}
 
     # When
     response = client.post(
         f"/sse/environments/{environment_key}/queue-change",
         headers=auth_header,
+        json=payload,
     )
 
     # Then
@@ -64,11 +67,13 @@ async def test_queue_environment_changes_returns_401_if_token_is_not_valid(
 ):
     # Given
     environment_key = "some_key"
+    payload = {"updated_at": datetime.now(tz=timezone.utc).isoformat()}
 
     # When
     response = client.post(
         f"/sse/environments/{environment_key}/queue-change",
         headers={"authorization": "not_a_valid_token"},
+        json=payload,
     )
     # Then
     assert response.status_code == 401
@@ -154,25 +159,29 @@ async def test_stream_changes(client):
         # Now, let's yield control back to event loop so that it can run our task
         await asyncio.sleep(0.1)
         first_last_updated_at = datetime.now()
-        with freeze_time(first_last_updated_at, ignore=["asyncio"]):
-            # Next, let's update the environment
-            await ac.post(f"/sse/environments/{environment_key}/queue-change")
+        # Next, let's update the environment
+        await ac.post(
+            f"/sse/environments/{environment_key}/queue-change",
+            json={"updated_at": first_last_updated_at.isoformat()},
+        )
 
         # Now, let's wait for the change to be streamed
         await asyncio.sleep(1)
 
         second_last_updated_at = datetime.now()
-        with freeze_time(second_last_updated_at, ignore=["asyncio"]):
-            # Next, let's update the environment once again
-            await ac.post(f"/sse/environments/{environment_key}/queue-change")
+        # Next, let's update the environment once again
+        await ac.post(
+            f"/sse/environments/{environment_key}/queue-change",
+            json={"updated_at": second_last_updated_at.isoformat()},
+        )
 
         # Finally, let's wait for the stream to finish
         response = await stream_response_task
 
         # Then
         expected_response = (
-            "event: environment_updated\r\ndata: {'last_updated_at': %0.6f}\r\nretry: 15000\r\n\r\nevent:"
-            " environment_updated\r\ndata: {'last_updated_at': %0.6f}\r\nretry: 15000\r\n\r\n"
+            "event: environment_updated\r\ndata: {'updated_at': %0.6f}\r\nretry: 15000\r\n\r\nevent:"
+            " environment_updated\r\ndata: {'updated_at': %0.6f}\r\nretry: 15000\r\n\r\n"
             % (first_last_updated_at.timestamp(), second_last_updated_at.timestamp())
         )
     assert response.status_code == 200

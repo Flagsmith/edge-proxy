@@ -2,6 +2,7 @@ import asyncio
 from datetime import datetime
 from functools import lru_cache
 from typing import List
+from typing import Optional
 
 from fastapi import APIRouter
 from fastapi import Body
@@ -115,7 +116,7 @@ async def stream_environment_changes(
     async with AsyncSession(engine, autoflush=True) as session:
         started_at = datetime.now()
 
-        async def get_updated_at() -> int:  # optional
+        async def get_updated_at() -> Optional[int]:
             environment = await session.get(Environment, environment_key)
             if environment:
                 return environment.updated_at.timestamp()

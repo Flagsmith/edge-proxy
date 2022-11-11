@@ -4,7 +4,6 @@ from datetime import timezone
 
 import pytest
 from fastapi.testclient import TestClient
-from freezegun import freeze_time
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 

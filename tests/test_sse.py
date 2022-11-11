@@ -1,5 +1,6 @@
 import asyncio
-from hashlib import sha1
+from datetime import datetime
+from datetime import timezone
 
 import pytest
 from fastapi.testclient import TestClient
@@ -16,7 +17,7 @@ from src.sse_models import Identity
 
 def get_settings_override():
     return Settings(
-        max_stream_age=5, stream_delay=1, sse_authentication_token=auth_token
+        max_stream_age=3, stream_delay=1, sse_authentication_token=auth_token
     )
 
 
@@ -43,11 +44,13 @@ async def test_health_check_returns_500_if_db_is_not_configured():
 async def test_queue_environment_changes_creates_environment_in_db(client):
     # Given
     environment_key = "some_key"
+    payload = {"updated_at": datetime.now(tz=timezone.utc).isoformat()}
 
     # When
     response = client.post(
         f"/sse/environments/{environment_key}/queue-change",
         headers=auth_header,
+        json=payload,
     )
 
     # Then
@@ -63,11 +66,13 @@ async def test_queue_environment_changes_returns_401_if_token_is_not_valid(
 ):
     # Given
     environment_key = "some_key"
+    payload = {"updated_at": datetime.now(tz=timezone.utc).isoformat()}
 
     # When
     response = client.post(
         f"/sse/environments/{environment_key}/queue-change",
         headers={"authorization": "not_a_valid_token"},
+        json=payload,
     )
     # Then
     assert response.status_code == 401
@@ -144,7 +149,6 @@ async def test_queue_identity_changes_returns_401_if_token_is_not_valid(client):
 async def test_stream_changes(client):
     # Given
     environment_key = "some_key"
-    identifier = "some_identity"
 
     async with AsyncClient(app=app, base_url="http://test", headers=auth_header) as ac:
         # First, let's create a task that makes a request to /stream endpoint
@@ -153,34 +157,31 @@ async def test_stream_changes(client):
         )
         # Now, let's yield control back to event loop so that it can run our task
         await asyncio.sleep(0.1)
-
+        first_last_updated_at = datetime.now()
         # Next, let's update the environment
-        await ac.post(f"/sse/environments/{environment_key}/queue-change")
+        await ac.post(
+            f"/sse/environments/{environment_key}/queue-change",
+            json={"updated_at": first_last_updated_at.isoformat()},
+        )
 
         # Now, let's wait for the change to be streamed
         await asyncio.sleep(1)
 
-        # Next, let's update the identity
-        await ac.post(
-            f"/sse/environments/{environment_key}/identities/queue-change",
-            json={"identifier": identifier},
-        )
-        # again wait for it to be streamed
-        await asyncio.sleep(1)
-
+        second_last_updated_at = datetime.now()
         # Next, let's update the environment once again
-        await ac.post(f"/sse/environments/{environment_key}/queue-change")
+        await ac.post(
+            f"/sse/environments/{environment_key}/queue-change",
+            json={"updated_at": second_last_updated_at.isoformat()},
+        )
 
         # Finally, let's wait for the stream to finish
         response = await stream_response_task
 
         # Then
         expected_response = (
-            "event: environment_updated\r\ndata: None\r\nretry: 15000\r\n\r\nevent:"
-            " identity_updated\r\ndata: {'hashed_identifier': '%s'}\r\n\r\nevent:"
-            " environment_updated\r\ndata: None\r\nretry: 15000\r\n\r\n"
-            % sha1(identifier.encode()).hexdigest()
+            "event: environment_updated\r\ndata: {'updated_at': %0.6f}\r\nretry: 15000\r\n\r\nevent:"
+            " environment_updated\r\ndata: {'updated_at': %0.6f}\r\nretry: 15000\r\n\r\n"
+            % (first_last_updated_at.timestamp(), second_last_updated_at.timestamp())
         )
-
     assert response.status_code == 200
     assert response.text == expected_response

@@ -44,7 +44,9 @@ async def health_check():
     try:
         redis_connection.ping()
     except ConnectionError:
-        return JSONResponse(status_code=500, content={"status": "error"})
+        return JSONResponse(
+            status_code=500, content={"status": "Unable to connect to redis"}
+        )
     return {"status": "ok"}
 
 

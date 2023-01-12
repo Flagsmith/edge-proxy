@@ -3,9 +3,7 @@ from datetime import datetime
 from datetime import timezone
 
 import pytest
-from fastapi.testclient import TestClient
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.main import app
 from src.settings import Settings

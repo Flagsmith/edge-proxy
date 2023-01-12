@@ -26,7 +26,9 @@ def get_settings():
 
 
 settings = get_settings()
-redis_connection = redis.Redis(host=settings.redis_host, port=settings.redis_port, db=0)
+redis_connection = redis.Redis(
+    host=settings.redis_host, port=settings.redis_port, db=0, decode_responses=True
+)
 
 
 async def is_authenticated(
@@ -60,7 +62,6 @@ async def queue_environment_changes(
 async def stream_environment_changes(
     request: Request, environment_key: str, settings: Settings = Depends(get_settings)
 ):
-    # async with AsyncSession(engine, autoflush=True) as session:
     started_at = datetime.now()
 
     async def get_updated_at() -> Optional[int]:
@@ -81,7 +82,7 @@ async def stream_environment_changes(
             if updated_at := await get_updated_at():
                 yield {
                     "event": "environment_updated",
-                    "data": {"updated_at": updated_at},
+                    "data": {"updated_at": float(updated_at)},
                     "retry": settings.retry_timeout,
                 }
             await asyncio.sleep(settings.stream_delay)

@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.main import app
 from src.settings import Settings
 from src.sse import get_settings
+from src.sse import redis_connection
 
 
 def get_settings_override():
@@ -24,17 +25,9 @@ auth_header = {"authorization": f"Token {auth_token}"}
 app.dependency_overrides[get_settings] = get_settings_override
 
 
-def test_health_check_returns_200_if_db_is_configured(client):
+def test_health_check_returns_200(client):
     response = client.get("/sse/health")
     assert response.status_code == 200
-
-
-@pytest.mark.asyncio
-async def test_health_check_returns_500_if_db_is_not_configured():
-    client = TestClient(app)
-    response = client.get("/sse/health")
-    assert response.status_code == 500
-    assert response.json() == {"status": "error"}
 
 
 @pytest.mark.asyncio
@@ -52,9 +45,7 @@ async def test_queue_environment_changes_creates_environment_in_db(client):
 
     # Then
     assert response.status_code == 200
-    # async with AsyncSession(engine) as session:
-    #     environment = await session.get(Environment, environment_key)
-    #     assert environment.key == environment_key
+    assert redis_connection.exists(environment_key) == 1
 
 
 @pytest.mark.asyncio
@@ -79,7 +70,7 @@ async def test_queue_environment_changes_returns_401_if_token_is_not_valid(
 @pytest.mark.asyncio
 async def test_stream_changes(client):
     # Given
-    environment_key = "some_key"
+    environment_key = "environment_key"
 
     async with AsyncClient(app=app, base_url="http://test", headers=auth_header) as ac:
         # First, let's create a task that makes a request to /stream endpoint

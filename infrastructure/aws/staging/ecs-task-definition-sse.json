@@ -24,7 +24,7 @@
             ],
             "essential": true,
             "environment": [
-                {"name": "redis_host", "value":"redis-cache.7u3xil.0001.euw2.cache.amazonaws.com"}
+                {"name": "REDIS_HOST", "value":"redis-cache.7u3xil.0001.euw2.cache.amazonaws.com"}
             ],
             "secrets": [
                 {

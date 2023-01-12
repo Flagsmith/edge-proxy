@@ -9,6 +9,4 @@ pydantic
 # sse-stuff
 sse-starlette
 asyncio
-SQLAlchemy
-aiosqlite
 redis

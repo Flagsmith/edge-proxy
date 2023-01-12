@@ -52,7 +52,7 @@ wrk -t10 -c40 -d5 -s post.lua -H 'X-Environment-Key: NC7zfaBWg7QJhbHpUMs7tv' 'ht
 ## Development
 
 ### Requirement:
-* Redis: In order to run the test please make sure environment variables `redis_host` and `redis_port` are set correctly
+* Redis: In order to run the test please make sure environment variables `REDIS_HOST` and `REDIS_PORT` are set correctly
 
 
 

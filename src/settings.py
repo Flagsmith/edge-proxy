@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     max_stream_age: int = 30  # seconds
     allow_origins: List[str] = ["*"]
     sse_authentication_token: str = ""
+    redis_host: str = "localhost"
+    redis_port: int = 6379
 
     class Config:
         @classmethod

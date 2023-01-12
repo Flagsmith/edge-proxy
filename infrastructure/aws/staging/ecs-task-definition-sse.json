@@ -23,7 +23,9 @@
                 }
             ],
             "essential": true,
-            "environment": [],
+            "environment": [
+                {"name": "REDIS_HOST", "value":"redis-cache.7u3xil.0001.euw2.cache.amazonaws.com"}
+            ],
             "secrets": [
                 {
                     "name": "SSE_AUTHENTICATION_TOKEN",

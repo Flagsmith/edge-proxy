@@ -66,9 +66,15 @@ async def stream_environment_changes(
     request: Request, environment_key: str, settings: Settings = Depends(get_settings)
 ):
     started_at = datetime.now()
+    last_updated_at = None
 
     async def get_updated_at() -> Optional[int]:
+        nonlocal last_updated_at
         updated_at = redis_connection.get(environment_key)
+        if last_updated_at == updated_at:
+            return None
+
+        last_updated_at = updated_at
         return updated_at
 
     async def event_generator():

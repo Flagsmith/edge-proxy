@@ -99,8 +99,8 @@ async def test_stream_changes(client):
 
         # Then
         expected_response = (
-            "event: environment_updated\r\ndata: {'updated_at': %0.6f}\r\nretry: 15000\r\n\r\nevent:"
-            " environment_updated\r\ndata: {'updated_at': %0.6f}\r\nretry: 15000\r\n\r\n"
+            'event: environment_updated\r\ndata: {"updated_at": %0.6f}\r\nretry: 15000\r\n\r\nevent:'
+            ' environment_updated\r\ndata: {"updated_at": %0.6f}\r\nretry: 15000\r\n\r\n'
             % (first_last_updated_at.timestamp(), second_last_updated_at.timestamp())
         )
     assert response.status_code == 200

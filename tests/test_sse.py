@@ -13,7 +13,7 @@ from src.sse import redis_connection
 
 def get_settings_override():
     return Settings(
-        max_stream_age=3, stream_delay=1, sse_authentication_token=auth_token
+        max_stream_age=3, stream_delay=0.2, sse_authentication_token=auth_token
     )
 
 
@@ -88,6 +88,7 @@ async def test_stream_changes(client):
         await asyncio.sleep(1)
 
         second_last_updated_at = datetime.now()
+
         # Next, let's update the environment once again
         await ac.post(
             f"/sse/environments/{environment_key}/queue-change",
@@ -97,10 +98,10 @@ async def test_stream_changes(client):
         # Finally, let's wait for the stream to finish
         response = await stream_response_task
 
-        # Then
+        # Then - we only got two messages
         expected_response = (
-            "event: environment_updated\r\ndata: {'updated_at': %0.6f}\r\nretry: 15000\r\n\r\nevent:"
-            " environment_updated\r\ndata: {'updated_at': %0.6f}\r\nretry: 15000\r\n\r\n"
+            'event: environment_updated\r\ndata: {"updated_at": %0.6f}\r\nretry: 15000\r\n\r\nevent:'
+            ' environment_updated\r\ndata: {"updated_at": %0.6f}\r\nretry: 15000\r\n\r\n'
             % (first_last_updated_at.timestamp(), second_last_updated_at.timestamp())
         )
     assert response.status_code == 200

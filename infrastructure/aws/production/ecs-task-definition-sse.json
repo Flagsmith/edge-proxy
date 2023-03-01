@@ -26,7 +26,7 @@
             "environment": [
                 {
                     "name": "REDIS_HOST",
-                    "value": "redis-cache.c4q8sw.0001.euw2.cache.amazonaws.com:6379"
+                    "value": "redis-cache.c4q8sw.0001.euw2.cache.amazonaws.com"
                 }
             ],
             "secrets": [

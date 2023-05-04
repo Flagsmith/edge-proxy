@@ -79,7 +79,7 @@ async def stream_environment_changes(
 
     async def event_generator():
         while True:
-            # If client closes connection, or the stream is open for more than `MAX_AGE` seconds
+            # If client closes the connection, or the stream is open for more than `MAX_AGE` seconds
             # stop sending events
             if (
                 await request.is_disconnected()

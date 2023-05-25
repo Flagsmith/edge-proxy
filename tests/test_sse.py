@@ -1,14 +1,12 @@
 import asyncio
-from datetime import datetime
-from datetime import timezone
+from datetime import datetime, timezone
 
 import pytest
 from httpx import AsyncClient
 
 from src.main import app
 from src.settings import Settings
-from src.sse import get_settings
-from src.sse import redis_connection
+from src.sse import get_settings, redis_connection
 
 
 def get_settings_override():

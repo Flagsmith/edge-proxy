@@ -1,13 +1,13 @@
 import json
 from datetime import datetime, timedelta
-from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
-from .fixtures.response_data import environment_1
 from src.main import app
+
+from .fixtures.response_data import environment_1
 
 client = TestClient(app)
 

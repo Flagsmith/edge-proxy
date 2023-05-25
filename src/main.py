@@ -1,24 +1,25 @@
 from contextlib import suppress
 from datetime import datetime
 
-from fastapi import FastAPI
-from fastapi import Header
+from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from flag_engine.engine import get_environment_feature_state
-from flag_engine.engine import get_environment_feature_states
-from flag_engine.engine import get_identity_feature_states
+from flag_engine.engine import (
+    get_environment_feature_state,
+    get_environment_feature_states,
+    get_identity_feature_states,
+)
 from flag_engine.environments.builders import build_environment_model
 from flag_engine.identities.models import IdentityModel
+
+from fastapi_utils.tasks import repeat_every
 
 from .cache import CacheService
 from .features import filter_out_server_key_only_feature_states
 from .models import IdentityWithTraits
-from .schemas import APIFeatureStateSchema
-from .schemas import APITraitSchema
+from .schemas import APIFeatureStateSchema, APITraitSchema
 from .settings import Settings
 from .sse import router as sse_router
-from fastapi_utils.tasks import repeat_every
 
 app = FastAPI()
 settings = Settings()

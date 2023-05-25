@@ -12,6 +12,7 @@ from flag_engine.environments.builders import build_environment_model
 from flag_engine.identities.models import IdentityModel
 
 from .cache import CacheService
+from .features import filter_out_server_key_only_feature_states
 from .models import IdentityWithTraits
 from .schemas import APIFeatureStateSchema
 from .schemas import APITraitSchema
@@ -46,9 +47,26 @@ def flags(feature: str = None, x_environment_key: str = Header(None)):
 
     if feature:
         feature_state = get_environment_feature_state(environment, feature)
+
+        if not filter_out_server_key_only_feature_states(
+            feature_states=[feature_state],
+            environment=environment,
+        ):
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "status": "not_found",
+                    "message": f"feature '{feature}' not found",
+                },
+            )
+
         data = fs_schema.dump(feature_state)
+
     else:
-        feature_states = get_environment_feature_states(environment)
+        feature_states = filter_out_server_key_only_feature_states(
+            feature_states=get_environment_feature_states(environment),
+            environment=environment,
+        )
         data = fs_schema.dump(feature_states, many=True)
 
     return data
@@ -72,8 +90,13 @@ def identity(
     )
     trait_models = trait_schema.load(input_data.dict()["traits"], many=True)
     fs_schema = _get_fs_schema(identity)
-    flags = get_identity_feature_states(
-        environment, identity, override_traits=trait_models
+    flags = filter_out_server_key_only_feature_states(
+        feature_states=get_identity_feature_states(
+            environment,
+            identity,
+            override_traits=trait_models,
+        ),
+        environment=environment,
     )
     data = {
         "traits": trait_schema.dump(trait_models, many=True),

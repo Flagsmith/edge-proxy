@@ -24,11 +24,6 @@ def environment_1_feature_states_response_list() -> typing.List[dict]:
             },
             "enabled": True,
         },
-        {
-            "feature_state_value": None,
-            "feature": {"name": "feature_3", "type": "STANDARD", "id": 3},
-            "enabled": False,
-        },
     ]
 
 

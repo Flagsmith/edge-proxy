@@ -1,13 +1,7 @@
-from typing import Any, List
-
-from pydantic import BaseModel
-
-
-class Traits(BaseModel):
-    trait_key: str
-    trait_value: Any
+from flag_engine.identities.models import TraitModel
+from pydantic import BaseModel, Field
 
 
 class IdentityWithTraits(BaseModel):
     identifier: str
-    traits: List[Traits] = []
+    traits: list[TraitModel] = Field(default_factory=list)

@@ -16,17 +16,18 @@ from fastapi_utils.tasks import repeat_every
 
 from .cache import CacheService
 from .features import filter_out_server_key_only_feature_states
+from .mappers import (
+    map_feature_state_to_response_data,
+    map_feature_states_to_response_data,
+    map_traits_to_response_data,
+)
 from .models import IdentityWithTraits
-from .schemas import APIFeatureStateSchema, APITraitSchema
 from .settings import Settings
 from .sse import router as sse_router
 
 app = FastAPI()
 settings = Settings()
 cache_service = CacheService(settings)
-
-fs_schema = APIFeatureStateSchema()
-trait_schema = APITraitSchema()
 
 
 @app.get("/health", deprecated=True)
@@ -61,22 +62,16 @@ def flags(feature: str = None, x_environment_key: str = Header(None)):
                 },
             )
 
-        data = fs_schema.dump(feature_state)
+        data = map_feature_state_to_response_data(feature_state)
 
     else:
         feature_states = filter_out_server_key_only_feature_states(
             feature_states=get_environment_feature_states(environment),
             environment=environment,
         )
-        data = fs_schema.dump(feature_states, many=True)
+        data = map_feature_states_to_response_data(feature_states)
 
     return data
-
-
-def _get_fs_schema(identity_model: IdentityModel):
-    return APIFeatureStateSchema(
-        context={"identity_identifier": identity_model.identifier},
-    )
 
 
 @app.post("/api/v1/identities/")
@@ -89,8 +84,7 @@ def identity(
     identity = IdentityModel(
         identifier=input_data.identifier, environment_api_key=x_environment_key
     )
-    trait_models = trait_schema.load(input_data.dict()["traits"], many=True)
-    fs_schema = _get_fs_schema(identity)
+    trait_models = input_data.traits
     flags = filter_out_server_key_only_feature_states(
         feature_states=get_identity_feature_states(
             environment,
@@ -100,8 +94,11 @@ def identity(
         environment=environment,
     )
     data = {
-        "traits": trait_schema.dump(trait_models, many=True),
-        "flags": fs_schema.dump(flags, many=True),
+        "traits": map_traits_to_response_data(trait_models),
+        "flags": map_feature_states_to_response_data(
+            flags,
+            identity_hash_key=input_data.identifier,
+        ),
     }
     return data
 

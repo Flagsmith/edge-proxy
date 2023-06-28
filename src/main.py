@@ -97,7 +97,7 @@ def identity(
         "traits": map_traits_to_response_data(trait_models),
         "flags": map_feature_states_to_response_data(
             flags,
-            identity_hash_key=input_data.identifier,
+            identity_hash_key=identity.composite_key,
         ),
     }
     return data

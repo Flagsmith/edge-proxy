@@ -3,6 +3,7 @@ pep8
 autopep8
 black
 pre-commit
+isort
 flake8
 pytest
 pytest-asyncio

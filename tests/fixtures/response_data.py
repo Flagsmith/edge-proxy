@@ -86,6 +86,7 @@ _project_1 = {
     "id": 1,
     "hide_disabled_flags": False,
     "segments": [_segment_1],
+    "server_key_only_feature_ids": [3],
 }
 
 

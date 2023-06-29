@@ -3,12 +3,12 @@ import typing
 from flag_engine.features.models import FeatureStateModel
 from flag_engine.features.schemas import FeatureStateSchema
 from flag_engine.identities.schemas import TraitSchema
-from marshmallow import fields
-from marshmallow import validates
-from marshmallow import ValidationError
+from marshmallow import ValidationError, fields, validates
 
-from .constants import ACCEPTED_TRAIT_VALUE_TYPES
-from .constants import TRAIT_STRING_VALUE_MAX_LENGTH
+from .constants import (
+    ACCEPTED_TRAIT_VALUE_TYPES,
+    TRAIT_STRING_VALUE_MAX_LENGTH,
+)
 
 
 class APIFeatureStateSchema(FeatureStateSchema):

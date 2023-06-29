@@ -5,18 +5,12 @@ from functools import lru_cache
 from typing import Optional
 
 import redis
-from fastapi import APIRouter
-from fastapi import Body
-from fastapi import Depends
-from fastapi import Header
-from fastapi import HTTPException
-from fastapi import Request
+from fastapi import APIRouter, Body, Depends, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 from redis.exceptions import ConnectionError
 from sse_starlette.sse import EventSourceResponse
 
 from .settings import Settings
-
 
 router = APIRouter()
 
@@ -79,7 +73,7 @@ async def stream_environment_changes(
 
     async def event_generator():
         while True:
-            # If client closes connection, or the stream is open for more than `MAX_AGE` seconds
+            # If client closes the connection, or the stream is open for more than `MAX_AGE` seconds
             # stop sending events
             if (
                 await request.is_disconnected()

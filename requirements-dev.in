@@ -16,4 +16,4 @@ httpx
 anyio==3.4.0
 
 # conflict between `requests` and httpx
-certifi==2021.10.8
+certifi==2022.12.7

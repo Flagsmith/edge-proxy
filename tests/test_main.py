@@ -102,3 +102,28 @@ def test_post_identity_with_traits(
         "traits": data["traits"],
     }
     mocked_cache_service.get_environment.assert_called_with(environment_key)
+
+
+def test_post_identity__invalid_trait_data__expected_response(
+    mocker: MockerFixture,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    mocked_cache_service = mocker.patch("src.main.cache_service")
+    mocked_cache_service.get_environment.return_value = environment_1
+    data = {
+        "traits": [{"trait_value": "a" * 2001, "trait_key": "first_name"}],
+        "identifier": "do_it_all_in_one_go_identity",
+    }
+
+    # When
+    response = client.post(
+        "/api/v1/identities/",
+        headers={"X-Environment-Key": environment_key},
+        data=json.dumps(data),
+    )
+
+    # Then
+    assert response.status_code == 422
+    assert response.json()["detail"][-1]["loc"] == ["body", "traits", 0, "trait_value"]
+    assert response.json()["detail"][-1]["type"] == "value_error.any_str.max_length"

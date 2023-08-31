@@ -18,7 +18,7 @@ click==8.0.3
     # via uvicorn
 fastapi==0.81.0
     # via -r requirements.in
-flagsmith-flag-engine==3.6.0
+flagsmith-flag-engine==4.0.4
     # via -r requirements.in
 h11==0.12.0
     # via uvicorn
@@ -27,13 +27,15 @@ idna==3.3
     #   anyio
     #   requests
 marshmallow==3.14.1
-    # via
-    #   -r requirements.in
-    #   flagsmith-flag-engine
-pydantic==1.8.2
+    # via -r requirements.in
+pydantic==1.10.9
     # via
     #   -r requirements.in
     #   fastapi
+    #   flagsmith-flag-engine
+    #   pydantic-collections
+pydantic-collections==0.4.0
+    # via flagsmith-flag-engine
 python-decouple==3.5
     # via -r requirements.in
 python-dotenv==0.19.2
@@ -52,7 +54,7 @@ starlette==0.19.1
     # via
     #   fastapi
     #   sse-starlette
-typing-extensions==4.0.1
+typing-extensions==4.6.3
     # via pydantic
 urllib3==1.26.7
     # via requests

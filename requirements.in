@@ -2,7 +2,7 @@ fastapi
 uvicorn
 requests
 marshmallow
-flagsmith-flag-engine
+flagsmith-flag-engine @ git+https://github.com/Flagsmith/flagsmith-engine.git@feat/schemas
 python-decouple
 python-dotenv
 pydantic

@@ -16,7 +16,7 @@ charset-normalizer==2.0.9
     # via requests
 click==8.0.3
     # via uvicorn
-fastapi==0.81.0
+fastapi==0.98.0
     # via -r requirements.in
 flagsmith-flag-engine==4.0.4
     # via -r requirements.in
@@ -50,7 +50,7 @@ sniffio==1.2.0
     # via anyio
 sse-starlette==1.1.1
     # via -r requirements.in
-starlette==0.19.1
+starlette==0.27.0
     # via
     #   fastapi
     #   sse-starlette

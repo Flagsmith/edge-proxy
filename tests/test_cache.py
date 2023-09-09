@@ -1,6 +1,8 @@
+import pytest
 import requests
 
 from src.cache import CacheService
+from src.exceptions import FlagsmithUnknownKeyError
 from src.settings import Settings
 
 settings = Settings(
@@ -91,3 +93,9 @@ def test_get_environment_works_correctly(mocker):
     cache_service.get_environment(settings.environment_key_pairs[0].client_side_key)
     cache_service.get_environment(settings.environment_key_pairs[1].client_side_key)
     assert mocked_fetch_document.call_count == 2
+
+
+def test_get_environment_raises_for_unknown_keys():
+    cache_service = CacheService(settings)
+    with pytest.raises(FlagsmithUnknownKeyError):
+        cache_service.get_environment("test_env_key_unknown")

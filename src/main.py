@@ -15,6 +15,7 @@ from flag_engine.identities.models import IdentityModel
 from fastapi_utils.tasks import repeat_every
 
 from .cache import CacheService
+from .exceptions import FlagsmithUnknownKeyError
 from .features import filter_out_server_key_only_feature_states
 from .mappers import (
     map_feature_state_to_response_data,
@@ -28,6 +29,17 @@ from .sse import router as sse_router
 app = FastAPI()
 settings = Settings()
 cache_service = CacheService(settings)
+
+
+@app.exception_handler(FlagsmithUnknownKeyError)
+async def unknown_key_error(request, exc):
+    return JSONResponse(
+        status_code=401,
+        content={
+            "status": "unauthorized",
+            "message": f"unknown key {exc}",
+        },
+    )
 
 
 @app.get("/health", deprecated=True)

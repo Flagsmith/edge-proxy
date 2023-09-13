@@ -28,6 +28,8 @@ idna==3.4
     #   requests
 marshmallow==3.20.1
     # via -r requirements.in
+orjson==3.9.7
+    # via -r requirements.in
 packaging==23.1
     # via marshmallow
 pydantic==1.10.12

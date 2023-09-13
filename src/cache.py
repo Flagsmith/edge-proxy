@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 
+import orjson
 import requests
 
 from .exceptions import FlagsmithUnknownKeyError
@@ -22,7 +23,7 @@ class CacheService:
             url, headers={"X-Environment-Key": server_side_key}
         )
         response.raise_for_status()
-        return response.json()
+        return orjson.loads(response.text)
 
     def refresh(self):
         received_error = False
@@ -31,10 +32,10 @@ class CacheService:
                 self._cache[key_pair.client_side_key] = self.fetch_document(
                     key_pair.server_side_key
                 )
-            except requests.exceptions.HTTPError:
+            except (requests.exceptions.HTTPError, orjson.JSONDecodeError):
                 received_error = True
                 logger.exception(
-                    f"Received non 200 response for {key_pair.client_side_key}"
+                    f"Failed to fetch document for {key_pair.client_side_key}"
                 )
         if not received_error:
             self.last_updated_at = datetime.now()

@@ -1,3 +1,5 @@
+import unittest.mock
+
 import pytest
 import requests
 
@@ -16,14 +18,19 @@ settings = Settings(
 
 def test_refresh_makes_correct_http_call(mocker):
     # Given
-    mocked_session = mocker.patch("src.cache.requests.Session")
+    mocked_get = mocker.patch("src.cache.requests.Session.get")
+    mocked_get.side_effect = [
+        unittest.mock.AsyncMock(text='{"key1": "value1"}'),
+        unittest.mock.AsyncMock(text='{"key2": "value2"}'),
+    ]
     mocked_datetime = mocker.patch("src.cache.datetime")
     cache_service = CacheService(settings)
 
     # When
     cache_service.refresh()
+
     # Then
-    mocked_session.return_value.get.assert_has_calls(
+    mocked_get.assert_has_calls(
         [
             mocker.call(
                 f"{settings.api_url}/environment-document/",

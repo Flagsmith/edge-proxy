@@ -71,7 +71,7 @@ def flags(feature: str = None, x_environment_key: str = Header(None)):
         )
         data = map_feature_states_to_response_data(feature_states)
 
-    return data
+    return JSONResponse(data)
 
 
 @app.post("/api/v1/identities/")
@@ -100,7 +100,7 @@ def identity(
             identity_hash_key=identity.composite_key,
         ),
     }
-    return data
+    return JSONResponse(data)
 
 
 @app.on_event("startup")

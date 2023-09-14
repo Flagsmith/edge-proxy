@@ -68,7 +68,6 @@ async def test_repeat_log_error(caplog: LogCaptureFixture) -> None:
 async def test_repeat_raise_error(
     caplog: LogCaptureFixture, capsys: CaptureFixture
 ) -> None:
-
     # Given
     logger = logging.getLogger(__name__)
 

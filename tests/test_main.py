@@ -1,6 +1,6 @@
-import json
 from datetime import datetime, timedelta
 
+import orjson
 import pytest
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
@@ -114,7 +114,7 @@ def test_post_identity_with_traits(
     response = client.post(
         "/api/v1/identities/",
         headers={"X-Environment-Key": environment_key},
-        data=json.dumps(data),
+        content=orjson.dumps(data),
     )
     assert response.json() == {
         "flags": environment_1_feature_states_response_list_response_with_segment_override,
@@ -139,7 +139,7 @@ def test_post_identity__invalid_trait_data__expected_response(
     response = client.post(
         "/api/v1/identities/",
         headers={"X-Environment-Key": environment_key},
-        data=json.dumps(data),
+        content=orjson.dumps(data),
     )
 
     # Then

@@ -1,7 +1,7 @@
 import unittest.mock
 
+import httpx
 import pytest
-import requests
 
 from src.cache import CacheService
 from src.exceptions import FlagsmithUnknownKeyError
@@ -16,62 +16,64 @@ settings = Settings(
 )
 
 
-def test_refresh_makes_correct_http_call(mocker):
+@pytest.mark.asyncio
+async def test_refresh_makes_correct_http_call(mocker):
     # Given
-    mocked_get = mocker.patch("src.cache.requests.Session.get")
+    mocked_get = mocker.patch("src.cache.httpx.AsyncClient.get")
     mocked_get.side_effect = [
-        unittest.mock.AsyncMock(text='{"key1": "value1"}'),
-        unittest.mock.AsyncMock(text='{"key2": "value2"}'),
+        unittest.mock.Mock(text='{"key1": "value1"}'),
+        unittest.mock.Mock(text='{"key2": "value2"}'),
     ]
     mocked_datetime = mocker.patch("src.cache.datetime")
+
     cache_service = CacheService(settings)
 
     # When
-    cache_service.refresh()
+    await cache_service.refresh()
 
     # Then
     mocked_get.assert_has_calls(
         [
             mocker.call(
-                f"{settings.api_url}/environment-document/",
+                url=f"{settings.api_url}/environment-document/",
                 headers={
                     "X-Environment-Key": settings.environment_key_pairs[
                         0
                     ].server_side_key
                 },
-            )
-        ],
-        [
+            ),
             mocker.call(
-                f"{settings.api_url}/environment-document/",
+                url=f"{settings.api_url}/environment-document/",
                 headers={
                     "X-Environment-Key": settings.environment_key_pairs[
                         1
                     ].server_side_key
                 },
-            )
-        ],
+            ),
+        ]
     )
     assert cache_service.last_updated_at == mocked_datetime.now.return_value
 
 
-def test_refresh_does_not_update_last_updated_at_if_any_request_fails(mocker):
+@pytest.mark.asyncio
+async def test_refresh_does_not_update_last_updated_at_if_any_request_fails(mocker):
     # Given
-    mocked_session = mocker.patch("src.cache.requests.Session")
-    mocked_session.return_value.get.side_effect = [
-        mocker.MagicMock(),
-        requests.exceptions.HTTPError(),
+    mocked_get = mocker.patch("src.cache.httpx.AsyncClient.get")
+    mocked_get.side_effect = [
+        httpx.ConnectTimeout("timeout"),
+        unittest.mock.Mock(text='{"key2": "value2"}'),
     ]
     cache_service = CacheService(settings)
 
     # When
-    cache_service.refresh()
+    await cache_service.refresh()
 
     # Then
     assert cache_service.last_updated_at is None
 
 
-def test_get_environment_works_correctly(mocker):
+@pytest.mark.asyncio
+async def test_get_environment_works_correctly(mocker):
     # Given
     cache_service = CacheService(settings)
     doc_1 = {"key1": "value1"}
@@ -83,7 +85,7 @@ def test_get_environment_works_correctly(mocker):
     )
 
     # When
-    cache_service.refresh()
+    await cache_service.refresh()
 
     # Next, test that get environment return correct document
     assert (

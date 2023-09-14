@@ -1,3 +1,4 @@
+import logging
 from contextlib import suppress
 from datetime import datetime
 
@@ -44,7 +45,7 @@ async def unknown_key_error(request, exc):
 
 @app.get("/health", response_class=ORJSONResponse, deprecated=True)
 @app.get("/proxy/health", response_class=ORJSONResponse)
-def health_check():
+async def health_check():
     with suppress(TypeError):
         last_updated = datetime.now() - cache_service.last_updated_at
         buffer = 30 * len(settings.environment_key_pairs)  # 30s per environment
@@ -55,7 +56,7 @@ def health_check():
 
 
 @app.get("/api/v1/flags/", response_class=ORJSONResponse)
-def flags(feature: str = None, x_environment_key: str = Header(None)):
+async def flags(feature: str = None, x_environment_key: str = Header(None)):
     environment_document = cache_service.get_environment(x_environment_key)
     environment = build_environment_model(environment_document)
 
@@ -87,7 +88,7 @@ def flags(feature: str = None, x_environment_key: str = Header(None)):
 
 
 @app.post("/api/v1/identities/", response_class=ORJSONResponse)
-def identity(
+async def identity(
     input_data: IdentityWithTraits,
     x_environment_key: str = Header(None),
 ):
@@ -116,9 +117,13 @@ def identity(
 
 
 @app.on_event("startup")
-@repeat_every(seconds=settings.api_poll_frequency, raise_exceptions=True)
-def refresh_cache():
-    cache_service.refresh()
+@repeat_every(
+    seconds=settings.api_poll_frequency,
+    raise_exceptions=True,
+    logger=logging.getLogger(__name__),
+)
+async def refresh_cache():
+    await cache_service.refresh()
 
 
 app.add_middleware(

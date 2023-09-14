@@ -1,14 +1,13 @@
 fastapi
 uvicorn
-requests
 marshmallow
 flagsmith-flag-engine
 python-decouple
 python-dotenv
 pydantic
 orjson
+httpx
 # sse-stuff
 sse-starlette
 asyncio
 redis
-

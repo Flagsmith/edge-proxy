@@ -15,4 +15,5 @@ certifi
 # lock the version because `starlette`(from requirements.in) explicitly depends on it
 # but httpx tries to fetch the latest version causing conflict between
 # requirements.txt and requirements-dev.txt
-anyio==3.4.0
+anyio==3.7.1
+

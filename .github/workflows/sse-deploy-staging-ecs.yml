@@ -17,9 +17,7 @@ jobs:
 
         steps:
             - name: Cloning repo
-              uses: actions/checkout@v2
-              with:
-                  fetch-depth: 0
+              uses: actions/checkout@v3
 
             - name: Deploy SSE to Staging
               uses: ./.github/actions/sse-deploy-ecs

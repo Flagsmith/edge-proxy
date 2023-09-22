@@ -5,6 +5,8 @@ import requests
 
 from .settings import Settings
 
+logger = logging.getLogger(__name__)
+
 
 class CacheService:
     def __init__(self, settings: Settings):
@@ -30,7 +32,7 @@ class CacheService:
                 )
             except requests.exceptions.HTTPError:
                 received_error = True
-                logging.error(
+                logger.error(
                     f"received non 200 response for {key_pair.client_side_key}"
                 )
         if not received_error:

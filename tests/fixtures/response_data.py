@@ -1,12 +1,10 @@
-from decimal import Decimal
-
 _segment_override_feature_state = {
     "multivariate_feature_state_values": [],
     "feature_state_value": "segment_override",
     "feature": {
         "name": "feature_2",
         "type": "STANDARD",
-        "id": Decimal("2"),
+        "id": 2,
     },
     "enabled": True,
 }
@@ -18,7 +16,7 @@ _environment_feature_state_1 = {
     "feature": {
         "name": "feature_1",
         "type": "STANDARD",
-        "id": Decimal("1"),
+        "id": 1,
     },
     "enabled": False,
 }
@@ -30,7 +28,7 @@ _environment_feature_state_2 = {
     "feature": {
         "name": "feature_2",
         "type": "STANDARD",
-        "id": Decimal("2"),
+        "id": 2,
     },
     "enabled": True,
 }
@@ -42,7 +40,7 @@ _environment_feature_state_3 = {
     "feature": {
         "name": "feature_3",
         "type": "STANDARD",
-        "id": Decimal("3"),
+        "id": 3,
     },
     "enabled": False,
 }
@@ -69,7 +67,7 @@ _segment_1 = {
             ],
         }
     ],
-    "id": Decimal("1"),
+    "id": 1,
     "feature_states": [_segment_override_feature_state],
 }
 
@@ -79,7 +77,7 @@ _project_1 = {
     "organisation": {
         "feature_analytics": False,
         "name": "org-1",
-        "id": Decimal("1"),
+        "id": 1,
         "persist_trait_data": True,
         "stop_serving_flags": False,
     },
@@ -98,5 +96,5 @@ environment_1 = {
     ],
     "api_key": "environment_1_api_key",
     "project": _project_1,
-    "id": Decimal("1"),
+    "id": 1,
 }

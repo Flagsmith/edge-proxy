@@ -77,12 +77,14 @@ def test_get_environment_works_correctly(mocker):
     cache_service.refresh()
 
     # Next, test that get environment return correct document
-    cache_service.get_environment(
-        settings.environment_key_pairs[0].client_side_key
-    ) == doc_1
-    cache_service.get_environment(
-        settings.environment_key_pairs[1].client_side_key
-    ) == doc_2
+    assert (
+        cache_service.get_environment(settings.environment_key_pairs[0].client_side_key)
+        == doc_1
+    )
+    assert (
+        cache_service.get_environment(settings.environment_key_pairs[1].client_side_key)
+        == doc_2
+    )
     assert mocked_fetch_document.call_count == 2
 
     # Next, let's verify that any additional call to get_environment does not call fetch document

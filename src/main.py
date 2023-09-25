@@ -34,10 +34,10 @@ cache_service = CacheService(settings)
 @app.get("/proxy/health")
 def health_check():
     with suppress(TypeError):
-        if (
-            datetime.now() - cache_service.last_updated_at
-        ).total_seconds() <= settings.api_poll_frequency:
-            return {"status": "ok"}
+        last_updated = datetime.now() - cache_service.last_updated_at
+        buffer = 30 * len(settings.environment_key_pairs)  # 30s per environment
+        if last_updated.total_seconds() <= settings.api_poll_frequency + buffer:
+            return JSONResponse(status_code=200, content={"status": "ok"})
 
     return JSONResponse(status_code=500, content={"status": "error"})
 

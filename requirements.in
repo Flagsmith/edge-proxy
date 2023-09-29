@@ -6,6 +6,7 @@ flagsmith-flag-engine
 python-decouple
 python-dotenv
 pydantic
+orjson
 # sse-stuff
 sse-starlette
 asyncio

@@ -3,7 +3,7 @@ from datetime import datetime
 
 from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from flag_engine.engine import (
     get_environment_feature_state,
     get_environment_feature_states,
@@ -33,7 +33,7 @@ cache_service = CacheService(settings)
 
 @app.exception_handler(FlagsmithUnknownKeyError)
 async def unknown_key_error(request, exc):
-    return JSONResponse(
+    return ORJSONResponse(
         status_code=401,
         content={
             "status": "unauthorized",
@@ -42,19 +42,19 @@ async def unknown_key_error(request, exc):
     )
 
 
-@app.get("/health", deprecated=True)
-@app.get("/proxy/health")
+@app.get("/health", response_class=ORJSONResponse, deprecated=True)
+@app.get("/proxy/health", response_class=ORJSONResponse)
 def health_check():
     with suppress(TypeError):
         last_updated = datetime.now() - cache_service.last_updated_at
         buffer = 30 * len(settings.environment_key_pairs)  # 30s per environment
         if last_updated.total_seconds() <= settings.api_poll_frequency + buffer:
-            return JSONResponse(status_code=200, content={"status": "ok"})
+            return ORJSONResponse(status_code=200, content={"status": "ok"})
 
-    return JSONResponse(status_code=500, content={"status": "error"})
+    return ORJSONResponse(status_code=500, content={"status": "error"})
 
 
-@app.get("/api/v1/flags/")
+@app.get("/api/v1/flags/", response_class=ORJSONResponse)
 def flags(feature: str = None, x_environment_key: str = Header(None)):
     environment_document = cache_service.get_environment(x_environment_key)
     environment = build_environment_model(environment_document)
@@ -66,7 +66,7 @@ def flags(feature: str = None, x_environment_key: str = Header(None)):
             feature_states=[feature_state],
             environment=environment,
         ):
-            return JSONResponse(
+            return ORJSONResponse(
                 status_code=404,
                 content={
                     "status": "not_found",
@@ -83,10 +83,10 @@ def flags(feature: str = None, x_environment_key: str = Header(None)):
         )
         data = map_feature_states_to_response_data(feature_states)
 
-    return JSONResponse(data)
+    return ORJSONResponse(data)
 
 
-@app.post("/api/v1/identities/")
+@app.post("/api/v1/identities/", response_class=ORJSONResponse)
 def identity(
     input_data: IdentityWithTraits,
     x_environment_key: str = Header(None),
@@ -112,7 +112,7 @@ def identity(
             identity_hash_key=identity.composite_key,
         ),
     }
-    return JSONResponse(data)
+    return ORJSONResponse(data)
 
 
 @app.on_event("startup")

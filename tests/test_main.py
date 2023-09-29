@@ -5,6 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
+from src.exceptions import FlagsmithUnknownKeyError
 from src.main import app
 
 from .fixtures.response_data import environment_1
@@ -79,6 +80,24 @@ def test_get_flags_single_feature__server_key_only_feature__return_expected(
     assert response.json() == {
         "message": "feature 'feature_3' not found",
         "status": "not_found",
+    }
+
+
+def test_get_flags_unknown_key(mocker):
+    environment_key = "unknown_environment_key"
+    mocked_cache_service = mocker.patch("src.main.cache_service")
+    mocked_cache_service.get_environment.side_effect = FlagsmithUnknownKeyError(
+        environment_key
+    )
+    response = client.get(
+        "/api/v1/flags",
+        headers={"X-Environment-Key": environment_key},
+        params={"feature": "feature_1"},
+    )
+    assert response.status_code == 401
+    assert response.json() == {
+        "status": "unauthorized",
+        "message": "unknown key 'unknown_environment_key'",
     }
 
 

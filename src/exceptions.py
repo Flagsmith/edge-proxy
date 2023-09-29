@@ -1,0 +1,2 @@
+class FlagsmithUnknownKeyError(KeyError):
+    pass

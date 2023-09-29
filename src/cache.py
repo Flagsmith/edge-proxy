@@ -3,6 +3,7 @@ from datetime import datetime
 
 import requests
 
+from .exceptions import FlagsmithUnknownKeyError
 from .settings import Settings
 
 logger = logging.getLogger(__name__)
@@ -39,4 +40,7 @@ class CacheService:
             self.last_updated_at = datetime.now()
 
     def get_environment(self, client_side_key):
-        return self._cache[client_side_key]
+        try:
+            return self._cache[client_side_key]
+        except KeyError:
+            raise FlagsmithUnknownKeyError(client_side_key)

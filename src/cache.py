@@ -15,7 +15,7 @@ class CacheService:
         self.settings = settings
         self.last_updated_at = None
         self._cache = {}
-        self._client = httpx.AsyncClient(timeout=30)
+        self._client = httpx.AsyncClient(timeout=settings.api_poll_timeout)
 
     async def fetch_document(self, server_side_key):
         response = await self._client.get(

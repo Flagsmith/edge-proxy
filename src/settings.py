@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     environment_key_pairs: List[EnvironmentKeyPair]
     api_url: HttpUrl = "https://edge.api.flagsmith.com/api/v1"
     api_poll_frequency: int = 10  # minutes
-    api_poll_timeout: int = 30  # seconds
+    api_poll_timeout: int = 5  # seconds
 
     # sse settings
     stream_delay: int = 1  # seconds

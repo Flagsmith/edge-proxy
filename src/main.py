@@ -4,6 +4,7 @@ from datetime import datetime
 
 from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import ORJSONResponse
 from flag_engine.engine import (
     get_environment_feature_state,
@@ -133,4 +134,5 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.include_router(sse_router)

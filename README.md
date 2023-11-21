@@ -11,12 +11,11 @@ The Flagsmith Edge Proxy allows you to run an instance of the Flagsmith Engine c
 Flagsmith within a server-side environment and you want to have very low latency flags, you have two options:
 
 1. Run the Edge Proxy and connect to it from your server-side SDKs
-2. Run your server-side SDKs in [Local Evaluation Mode](/clients/overview#2---local-evaluation).
+2. Run your server-side SDKs in [Local Evaluation Mode](https://docs.flagsmith.com/clients/overview#2---local-evaluation).
 
 The main benefit to running the Edge Proxy is that you reduce your polling requests against the Flagsmith API itself.
 
-The main benefit to running server side SDKs in [Local Evaluation Mode](/clients/overview#2---local-evaluation) is that
-you get the lowest possible latency.
+The main benefit to running server side SDKs in [Local Evaluation Mode](https://docs.flagsmith.com/clients/overview#2---local-evaluation) is that you get the lowest possible latency.
 
 ## Useful Links
 

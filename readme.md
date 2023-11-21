@@ -1,60 +1,23 @@
-# Flagsmith Edge Proxy
+[![Feature Flag, Remote Config and A/B Testing platform, Flagsmith](https://raw.githubusercontent.com/Flagsmith/flagsmith/main/static-files/hero.png)](https://www.flagsmith.com/)
 
-https://docs.flagsmith.com/advanced-use/edge-proxy
+[![Join the Discord chat](https://img.shields.io/discord/517647859495993347)](https://discord.gg/hFhxNtXzgm)
 
-## Configuration
+[Flagsmith](https://flagsmith.com/) is an open source, fully featured, Feature Flag and Remote Config service. Use our
+hosted API, deploy to your own private cloud, or run on-premise.
 
-Edge proxy can be configured using the `config.json` file located at the root.
+# Edge Proxy
 
-### Supported configuration
+The Flagsmith Edge Proxy allows you to run an instance of the Flagsmith Engine close to your servers. If you are running
+Flagsmith within a server-side environment and you want to have very low latency flags, you have two options:
 
-You can set the following configuration(in config.json) to control the behaviour
-of edge-proxy
+1. Run the Edge Proxy and connect to it from your server-side SDKs
+2. Run your server-side SDKs in [Local Evaluation Mode](/clients/overview#2---local-evaluation).
 
-- environment_key_pairs: An array of environment key pair objects, e.g:
-  `"environment_key_pairs":[{"server_side_key":"your_server_side_key", "client_side_key":"your_client_side_environment_key"}]`
+The main benefit to running the Edge Proxy is that you reduce your polling requests against the Flagsmith API itself.
 
-- [Optional]api_poll_frequency(seconds): it is used to control how often the proxy is going to ping the server for changes,
-  e.g: `"api_poll_frequency":10`
+The main benefit to running server side SDKs in [Local Evaluation Mode](/clients/overview#2---local-evaluation) is that
+you get the lowest possible latency.
 
-- [Optional]api_url: If you are running a self hosted version of flagsmith you can add the self hosted url here for edge-proxy to ping
-  your server, e.g: `"api_url":"https://self.hosted.flagsmith.com/api/v1"`
+## Useful Links
 
-### Here are some examples of adding local `config.json` to edge-proxy:
-
-- With docker run:
-  `docker run -v /<path-to-local>/config.json:/app/config.json flagsmith/edge-proxy:latest`
-
-- With docker compose:
-
-```yaml
-version: "3.9"
-services:
-  edge_proxy:
-    image: flagsmith/edge-proxy:latest
-    volumes:
-      - type: bind
-        source: /<path-to-local>/config.json
-        target: /app/config.json
-```
-
-## Load Testing
-
-You can send post request with `wrk` like this:
-
-```bash
-cd load-test
-wrk -t10 -c40 -d5 -s post.lua -H 'X-Environment-Key: NC7zfaBWg7QJhbHpUMs7tv' 'http://localhost:8001/api/v1/identities/?identifier=development_user_123456'
-```
-
-# Realtime(SSE)
-
-## Development
-
-### Requirement:
-* Redis: In order to run the test please make sure environment variables `REDIS_HOST`(default: localhost) and `REDIS_PORT`(default:6379) are set correctly
-
-
-
-
-
+[Documentation](https://docs.flagsmith.com/advanced-use/edge-proxy)

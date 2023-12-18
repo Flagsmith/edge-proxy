@@ -47,14 +47,3 @@ cd load-test
 wrk -t10 -c40 -d5 -s post.lua -H 'X-Environment-Key: NC7zfaBWg7QJhbHpUMs7tv' 'http://localhost:8001/api/v1/identities/?identifier=development_user_123456'
 ```
 
-# Realtime(SSE)
-
-## Development
-
-### Requirement:
-* Redis: In order to run the test please make sure environment variables `REDIS_HOST`(default: localhost) and `REDIS_PORT`(default:6379) are set correctly
-
-
-
-
-

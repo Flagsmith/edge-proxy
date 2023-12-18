@@ -36,17 +36,8 @@ class Settings(BaseSettings):
     api_url: HttpUrl = "https://edge.api.flagsmith.com/api/v1"
     api_poll_frequency: int = 10  # minutes
     api_poll_timeout: int = 5  # seconds
-
     endpoint_caches: EndpointCachesSettings | None = None
-
-    # sse settings
-    stream_delay: int = 1  # seconds
-    retry_timeout: int = 15000  # milliseconds
-    max_stream_age: int = 30  # seconds
     allow_origins: List[str] = ["*"]
-    sse_authentication_token: str = ""
-    redis_host: str = "localhost"
-    redis_port: int = 6379
 
     class Config:
         @classmethod

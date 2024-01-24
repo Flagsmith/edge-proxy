@@ -29,9 +29,12 @@ class CacheService:
         received_error = False
         for key_pair in self.settings.environment_key_pairs:
             try:
-                self._cache[key_pair.client_side_key] = await self.fetch_document(
+                environment_document = await self.fetch_document(
                     key_pair.server_side_key
                 )
+                if environment_document != self._cache.get(key_pair.client_side_key):
+                    self._cache[key_pair.client_side_key] = environment_document
+                    self._clear_endpoint_caches()
             except (httpx.HTTPError, orjson.JSONDecodeError):
                 received_error = True
                 logger.exception(
@@ -45,3 +48,12 @@ class CacheService:
             return self._cache[client_side_key]
         except KeyError:
             raise FlagsmithUnknownKeyError(client_side_key)
+
+    def _clear_endpoint_caches(self) -> None:
+        from .main import _get_flags_response_data, _get_identity_response_data
+
+        if self.settings.endpoint_caches:
+            if self.settings.endpoint_caches.flags.use_cache:
+                _get_flags_response_data.cache_clear()
+            if self.settings.endpoint_caches.identities.use_cache:
+                _get_identity_response_data.cache_clear()

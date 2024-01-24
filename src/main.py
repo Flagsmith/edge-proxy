@@ -1,6 +1,8 @@
 import logging
 from contextlib import suppress
 from datetime import datetime
+from functools import lru_cache
+
 from cachetools.func import ttl_cache
 
 from fastapi import FastAPI, Header
@@ -132,15 +134,13 @@ def _get_identity_response_data(
 
 if settings.endpoint_caches:
     if settings.endpoint_caches.flags.use_cache:
-        _get_flags_response_data = ttl_cache(
+        _get_flags_response_data = lru_cache(
             maxsize=settings.endpoint_caches.flags.cache_max_size,
-            ttl=settings.endpoint_caches.flags.cache_max_size,
         )(_get_flags_response_data)
 
     if settings.endpoint_caches.identities.use_cache:
-        _get_identity_response_data = ttl_cache(
+        _get_identity_response_data = lru_cache(
             maxsize=settings.endpoint_caches.identities.cache_max_size,
-            ttl=settings.endpoint_caches.identities.cache_max_size,
         )(_get_identity_response_data)
 
 

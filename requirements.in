@@ -11,4 +11,3 @@ httpx
 sse-starlette
 asyncio
 redis
-cachetools

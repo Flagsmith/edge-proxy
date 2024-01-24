@@ -9,14 +9,10 @@
   "api_url": "https://edge.api.flagsmith.com/api/v1",
   "endpoint_caches": {
     "flags": {
-      "use_cache": true,
-      "cache_max_size": 128,
-      "cache_ttl": 60
+      "use_cache": false
     },
     "identities": {
-      "use_cache": true,
-      "cache_max_size": 128,
-      "cache_ttl": 60
+      "use_cache": false
     }
   }
 }

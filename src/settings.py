@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     api_poll_frequency: int = 10  # minutes
     api_poll_timeout: int = 5  # seconds
 
+    cache_max_size: int = 128
+    cache_ttl: int = 60
+
     # sse settings
     stream_delay: int = 1  # seconds
     retry_timeout: int = 15000  # milliseconds

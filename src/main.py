@@ -1,6 +1,7 @@
 import logging
 from contextlib import suppress
 from datetime import datetime
+from cachetools.func import ttl_cache
 
 from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
@@ -58,7 +59,12 @@ async def health_check():
 
 @app.get("/api/v1/flags/", response_class=ORJSONResponse)
 async def flags(feature: str = None, x_environment_key: str = Header(None)):
-    environment_document = cache_service.get_environment(x_environment_key)
+    return _get_flags_response_data(x_environment_key, feature)
+
+
+@ttl_cache(ttl=settings.cache_ttl)
+def _get_flags_response_data(environment_key: str, feature: str = None) -> ORJSONResponse:
+    environment_document = cache_service.get_environment(environment_key)
     environment = build_environment_model(environment_document)
 
     if feature:
@@ -93,10 +99,15 @@ async def identity(
     input_data: IdentityWithTraits,
     x_environment_key: str = Header(None),
 ):
-    environment_document = cache_service.get_environment(x_environment_key)
+    return _get_identity_response_data(input_data, x_environment_key)
+
+
+@ttl_cache(maxsize=settings.cache_max_size, ttl=settings.cache_ttl)
+def _get_identity_response_data(input_data: IdentityWithTraits, environment_key: str) -> ORJSONResponse:
+    environment_document = cache_service.get_environment(environment_key)
     environment = build_environment_model(environment_document)
     identity = IdentityModel(
-        identifier=input_data.identifier, environment_api_key=x_environment_key
+        identifier=input_data.identifier, environment_api_key=environment_key
     )
     trait_models = input_data.traits
     flags = filter_out_server_key_only_feature_states(

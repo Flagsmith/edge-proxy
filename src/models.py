@@ -9,7 +9,7 @@ class IdentityWithTraits(BaseModel):
     def __str__(self):
         return f"identifier:%s|traits:%s" % (
             self.identifier,
-            ",".join([f"{t.trait_key}={str(t.trait_value)}" for t in self.traits])
+            ",".join([f"{t.trait_key}={str(t.trait_value)}" for t in self.traits]),
         )
 
     def __hash__(self):

@@ -21,14 +21,24 @@ class EnvironmentKeyPair(BaseModel):
     client_side_key: str
 
 
+class EndpointCacheSettings(BaseModel):
+    use_cache: bool = False
+    cache_max_size: int = 128
+    cache_ttl: int = 60
+
+
+class EndpointCachesSettings(BaseModel):
+    flags: EndpointCacheSettings = EndpointCacheSettings(use_cache=False)
+    identities: EndpointCacheSettings = EndpointCacheSettings(use_cache=False)
+
+
 class Settings(BaseSettings):
     environment_key_pairs: List[EnvironmentKeyPair]
     api_url: HttpUrl = "https://edge.api.flagsmith.com/api/v1"
     api_poll_frequency: int = 10  # minutes
     api_poll_timeout: int = 5  # seconds
 
-    cache_max_size: int = 128
-    cache_ttl: int = 60
+    endpoint_caches: EndpointCachesSettings | None = None
 
     # sse settings
     stream_delay: int = 1  # seconds

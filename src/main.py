@@ -62,8 +62,9 @@ async def flags(feature: str = None, x_environment_key: str = Header(None)):
     return _get_flags_response_data(x_environment_key, feature)
 
 
-@ttl_cache(ttl=settings.cache_ttl)
-def _get_flags_response_data(environment_key: str, feature: str = None) -> ORJSONResponse:
+def _get_flags_response_data(
+    environment_key: str, feature: str = None
+) -> ORJSONResponse:
     environment_document = cache_service.get_environment(environment_key)
     environment = build_environment_model(environment_document)
 
@@ -102,8 +103,9 @@ async def identity(
     return _get_identity_response_data(input_data, x_environment_key)
 
 
-@ttl_cache(maxsize=settings.cache_max_size, ttl=settings.cache_ttl)
-def _get_identity_response_data(input_data: IdentityWithTraits, environment_key: str) -> ORJSONResponse:
+def _get_identity_response_data(
+    input_data: IdentityWithTraits, environment_key: str
+) -> ORJSONResponse:
     environment_document = cache_service.get_environment(environment_key)
     environment = build_environment_model(environment_document)
     identity = IdentityModel(
@@ -126,6 +128,20 @@ def _get_identity_response_data(input_data: IdentityWithTraits, environment_key:
         ),
     }
     return ORJSONResponse(data)
+
+
+if settings.endpoint_caches:
+    if settings.endpoint_caches.flags.use_cache:
+        _get_flags_response_data = ttl_cache(
+            maxsize=settings.endpoint_caches.flags.cache_max_size,
+            ttl=settings.endpoint_caches.flags.cache_max_size,
+        )(_get_flags_response_data)
+
+    if settings.endpoint_caches.identities.use_cache:
+        _get_identity_response_data = ttl_cache(
+            maxsize=settings.endpoint_caches.identities.cache_max_size,
+            ttl=settings.endpoint_caches.identities.cache_max_size,
+        )(_get_identity_response_data)
 
 
 @app.on_event("startup")

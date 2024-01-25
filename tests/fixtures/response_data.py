@@ -87,6 +87,8 @@ _project_1 = {
     "server_key_only_feature_ids": [3],
 }
 
+environment_1_api_key = "environment_1_api_key"
+
 
 environment_1 = {
     "feature_states": [
@@ -94,7 +96,7 @@ environment_1 = {
         _environment_feature_state_2,
         _environment_feature_state_3,
     ],
-    "api_key": "environment_1_api_key",
+    "api_key": environment_1_api_key,
     "project": _project_1,
     "id": 1,
 }

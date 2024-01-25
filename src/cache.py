@@ -12,16 +12,9 @@ class BaseEnvironmentsCache(ABC):
 
     def put_environment(self, environment_api_key: str, environment_document: typing.Dict[str, typing.Any]) -> bool:
         """
-        Update the environment cache with the given environment document.
+        Update the environment cache for the given key with the given environment document.
 
-        Parameters
-        ----------
-        environment_api_key
-        environment_document
-
-        Returns
-        -------
-        a boolean confirming if the cache was updated or not (i.e. if the environment document
+        Returns a boolean confirming if the cache was updated or not (i.e. if the environment document
         was different from the one already in the cache).
         """
         if environment_document != self.get_environment(environment_api_key):

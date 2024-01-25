@@ -1,4 +1,5 @@
 import logging
+import typing
 from datetime import datetime
 from functools import lru_cache
 
@@ -117,12 +118,12 @@ class EnvironmentService:
         }
         return ORJSONResponse(data)
 
-    def get_environment(self, client_side_key: str):
+    def get_environment(self, client_side_key: str) -> dict[str, typing.Any]:
         if environment_document := self.cache.get_environment(client_side_key):
             return environment_document
         raise FlagsmithUnknownKeyError(client_side_key)
 
-    async def _fetch_document(self, server_side_key):
+    async def _fetch_document(self, server_side_key: str) -> dict[str, typing.Any]:
         response = await self._client.get(
             url=f"{self.settings.api_url}/environment-document/",
             headers={"X-Environment-Key": server_side_key},

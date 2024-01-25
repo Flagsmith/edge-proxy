@@ -25,7 +25,6 @@ class EnvironmentKeyPair(BaseModel):
 class EndpointCacheSettings(BaseModel):
     use_cache: bool = False
     cache_max_size: int = 128
-    cache_ttl: int = 60
 
 
 class EndpointCachesSettings(BaseModel):

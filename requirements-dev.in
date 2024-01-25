@@ -10,3 +10,4 @@ pytest-asyncio
 pytest-mock
 reorder-python-imports
 certifi
+pytest-freezegun

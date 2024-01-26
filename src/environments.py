@@ -5,8 +5,11 @@ from functools import lru_cache
 
 import httpx
 from fastapi.responses import ORJSONResponse
-from flag_engine.engine import get_environment_feature_state, get_environment_feature_states, \
-    get_identity_feature_states
+from flag_engine.engine import (
+    get_environment_feature_state,
+    get_environment_feature_states,
+    get_identity_feature_states,
+)
 from flag_engine.environments.builders import build_environment_model
 from flag_engine.identities.models import IdentityModel
 from orjson import orjson
@@ -14,8 +17,11 @@ from orjson import orjson
 from src.cache import BaseEnvironmentsCache, LocalMemEnvironmentsCache
 from src.exceptions import FlagsmithUnknownKeyError
 from src.feature_utils import filter_out_server_key_only_feature_states
-from src.mappers import map_feature_state_to_response_data, map_feature_states_to_response_data, \
-    map_traits_to_response_data
+from src.mappers import (
+    map_feature_state_to_response_data,
+    map_feature_states_to_response_data,
+    map_traits_to_response_data,
+)
 from src.models import IdentityWithTraits
 from src.settings import Settings
 
@@ -23,7 +29,12 @@ logger = logging.getLogger(__name__)
 
 
 class EnvironmentService:
-    def __init__(self, cache: BaseEnvironmentsCache = None, client: httpx.AsyncClient = None, settings: Settings = None):
+    def __init__(
+        self,
+        cache: BaseEnvironmentsCache = None,
+        client: httpx.AsyncClient = None,
+        settings: Settings = None,
+    ):
         self.cache = cache or LocalMemEnvironmentsCache()
         self.settings = settings or Settings()
         self._client = client or httpx.AsyncClient(timeout=settings.api_poll_timeout)
@@ -49,10 +60,10 @@ class EnvironmentService:
                 )
                 if self.cache.put_environment(
                     environment_api_key=key_pair.client_side_key,
-                    environment_document=environment_document
+                    environment_document=environment_document,
                 ):
                     await self._clear_endpoint_caches()
-            except (httpx.HTTPError, orjson.JSONDecodeError) as e:
+            except (httpx.HTTPError, orjson.JSONDecodeError):
                 logger.exception(
                     f"Failed to fetch document for {key_pair.client_side_key}"
                 )

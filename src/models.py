@@ -7,7 +7,7 @@ class IdentityWithTraits(BaseModel):
     traits: list[TraitModel] = Field(default_factory=list)
 
     def __str__(self):
-        return f"identifier:%s|traits:%s" % (
+        return "identifier:%s|traits:%s" % (
             self.identifier,
             ",".join([f"{t.trait_key}={str(t.trait_value)}" for t in self.traits]),
         )

@@ -13,7 +13,9 @@ client = TestClient(app)
 
 
 @pytest.mark.parametrize("endpoint", ["/proxy/health", "/health"])
-def test_health_check_returns_200_if_cache_was_updated_recently(mocker: MockerFixture, endpoint: str) -> None:
+def test_health_check_returns_200_if_cache_was_updated_recently(
+    mocker: MockerFixture, endpoint: str
+) -> None:
     mocked_environment_service = mocker.patch("src.main.environment_service")
     mocked_environment_service.last_updated_at = datetime.now()
 
@@ -35,7 +37,9 @@ def test_health_check_returns_500_if_cache_is_stale(mocker) -> None:
     assert response.json() == {"status": "error"}
 
 
-def test_get_flags(mocker: MockerFixture, environment_1_feature_states_response_list: list[dict]) -> None:
+def test_get_flags(
+    mocker: MockerFixture, environment_1_feature_states_response_list: list[dict]
+) -> None:
     environment_key = "test_environment_key"
     mocked_environment_cache = mocker.patch("src.main.environment_service.cache")
     mocked_environment_cache.get_environment.return_value = environment_1
@@ -46,7 +50,9 @@ def test_get_flags(mocker: MockerFixture, environment_1_feature_states_response_
     mocked_environment_cache.get_environment.assert_called_with(environment_key)
 
 
-def test_get_flags_single_feature(mocker: MockerFixture, environment_1_feature_states_response_list: list[dict]) -> None:
+def test_get_flags_single_feature(
+    mocker: MockerFixture, environment_1_feature_states_response_list: list[dict]
+) -> None:
     environment_key = "test_environment_key"
     mocked_environment_cache = mocker.patch("src.main.environment_service.cache")
     mocked_environment_cache.get_environment.return_value = environment_1

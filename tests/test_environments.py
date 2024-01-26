@@ -11,8 +11,12 @@ from pytest_mock import MockerFixture
 from src.environments import EnvironmentService
 from src.exceptions import FlagsmithUnknownKeyError
 from src.models import IdentityWithTraits
-from src.settings import Settings, EndpointCachesSettings, EndpointCacheSettings
-from tests.fixtures.response_data import environment_1_api_key, environment_1
+from src.settings import (
+    EndpointCacheSettings,
+    EndpointCachesSettings,
+    Settings,
+)
+from tests.fixtures.response_data import environment_1, environment_1_api_key
 
 client_key_2 = "test_env_key_2"
 
@@ -66,7 +70,9 @@ async def test_refresh_makes_correct_http_call(mocker: MockerFixture):
 
 
 @pytest.mark.asyncio
-async def test_refresh_does_not_update_last_updated_at_if_any_request_fails(mocker: MockerFixture):
+async def test_refresh_does_not_update_last_updated_at_if_any_request_fails(
+    mocker: MockerFixture,
+):
     # Given
     mock_client = mocker.AsyncMock()
     mock_client.get.side_effect = [
@@ -91,7 +97,7 @@ async def test_get_environment_works_correctly(mocker: MockerFixture):
 
     mock_client.get.side_effect = [
         mocker.MagicMock(text=orjson.dumps(doc_1), raise_for_status=lambda: None),
-        mocker.MagicMock(text=orjson.dumps(doc_2), raise_for_status=lambda: None)
+        mocker.MagicMock(text=orjson.dumps(doc_2), raise_for_status=lambda: None),
     ]
 
     environment_service = EnvironmentService(settings=settings, client=mock_client)
@@ -101,18 +107,26 @@ async def test_get_environment_works_correctly(mocker: MockerFixture):
 
     # Next, test that get environment return correct document
     assert (
-            environment_service.get_environment(settings.environment_key_pairs[0].client_side_key)
-            == doc_1
+        environment_service.get_environment(
+            settings.environment_key_pairs[0].client_side_key
+        )
+        == doc_1
     )
     assert (
-            environment_service.get_environment(settings.environment_key_pairs[1].client_side_key)
-            == doc_2
+        environment_service.get_environment(
+            settings.environment_key_pairs[1].client_side_key
+        )
+        == doc_2
     )
     assert mock_client.get.call_count == 2
 
     # Next, let's verify that any additional call to get_environment does not call fetch document
-    environment_service.get_environment(settings.environment_key_pairs[0].client_side_key)
-    environment_service.get_environment(settings.environment_key_pairs[1].client_side_key)
+    environment_service.get_environment(
+        settings.environment_key_pairs[0].client_side_key
+    )
+    environment_service.get_environment(
+        settings.environment_key_pairs[1].client_side_key
+    )
     assert mock_client.get.call_count == 2
 
 
@@ -123,7 +137,9 @@ def test_get_environment_raises_for_unknown_keys():
 
 
 @pytest.mark.asyncio
-async def test_refresh_environment_caches_clears_endpoint_caches_if_environment_changes(mocker: MockerFixture) -> None:
+async def test_refresh_environment_caches_clears_endpoint_caches_if_environment_changes(
+    mocker: MockerFixture,
+) -> None:
     # Given
     # we create a new settings object which includes caching settings
     _settings = Settings(
@@ -133,7 +149,7 @@ async def test_refresh_environment_caches_clears_endpoint_caches_if_environment_
         endpoint_caches=EndpointCachesSettings(
             flags=EndpointCacheSettings(use_cache=True),
             identities=EndpointCacheSettings(use_cache=True),
-        )
+        ),
     )
 
     # let's create a modified environment document
@@ -152,7 +168,7 @@ async def test_refresh_environment_caches_clears_endpoint_caches_if_environment_
         ),
         mocker.MagicMock(
             text=orjson.dumps(modified_document), raise_for_status=lambda: None
-        )
+        ),
     ]
 
     # Now let's create the environment service, refresh the environment caches and
@@ -178,7 +194,9 @@ async def test_refresh_environment_caches_clears_endpoint_caches_if_environment_
 
 
 @pytest.mark.asyncio
-async def test_get_identity_flags_response_skips_cache_for_different_identity(mocker: MockerFixture) -> None:
+async def test_get_identity_flags_response_skips_cache_for_different_identity(
+    mocker: MockerFixture,
+) -> None:
     # Given
     # we create a new settings object which includes caching settings
     _settings = Settings(
@@ -187,7 +205,7 @@ async def test_get_identity_flags_response_skips_cache_for_different_identity(mo
         ],
         endpoint_caches=EndpointCachesSettings(
             identities=EndpointCacheSettings(use_cache=True),
-        )
+        ),
     )
 
     mocked_client = mocker.AsyncMock()
@@ -200,8 +218,12 @@ async def test_get_identity_flags_response_skips_cache_for_different_identity(mo
 
     # When
     # We retrieve the flags for 2 separate identities
-    environment_service.get_identity_response_data(IdentityWithTraits(identifier="foo"), environment_1_api_key)
-    environment_service.get_identity_response_data(IdentityWithTraits(identifier="bar"), environment_1_api_key)
+    environment_service.get_identity_response_data(
+        IdentityWithTraits(identifier="foo"), environment_1_api_key
+    )
+    environment_service.get_identity_response_data(
+        IdentityWithTraits(identifier="bar"), environment_1_api_key
+    )
 
     # Then
     # we get 2 cache misses

@@ -22,7 +22,7 @@ settings = Settings()
 environment_service = EnvironmentService(
     LocalMemEnvironmentsCache(),
     httpx.AsyncClient(timeout=settings.api_poll_timeout),
-    settings
+    settings,
 )
 
 

@@ -20,6 +20,7 @@ class BaseEnvironmentsCache(ABC):
         Returns a boolean confirming if the cache was updated or not (i.e. if the environment document
         was different from the one already in the cache).
         """
+        # TODO: can we use the environment header here instead of comparing the document?
         if environment_document != self.get_environment(environment_api_key):
             self._put_environment(environment_api_key, environment_document)
             return True

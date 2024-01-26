@@ -9,8 +9,6 @@ anyio==3.7.1
     #   fastapi
     #   httpcore
     #   starlette
-async-timeout==4.0.3
-    # via redis
 asyncio==3.4.3
     # via -r requirements.in
 certifi==2023.7.22
@@ -19,8 +17,6 @@ certifi==2023.7.22
     #   httpx
 click==8.1.7
     # via uvicorn
-exceptiongroup==1.2.0
-    # via anyio
 fastapi==0.103.2
     # via -r requirements.in
 flagsmith-flag-engine==4.1.0
@@ -75,6 +71,5 @@ typing-extensions==4.9.0
     #   fastapi
     #   pydantic
     #   pydantic-collections
-    #   uvicorn
 uvicorn==0.23.2
     # via -r requirements.in

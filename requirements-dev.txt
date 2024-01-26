@@ -22,8 +22,6 @@ dill==0.3.7
     # via pylint
 distlib==0.3.7
     # via virtualenv
-exceptiongroup==1.2.0
-    # via pytest
 filelock==3.12.4
     # via virtualenv
 flake8==6.1.0
@@ -93,18 +91,8 @@ reorder-python-imports==3.11.0
     # via -r requirements-dev.in
 six==1.16.0
     # via python-dateutil
-tomli==2.0.1
-    # via
-    #   autopep8
-    #   black
-    #   pylint
-    #   pytest
 tomlkit==0.12.1
     # via pylint
-typing-extensions==4.9.0
-    # via
-    #   astroid
-    #   black
 virtualenv==20.24.5
     # via pre-commit
 wrapt==1.15.0

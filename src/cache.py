@@ -1,47 +1,57 @@
 import logging
-from datetime import datetime
-
-import httpx
-import orjson
-
-from .exceptions import FlagsmithUnknownKeyError
-from .settings import Settings
+import typing
+from abc import ABC
 
 logger = logging.getLogger(__name__)
 
 
-class CacheService:
-    def __init__(self, settings: Settings):
-        self.settings = settings
+class BaseEnvironmentsCache(ABC):
+    def __init__(self, *args, **kwargs):
         self.last_updated_at = None
+
+    def put_environment(
+        self,
+        environment_api_key: str,
+        environment_document: typing.Dict[str, typing.Any],
+    ) -> bool:
+        """
+        Update the environment cache for the given key with the given environment document.
+
+        Returns a boolean confirming if the cache was updated or not (i.e. if the environment document
+        was different from the one already in the cache).
+        """
+        # TODO: can we use the environment header here instead of comparing the document?
+        if environment_document != self.get_environment(environment_api_key):
+            self._put_environment(environment_api_key, environment_document)
+            return True
+        return False
+
+    def _put_environment(
+        self,
+        environment_api_key: str,
+        environment_document: typing.Dict[str, typing.Any],
+    ) -> None:
+        raise NotImplementedError()
+
+    def get_environment(
+        self, environment_api_key: str
+    ) -> typing.Dict[str, typing.Any] | None:
+        raise NotImplementedError()
+
+
+class LocalMemEnvironmentsCache(BaseEnvironmentsCache):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._cache = {}
-        self._client = httpx.AsyncClient(timeout=settings.api_poll_timeout)
 
-    async def fetch_document(self, server_side_key):
-        response = await self._client.get(
-            url=f"{self.settings.api_url}/environment-document/",
-            headers={"X-Environment-Key": server_side_key},
-        )
-        response.raise_for_status()
-        return orjson.loads(response.text)
+    def _put_environment(
+        self,
+        environment_api_key: str,
+        environment_document: typing.Dict[str, typing.Any],
+    ) -> None:
+        self._cache[environment_api_key] = environment_document
 
-    async def refresh(self):
-        received_error = False
-        for key_pair in self.settings.environment_key_pairs:
-            try:
-                self._cache[key_pair.client_side_key] = await self.fetch_document(
-                    key_pair.server_side_key
-                )
-            except (httpx.HTTPError, orjson.JSONDecodeError):
-                received_error = True
-                logger.exception(
-                    f"Failed to fetch document for {key_pair.client_side_key}"
-                )
-        if not received_error:
-            self.last_updated_at = datetime.now()
-
-    def get_environment(self, client_side_key):
-        try:
-            return self._cache[client_side_key]
-        except KeyError:
-            raise FlagsmithUnknownKeyError(client_side_key)
+    def get_environment(
+        self, environment_api_key
+    ) -> typing.Dict[str, typing.Any] | None:
+        return self._cache.get(environment_api_key)

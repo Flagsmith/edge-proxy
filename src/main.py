@@ -15,7 +15,6 @@ from .environments import EnvironmentService
 from .exceptions import FlagsmithUnknownKeyError
 from .models import IdentityWithTraits
 from .settings import Settings
-from .sse import router as sse_router
 
 app = FastAPI()
 settings = Settings()
@@ -80,4 +79,3 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(GZipMiddleware, minimum_size=1000)
-app.include_router(sse_router)

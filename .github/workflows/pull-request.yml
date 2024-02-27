@@ -3,7 +3,7 @@ name: Pull Request
 on:
     push:
         branches:
-            - main #todo - remove
+            - main
     pull_request:
         types: [opened, synchronize, reopened, ready_for_review]
 
@@ -16,11 +16,6 @@ jobs:
             FLAGSMITH_API_URL: https://api.flagsmith.com/api/v1
             FLAGSMITH_API_TOKEN: test_token
             ENVIRONMENT_API_KEYS: placeholder_key1
-
-        services:
-          redis:
-            image: redis:7.0.7
-            ports: ["6379:6379"]
 
         strategy:
             max-parallel: 4

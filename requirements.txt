@@ -9,8 +9,6 @@ anyio==3.7.1
     #   fastapi
     #   httpcore
     #   starlette
-asyncio==3.4.3
-    # via -r requirements.in
 certifi==2023.7.22
     # via
     #   httpcore
@@ -51,8 +49,6 @@ python-decouple==3.8
     # via -r requirements.in
 python-dotenv==1.0.0
     # via -r requirements.in
-redis==5.0.1
-    # via -r requirements.in
 semver==2.13.0
     # via flagsmith-flag-engine
 sniffio==1.3.0
@@ -60,13 +56,9 @@ sniffio==1.3.0
     #   anyio
     #   httpcore
     #   httpx
-sse-starlette==1.6.5
-    # via -r requirements.in
 starlette==0.27.0
-    # via
-    #   fastapi
-    #   sse-starlette
-typing-extensions==4.9.0
+    # via fastapi
+typing-extensions==4.8.0
     # via
     #   fastapi
     #   pydantic

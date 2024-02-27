@@ -4,7 +4,6 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.main import app
-from src.sse import redis_connection
 
 
 @pytest.fixture
@@ -41,12 +40,3 @@ def environment_1_feature_states_response_list_response_with_segment_override(
 def client():
     with TestClient(app) as c:
         yield c
-
-
-@pytest.fixture(autouse=True)
-def clear_redis():
-    redis_connection.flushall()
-
-    yield
-
-    redis_connection.flushall()

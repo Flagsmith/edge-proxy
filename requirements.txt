@@ -35,7 +35,7 @@ idna==3.4
     #   httpx
 marshmallow==3.20.1
     # via -r requirements.in
-orjson==3.9.7
+orjson==3.9.15
     # via -r requirements.in
 packaging==23.1
     # via marshmallow

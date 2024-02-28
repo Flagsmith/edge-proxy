@@ -12,7 +12,7 @@ from fastapi_utils.tasks import repeat_every
 
 from .cache import LocalMemEnvironmentsCache
 from .environments import EnvironmentService
-from .exceptions import FlagsmithUnknownKeyError
+from .exceptions import FlagsmithUnknownKeyError, FeatureNotFoundError
 from .models import IdentityWithTraits
 from .settings import Settings
 
@@ -50,7 +50,18 @@ async def health_check():
 
 @app.get("/api/v1/flags/", response_class=ORJSONResponse)
 async def flags(feature: str = None, x_environment_key: str = Header(None)):
-    return environment_service.get_flags_response_data(x_environment_key, feature)
+    try:
+        data = environment_service.get_flags_response_data(x_environment_key, feature)
+    except FeatureNotFoundError:
+        return ORJSONResponse(
+            status_code=404,
+            content={
+                "status": "not_found",
+                "message": f"feature '{feature}' not found",
+            },
+        )
+    
+    return ORJSONResponse(data)
 
 
 @app.post("/api/v1/identities/", response_class=ORJSONResponse)
@@ -58,7 +69,8 @@ async def identity(
     input_data: IdentityWithTraits,
     x_environment_key: str = Header(None),
 ):
-    return environment_service.get_identity_response_data(input_data, x_environment_key)
+    data = environment_service.get_identity_response_data(input_data, x_environment_key)
+    return ORJSONResponse(data)
 
 
 @app.on_event("startup")

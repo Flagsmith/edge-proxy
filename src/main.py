@@ -12,7 +12,7 @@ from fastapi_utils.tasks import repeat_every
 
 from .cache import LocalMemEnvironmentsCache
 from .environments import EnvironmentService
-from .exceptions import FlagsmithUnknownKeyError, FeatureNotFoundError
+from .exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
 from .models import IdentityWithTraits
 from .settings import Settings
 
@@ -60,7 +60,7 @@ async def flags(feature: str = None, x_environment_key: str = Header(None)):
                 "message": f"feature '{feature}' not found",
             },
         )
-    
+
     return ORJSONResponse(data)
 
 

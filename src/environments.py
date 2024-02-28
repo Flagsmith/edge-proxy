@@ -4,7 +4,6 @@ from datetime import datetime
 from functools import lru_cache
 
 import httpx
-from fastapi.responses import ORJSONResponse
 from flag_engine.engine import (
     get_environment_feature_state,
     get_environment_feature_states,
@@ -15,7 +14,7 @@ from flag_engine.identities.models import IdentityModel
 from orjson import orjson
 
 from src.cache import BaseEnvironmentsCache, LocalMemEnvironmentsCache
-from src.exceptions import FlagsmithUnknownKeyError, FeatureNotFoundError
+from src.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
 from src.feature_utils import filter_out_server_key_only_feature_states
 from src.mappers import (
     map_feature_state_to_response_data,

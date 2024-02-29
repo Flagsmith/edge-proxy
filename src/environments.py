@@ -4,7 +4,6 @@ from datetime import datetime
 from functools import lru_cache
 
 import httpx
-from fastapi.responses import ORJSONResponse
 from flag_engine.engine import (
     get_environment_feature_state,
     get_environment_feature_states,
@@ -15,7 +14,7 @@ from flag_engine.identities.models import IdentityModel
 from orjson import orjson
 
 from src.cache import BaseEnvironmentsCache, LocalMemEnvironmentsCache
-from src.exceptions import FlagsmithUnknownKeyError
+from src.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
 from src.feature_utils import filter_out_server_key_only_feature_states
 from src.mappers import (
     map_feature_state_to_response_data,
@@ -73,7 +72,7 @@ class EnvironmentService:
 
     def get_flags_response_data(
         self, environment_key: str, feature: str = None
-    ) -> ORJSONResponse:
+    ) -> dict[str, typing.Any]:
         environment_document = self.get_environment(environment_key)
         environment = build_environment_model(environment_document)
 
@@ -84,13 +83,7 @@ class EnvironmentService:
                 feature_states=[feature_state],
                 environment=environment,
             ):
-                return ORJSONResponse(
-                    status_code=404,
-                    content={
-                        "status": "not_found",
-                        "message": f"feature '{feature}' not found",
-                    },
-                )
+                raise FeatureNotFoundError()
 
             data = map_feature_state_to_response_data(feature_state)
 
@@ -101,11 +94,11 @@ class EnvironmentService:
             )
             data = map_feature_states_to_response_data(feature_states)
 
-        return ORJSONResponse(data)
+        return data
 
     def get_identity_response_data(
         self, input_data: IdentityWithTraits, environment_key: str
-    ) -> ORJSONResponse:
+    ) -> dict[str, typing.Any]:
         environment_document = self.get_environment(environment_key)
         environment = build_environment_model(environment_document)
         identity = IdentityModel(
@@ -127,7 +120,7 @@ class EnvironmentService:
                 identity_hash_key=identity.composite_key,
             ),
         }
-        return ORJSONResponse(data)
+        return data
 
     def get_environment(self, client_side_key: str) -> dict[str, typing.Any]:
         if environment_document := self.cache.get_environment(client_side_key):

@@ -51,9 +51,9 @@ class EndpointCachesSettings(BaseModel):
 
 
 class LoggingSettings(BaseModel):
-    enable_access_log: bool = True
+    enable_access_log: bool = False
     log_format: LogFormat = LogFormat.GENERIC
-    log_level: LogLevel = LogLevel.NOTSET
+    log_level: LogLevel = LogLevel.INFO
     log_event_field_name: str = "message"
 
 

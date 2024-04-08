@@ -19,6 +19,6 @@ jobs:
 
             - name: Set up Rye
               uses: sksat/setup-rye@v0.20.0
-          
+
             - name: Run Tests
-              run: rye test
+              run: rye sync && rye test

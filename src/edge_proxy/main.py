@@ -10,12 +10,12 @@ from fastapi.responses import ORJSONResponse
 
 from fastapi_utils.tasks import repeat_every
 
-from .cache import LocalMemEnvironmentsCache
-from .environments import EnvironmentService
-from .exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
-from .logging import setup_logging
-from .models import IdentityWithTraits
-from .settings import Settings
+from edge_proxy.cache import LocalMemEnvironmentsCache
+from edge_proxy.environments import EnvironmentService
+from edge_proxy.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
+from edge_proxy.logging import setup_logging
+from edge_proxy.models import IdentityWithTraits
+from edge_proxy.settings import Settings
 
 settings = Settings()
 setup_logging(settings.logging)

@@ -8,10 +8,10 @@ from freezegun import freeze_time
 from orjson import orjson
 from pytest_mock import MockerFixture
 
-from src.environments import EnvironmentService
-from src.exceptions import FlagsmithUnknownKeyError
-from src.models import IdentityWithTraits
-from src.settings import (
+from edge_proxy.environments import EnvironmentService
+from edge_proxy.exceptions import FlagsmithUnknownKeyError
+from edge_proxy.models import IdentityWithTraits
+from edge_proxy.settings import (
     EndpointCacheSettings,
     EndpointCachesSettings,
     Settings,

@@ -4,7 +4,7 @@ import pytest
 from flag_engine.features.models import FeatureStateModel
 from flag_engine.identities.traits.models import TraitModel
 
-from src.mappers import (
+from edge_proxy.mappers import (
     map_feature_state_to_response_data,
     map_feature_states_to_response_data,
     map_traits_to_response_data,

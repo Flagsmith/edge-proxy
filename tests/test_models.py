@@ -1,4 +1,4 @@
-from src.models import IdentityWithTraits
+from edge_proxy.models import IdentityWithTraits
 
 
 def test_identity_with_traits_str():

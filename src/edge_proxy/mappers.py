@@ -3,7 +3,7 @@ from typing import Any, Optional
 from flag_engine.features.models import FeatureStateModel
 from flag_engine.identities.traits.models import TraitModel
 
-from src.schemas import APIFeatureStateSchema
+from edge_proxy.schemas import APIFeatureStateSchema
 
 _api_feature_state_schema = APIFeatureStateSchema()
 

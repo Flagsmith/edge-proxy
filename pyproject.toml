@@ -1,10 +1,34 @@
-# NOTE: you have to use single-quoted strings in TOML for regular expressions.
-# It's the equivalent of r-strings in Python.  Multiline strings are treated as
-# verbose regular expressions by Black.  Use [ ] to denote a significant space
-# character.
+[project]
+dynamic = ["version"]
+name = "edge-proxy"
+dependencies = [
+  "fastapi",
+  "flagsmith-flag-engine>4,<5",
+  "httpx",
+  "marshmallow",
+  "orjson",
+  "pydantic<2",
+  "python-decouple",
+  "python-dotenv",
+  "structlog",
+  "uvicorn",
+]
+requires-python = ">= 3.12"
+
+[tool.rye]
+managed = true
+virtual = true
+dev-dependencies = [
+  "pre-commit",
+  "pytest",
+  "pytest-asyncio",
+  "pytest-mock",
+  "reorder-python-imports",
+  "certifi",
+  "pytest-freezegun",
+]
 
 [tool.ruff]
-target-version = 'py312'
 line-length = 88
 
 [tool.ruff.lint.isort]
@@ -12,3 +36,6 @@ known-first-party = ['fastapi_utils']
 
 [tool.ruff.lint.mccabe]
 max-complexity = 10
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

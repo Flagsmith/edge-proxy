@@ -7,10 +7,10 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-COPY requirements.lock /app/
+COPY requirements.lock config.json /app/
 RUN pip install --no-cache-dir --upgrade -r requirements.lock
 
-COPY . /app/
+COPY ./src /app/
 
 EXPOSE 8000
 

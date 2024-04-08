@@ -39,5 +39,4 @@ max-complexity = 10
 
 [tool.pytest.ini_options]
 addopts = ['-vvvv']
-
 pythonpath = ["src"]

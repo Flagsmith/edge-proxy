@@ -20,8 +20,8 @@ jobs:
             - name: Set up Rye
               uses: sksat/setup-rye@v0.20.0
 
-            - name: Sync dependencies 
-              run: rye sync
+            - name: Install dependencies 
+              run: rye sync --no-lock
 
             - name: Run Tests
-              run: rye sync && rye test
+              run: rye test

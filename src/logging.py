@@ -11,6 +11,10 @@ def _extract_gunicorn_access_log_event(
     name: str,
     event_dict: structlog.types.EventDict,
 ) -> structlog.types.EventDict:
+    # Extract logger args from Gunicorn access log entry
+    # and map them to Flagsmith's JSON log format.
+    # Argument positions taken from
+    # https://github.com/encode/uvicorn/blob/a2219eb2ed2bbda4143a0fb18c4b0578881b1ae8/uvicorn/logging.py#L99-L105
     if event_dict.get("logger") == "uvicorn.access":
         remote_ip, method, path, _, status = event_dict["positional_args"]
         event_dict["remote_ip"] = remote_ip

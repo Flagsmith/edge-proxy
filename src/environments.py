@@ -1,9 +1,9 @@
-import logging
 import typing
 from datetime import datetime
 from functools import lru_cache
 
 import httpx
+import structlog
 from flag_engine.engine import (
     get_environment_feature_state,
     get_environment_feature_states,
@@ -24,7 +24,7 @@ from src.mappers import (
 from src.models import IdentityWithTraits
 from src.settings import Settings
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class EnvironmentService:
@@ -64,7 +64,7 @@ class EnvironmentService:
                     await self._clear_endpoint_caches()
             except (httpx.HTTPError, orjson.JSONDecodeError):
                 logger.exception(
-                    f"Failed to fetch document for {key_pair.client_side_key}"
+                    "error_fetching_document", client_side_key=key_pair.client_side_key
                 )
                 received_error = True
         if not received_error:

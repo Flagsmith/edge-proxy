@@ -1,8 +1,5 @@
-import logging
 import typing
 from abc import ABC
-
-logger = logging.getLogger(__name__)
 
 
 class BaseEnvironmentsCache(ABC):

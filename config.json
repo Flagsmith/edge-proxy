@@ -14,5 +14,10 @@
     "identities": {
       "use_cache": false
     }
+  },
+  "logging": {
+    "log_level": "INFO",
+    "log_format": "generic",
+    "enable_access_log": false
   }
 }

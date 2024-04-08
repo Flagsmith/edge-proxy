@@ -1,9 +1,28 @@
 import json
+import logging
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 from pydantic import BaseModel, BaseSettings, HttpUrl
 from pydantic.env_settings import SettingsSourceCallable
+
+
+class LogFormat(Enum):
+    GENERIC = "generic"
+    JSON = "json"
+
+
+class LogLevel(Enum):
+    CRITICAL = "CRITICAL"
+    ERROR = "ERROR"
+    WARNING = "WARNING"
+    INFO = "INFO"
+    DEBUG = "DEBUG"
+    NOTSET = "NOTSET"
+
+    def to_logging_log_level(self) -> int:
+        return getattr(logging, self.value)
 
 
 def json_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
@@ -31,6 +50,13 @@ class EndpointCachesSettings(BaseModel):
     identities: EndpointCacheSettings = EndpointCacheSettings(use_cache=False)
 
 
+class LoggingSettings(BaseModel):
+    enable_access_log: bool = True
+    log_format: LogFormat = LogFormat.GENERIC
+    log_level: LogLevel = LogLevel.NOTSET
+    log_event_field_name: str = "message"
+
+
 class Settings(BaseSettings):
     environment_key_pairs: List[EnvironmentKeyPair]
     api_url: HttpUrl = "https://edge.api.flagsmith.com/api/v1"
@@ -38,6 +64,7 @@ class Settings(BaseSettings):
     api_poll_timeout: int = 5  # seconds
     endpoint_caches: EndpointCachesSettings | None = None
     allow_origins: List[str] = ["*"]
+    logging: LoggingSettings = LoggingSettings()
 
     class Config:
         @classmethod

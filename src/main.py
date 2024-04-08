@@ -1,8 +1,8 @@
-import logging
 from contextlib import suppress
 from datetime import datetime
 
 import httpx
+import structlog
 from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -13,16 +13,18 @@ from fastapi_utils.tasks import repeat_every
 from .cache import LocalMemEnvironmentsCache
 from .environments import EnvironmentService
 from .exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
+from .logging import setup_logging
 from .models import IdentityWithTraits
 from .settings import Settings
 
-app = FastAPI()
 settings = Settings()
+setup_logging(settings.logging)
 environment_service = EnvironmentService(
     LocalMemEnvironmentsCache(),
     httpx.AsyncClient(timeout=settings.api_poll_timeout),
     settings,
 )
+app = FastAPI()
 
 
 @app.exception_handler(FlagsmithUnknownKeyError)
@@ -77,7 +79,7 @@ async def identity(
 @repeat_every(
     seconds=settings.api_poll_frequency,
     raise_exceptions=True,
-    logger=logging.getLogger(__name__),
+    logger=structlog.get_logger(__name__),
 )
 async def refresh_cache():
     await environment_service.refresh_environment_caches()

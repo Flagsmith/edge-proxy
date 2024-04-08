@@ -1,18 +1,6 @@
 repos:
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.5
     hooks:
-      - id: isort
-        name: isort (python)
-  - repo: https://github.com/psf/black
-    rev: 22.6.0
-    hooks:
-      - id: black
-        language_version: python3
-        exclude: migrations
-  - repo: https://github.com/pycqa/flake8
-    rev: '4.0.1'
-    hooks:
-      - id: flake8
-        name: flake8
-        entry: bash -c 'git diff --staged -- "$@" | flake8 --diff' --
+      - id: ruff
+      - id: ruff-format

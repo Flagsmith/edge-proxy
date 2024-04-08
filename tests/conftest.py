@@ -30,9 +30,9 @@ def environment_1_feature_states_response_list() -> typing.List[dict]:
 def environment_1_feature_states_response_list_response_with_segment_override(
     environment_1_feature_states_response_list,
 ):
-    environment_1_feature_states_response_list[1][
-        "feature_state_value"
-    ] = "segment_override"
+    environment_1_feature_states_response_list[1]["feature_state_value"] = (
+        "segment_override"
+    )
     return environment_1_feature_states_response_list
 
 

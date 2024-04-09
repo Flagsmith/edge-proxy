@@ -22,5 +22,8 @@ jobs:
               with:
                 enable-cache: true
 
+            - name: Install Dependencies
+              run: rye sync --no-lock
+
             - name: Run Tests
               run: rye test

@@ -17,7 +17,6 @@ requires-python = ">= 3.12"
 
 [tool.rye]
 managed = true
-virtual = true
 dev-dependencies = [
   "pre-commit",
   "pytest",
@@ -39,4 +38,3 @@ max-complexity = 10
 
 [tool.pytest.ini_options]
 addopts = ['-vvvv']
-pythonpath = ["src"]

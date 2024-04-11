@@ -15,3 +15,4 @@ checkstyle.txt
 .idea
 *.iml
 __pycache__
+*.egg-info

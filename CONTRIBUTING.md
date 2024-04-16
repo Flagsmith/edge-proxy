@@ -4,7 +4,7 @@ https://docs.flagsmith.com/advanced-use/edge-proxy
 
 ## Configuration
 
-Edge proxy can be configured using the `config.json` file located at the root.
+Edge proxy can be configured using the `config.json` file located at the root or at a location defined by the `CONFIG_PATH` environment variable.
 
 ### Supported configuration
 
@@ -22,6 +22,8 @@ of edge-proxy
 
 ### Here are some examples of adding local `config.json` to edge-proxy:
 
+#### Default location
+
 - With docker run:
   `docker run -v /<path-to-local>/config.json:/app/config.json flagsmith/edge-proxy:latest`
 
@@ -36,6 +38,26 @@ services:
       - type: bind
         source: /<path-to-local>/config.json
         target: /app/config.json
+```
+
+#### Location defined by environment variable
+
+- With docker run:
+  `docker run -e CONFIG_PATH='/tmp/config.json' -v /<path-to-local>/config.json:/tmp/config.json flagsmith/edge-proxy:latest`
+
+- With docker compose:
+
+```yaml
+version: "3.9"
+services:
+  edge_proxy:
+    image: flagsmith/edge-proxy:latest
+    volumes:
+      - type: bind
+        source: /<path-to-local>/config.json
+        target: /tmp/config.json
+    environment:
+      - CONFIG_PATH='/tmp/config.json'
 ```
 
 ## Load Testing

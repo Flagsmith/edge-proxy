@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
@@ -31,7 +32,7 @@ def json_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
     at the project's root.
     """
     encoding = "utf-8"
-    env_file = "config.json"
+    env_file = os.environ.get("CONFIG_PATH", "config.json")
     return json.loads(Path(env_file).read_text(encoding))
 
 

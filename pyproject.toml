@@ -17,7 +17,7 @@ requires-python = ">= 3.12"
 
 [project.scripts]
 edge-proxy-serve = 'edge_proxy.main:serve'
-edge-proxy-config = 'edge_proxy.main:config'
+edge-proxy-render-config = 'edge_proxy.main:render_config'
 
 [tool.rye]
 managed = true

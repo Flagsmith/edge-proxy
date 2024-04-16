@@ -15,6 +15,10 @@ dependencies = [
 ]
 requires-python = ">= 3.12"
 
+[project.scripts]
+edge-proxy-serve = 'edge_proxy.main:serve'
+edge-proxy-config = 'edge_proxy.main:config'
+
 [tool.rye]
 managed = true
 dev-dependencies = [

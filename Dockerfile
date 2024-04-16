@@ -7,13 +7,12 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-COPY requirements.lock config.json /app/
-RUN pip install --no-cache-dir --upgrade -r requirements.lock
-
-COPY ./src /app/
+COPY src /app/src
+COPY requirements.lock pyproject.toml /app/
+RUN pip install --no-cache-dir -r requirements.lock && edge-proxy-config
 
 EXPOSE 8000
 
 USER nobody
 
-CMD ["uvicorn", "edge_proxy.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["edge-proxy-serve"]

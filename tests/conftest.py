@@ -3,7 +3,7 @@ import typing
 import pytest
 from fastapi.testclient import TestClient
 
-from edge_proxy.main import app
+from edge_proxy.server import app
 
 
 @pytest.fixture

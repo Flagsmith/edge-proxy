@@ -16,3 +16,4 @@ checkstyle.txt
 *.iml
 __pycache__
 *.egg-info
+config.json

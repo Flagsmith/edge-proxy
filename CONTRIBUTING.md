@@ -2,6 +2,52 @@
 
 https://docs.flagsmith.com/advanced-use/edge-proxy
 
+## Local development
+
+### Prerequisites
+
+- `Python3`
+- `Docker`
+
+### Setup local environment and pre-commit hooks
+
+1. Setup virtual environment (Optional, but recommended)
+```shell
+# Create a virtual environment (first time)
+python3 -m venv venv
+# Activate the virtual environment
+source ./venv/bin/activate
+
+# Deactivate virtual environment when done
+deactivate
+```
+2. Install dependencies
+```shell
+# Install python requirements
+pip install -r requirements.txt -r requirements-dev.txt
+```
+3. Install pre-commit hooks
+```shell
+# Confirm pre-commit is installed
+pre-commit --version
+
+# Install pre-commit hooks
+pre-commit install
+```
+
+### Build and run Docker image locally
+
+```shell
+# Build image
+docker build . -t edge-proxy-local
+
+# Run image 
+docker run -it --rm \
+  -v <path-to-config>/config.json:/app/config.json \
+  -p 8000:8000 \
+  edge-proxy-local:latest
+```
+
 ## Configuration
 
 Edge proxy can be configured using the `config.json` file located at the root or at a location defined by the `CONFIG_PATH` environment variable.

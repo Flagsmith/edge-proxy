@@ -1,9 +1,8 @@
 import typing
 
 import pytest
+from pytest_mock import MockerFixture
 from fastapi.testclient import TestClient
-
-from edge_proxy.server import app
 
 
 @pytest.fixture
@@ -36,7 +35,14 @@ def environment_1_feature_states_response_list_response_with_segment_override(
     return environment_1_feature_states_response_list
 
 
+@pytest.fixture(autouse=True)
+def skip_json_config_settings_source(mocker: MockerFixture) -> None:
+    mocker.patch("edge_proxy.settings.json_config_settings_source", lambda _: {})
+
+
 @pytest.fixture
 def client():
+    from edge_proxy.server import app
+
     with TestClient(app) as c:
         yield c

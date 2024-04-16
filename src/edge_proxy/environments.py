@@ -22,7 +22,7 @@ from edge_proxy.mappers import (
     map_traits_to_response_data,
 )
 from edge_proxy.models import IdentityWithTraits
-from edge_proxy.settings import Settings
+from edge_proxy.settings import AppSettings
 
 logger = structlog.get_logger(__name__)
 
@@ -32,10 +32,10 @@ class EnvironmentService:
         self,
         cache: BaseEnvironmentsCache = None,
         client: httpx.AsyncClient = None,
-        settings: Settings = None,
+        settings: AppSettings = None,
     ):
         self.cache = cache or LocalMemEnvironmentsCache()
-        self.settings = settings or Settings()
+        self.settings = settings or AppSettings()
         self._client = client or httpx.AsyncClient(
             timeout=settings.api_poll_timeout_seconds,
         )

@@ -12,6 +12,15 @@ from pydantic import BaseModel, BaseSettings, HttpUrl, IPvAnyAddress, Field
 from pydantic.env_settings import SettingsSourceCallable
 
 
+CONFIG_PATH = os.environ.get(
+    "CONFIG_PATH",
+    default="config.json",
+)
+
+
+logger = structlog.get_logger()
+
+
 class LogFormat(Enum):
     GENERIC = "generic"
     JSON = "json"
@@ -29,24 +38,18 @@ class LogLevel(Enum):
         return getattr(logging, self.value)
 
 
-def get_config_path() -> str:
-    return os.environ.get("CONFIG_PATH", "config.json")
-
-
 def ensure_defaults() -> None:
-    config_path = get_config_path()
-
-    if not os.path.exists(config_path):
-        defaults = _Settings()
+    if not os.path.exists(CONFIG_PATH):
+        defaults = AppSettings()
         defaults_json = defaults.json(indent=4, exclude_none=True)
         print(defaults_json, file=sys.stdout)
         try:
-            with open(config_path, "w") as fp:
+            with open(CONFIG_PATH, "w") as fp:
                 fp.write(defaults_json)
         except OSError:
-            structlog.get_logger().warning(
+            logger.warning(
                 "error_writing_config_defaults",
-                config_path=config_path,
+                config_path=CONFIG_PATH,
                 exc_info=True,
             )
 
@@ -56,9 +59,8 @@ def json_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
     A simple settings source that loads variables from a JSON file
     at the project's root.
     """
-    config_path = get_config_path()
     encoding = "utf-8"
-    return json.loads(Path(config_path).read_text(encoding))
+    return json.loads(Path(CONFIG_PATH).read_text(encoding))
 
 
 class EnvironmentKeyPair(BaseModel):
@@ -89,7 +91,7 @@ class ServerSettings(BaseModel):
     reload: bool = False
 
 
-class _Settings(BaseModel):
+class AppSettings(BaseModel):
     environment_key_pairs: List[EnvironmentKeyPair] = [
         EnvironmentKeyPair(
             server_side_key="ser.environment_key",
@@ -111,7 +113,7 @@ class _Settings(BaseModel):
     server: ServerSettings = ServerSettings()
 
 
-class Settings(_Settings, BaseSettings):
+class AppConfig(AppSettings, BaseSettings):
     class Config:
         @classmethod
         def customise_sources(
@@ -123,5 +125,5 @@ class Settings(_Settings, BaseSettings):
             return init_settings, env_settings, json_config_settings_source
 
 
-def get_settings() -> Settings:
-    return Settings()
+def get_settings() -> AppConfig:
+    return AppConfig()

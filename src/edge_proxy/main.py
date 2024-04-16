@@ -13,5 +13,5 @@ def serve():
     )
 
 
-def config():
+def render_config():
     ensure_defaults()

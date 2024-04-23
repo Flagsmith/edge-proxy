@@ -57,10 +57,10 @@ See complete configuration [reference](https://docs.flagsmith.com/deployment/hos
 
 Edge Proxy expects to load configuration from `./config.json`.
 
-Create an example configuration by running the `edge-proxy-config` entrypoint:
+Create an example configuration by running the `edge-proxy-render-config` entrypoint:
 
 ```sh
-rye run edge-proxy-config
+rye run edge-proxy-render-config
 ```
 
 This will output the example configuration to stdout and write it to `./config.json`.
@@ -76,7 +76,7 @@ You can specify custom path to `config.json`, e.g.:
 ```sh
 export CONFIG_PATH=/<path-to-config>/config.json
 
-edge-proxy-config            # Will write an example configuration to custom path.
+edge-proxy-render-config            # Will write an example configuration to custom path.
 edge-proxy-serve             # Will read configuration from custom path.
 ```
 

@@ -13,16 +13,16 @@ from flag_engine.environments.builders import build_environment_model
 from flag_engine.identities.models import IdentityModel
 from orjson import orjson
 
-from src.cache import BaseEnvironmentsCache, LocalMemEnvironmentsCache
-from src.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
-from src.feature_utils import filter_out_server_key_only_feature_states
-from src.mappers import (
+from edge_proxy.cache import BaseEnvironmentsCache, LocalMemEnvironmentsCache
+from edge_proxy.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
+from edge_proxy.feature_utils import filter_out_server_key_only_feature_states
+from edge_proxy.mappers import (
     map_feature_state_to_response_data,
     map_feature_states_to_response_data,
     map_traits_to_response_data,
 )
-from src.models import IdentityWithTraits
-from src.settings import Settings
+from edge_proxy.models import IdentityWithTraits
+from edge_proxy.settings import AppSettings
 
 logger = structlog.get_logger(__name__)
 
@@ -32,11 +32,13 @@ class EnvironmentService:
         self,
         cache: BaseEnvironmentsCache = None,
         client: httpx.AsyncClient = None,
-        settings: Settings = None,
+        settings: AppSettings = None,
     ):
         self.cache = cache or LocalMemEnvironmentsCache()
-        self.settings = settings or Settings()
-        self._client = client or httpx.AsyncClient(timeout=settings.api_poll_timeout)
+        self.settings = settings or AppSettings()
+        self._client = client or httpx.AsyncClient(
+            timeout=settings.api_poll_timeout_seconds,
+        )
         self.last_updated_at = None
 
         if settings.endpoint_caches:

@@ -8,19 +8,19 @@ from freezegun import freeze_time
 from orjson import orjson
 from pytest_mock import MockerFixture
 
-from src.environments import EnvironmentService
-from src.exceptions import FlagsmithUnknownKeyError
-from src.models import IdentityWithTraits
-from src.settings import (
+from edge_proxy.environments import EnvironmentService
+from edge_proxy.exceptions import FlagsmithUnknownKeyError
+from edge_proxy.models import IdentityWithTraits
+from edge_proxy.settings import (
     EndpointCacheSettings,
     EndpointCachesSettings,
-    Settings,
+    AppSettings,
 )
 from tests.fixtures.response_data import environment_1, environment_1_api_key
 
 client_key_2 = "test_env_key_2"
 
-settings = Settings(
+settings = AppSettings(
     api_url="http://127.0.0.1:8000/api/v1",
     environment_key_pairs=[
         {"server_side_key": "ser.key1", "client_side_key": environment_1_api_key},
@@ -142,7 +142,7 @@ async def test_refresh_environment_caches_clears_endpoint_caches_if_environment_
 ) -> None:
     # Given
     # we create a new settings object which includes caching settings
-    _settings = Settings(
+    _settings = AppSettings(
         environment_key_pairs=[
             {"client_side_key": environment_1_api_key, "server_side_key": "ser.key"}
         ],
@@ -199,7 +199,7 @@ async def test_get_identity_flags_response_skips_cache_for_different_identity(
 ) -> None:
     # Given
     # we create a new settings object which includes caching settings
-    _settings = Settings(
+    _settings = AppSettings(
         environment_key_pairs=[
             {"client_side_key": environment_1_api_key, "server_side_key": "ser.key"}
         ],

@@ -3,7 +3,7 @@ import logging.handlers
 
 import structlog
 
-from .settings import LogFormat, LoggingSettings
+from edge_proxy.settings import LogFormat, LoggingSettings
 
 
 def _extract_gunicorn_access_log_event(

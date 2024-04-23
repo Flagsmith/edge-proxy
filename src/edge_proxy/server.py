@@ -10,18 +10,18 @@ from fastapi.responses import ORJSONResponse
 
 from fastapi_utils.tasks import repeat_every
 
-from .cache import LocalMemEnvironmentsCache
-from .environments import EnvironmentService
-from .exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
-from .logging import setup_logging
-from .models import IdentityWithTraits
-from .settings import Settings
+from edge_proxy.cache import LocalMemEnvironmentsCache
+from edge_proxy.environments import EnvironmentService
+from edge_proxy.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
+from edge_proxy.logging import setup_logging
+from edge_proxy.models import IdentityWithTraits
+from edge_proxy.settings import get_settings
 
-settings = Settings()
+settings = get_settings()
 setup_logging(settings.logging)
 environment_service = EnvironmentService(
     LocalMemEnvironmentsCache(),
-    httpx.AsyncClient(timeout=settings.api_poll_timeout),
+    httpx.AsyncClient(timeout=settings.api_poll_timeout_seconds),
     settings,
 )
 app = FastAPI()
@@ -44,7 +44,7 @@ async def health_check():
     with suppress(TypeError):
         last_updated = datetime.now() - environment_service.last_updated_at
         buffer = 30 * len(settings.environment_key_pairs)  # 30s per environment
-        if last_updated.total_seconds() <= settings.api_poll_frequency + buffer:
+        if last_updated.total_seconds() <= settings.api_poll_frequency_seconds + buffer:
             return ORJSONResponse(status_code=200, content={"status": "ok"})
 
     return ORJSONResponse(status_code=500, content={"status": "error"})
@@ -77,7 +77,7 @@ async def identity(
 
 @app.on_event("startup")
 @repeat_every(
-    seconds=settings.api_poll_frequency,
+    seconds=settings.api_poll_frequency_seconds,
     raise_exceptions=True,
     logger=structlog.get_logger(__name__),
 )

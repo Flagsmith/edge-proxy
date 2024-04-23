@@ -9,7 +9,8 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY src /app/src
 COPY requirements.lock pyproject.toml /app/
-RUN pip install --no-cache-dir -r requirements.lock && edge-proxy-config
+RUN pip install --no-cache-dir -r requirements.lock
+RUN edge-proxy-render-config
 
 EXPOSE 8000
 

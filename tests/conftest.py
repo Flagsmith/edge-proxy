@@ -68,11 +68,3 @@ def client():
 
     with TestClient(app) as c:
         yield c
-
-
-@pytest.fixture
-def mock_json_config_file(mocker: MockerFixture) -> typing.Callable[[str], None]:
-    def _inner(raw_json: str) -> None:
-        mocker.patch("edge_proxy.settings.Path.read_text", return_value=raw_json)
-
-    return _inner

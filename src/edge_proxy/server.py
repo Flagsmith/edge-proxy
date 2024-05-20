@@ -21,7 +21,7 @@ settings = get_settings()
 setup_logging(settings.logging)
 environment_service = EnvironmentService(
     LocalMemEnvironmentsCache(),
-    httpx.AsyncClient(timeout=settings.api_poll_timeout_seconds),
+    httpx.AsyncClient(timeout=settings.api_poll_timeout),
     settings,
 )
 app = FastAPI()
@@ -44,7 +44,7 @@ async def health_check():
     with suppress(TypeError):
         last_updated = datetime.now() - environment_service.last_updated_at
         buffer = 30 * len(settings.environment_key_pairs)  # 30s per environment
-        if last_updated.total_seconds() <= settings.api_poll_frequency_seconds + buffer:
+        if last_updated.total_seconds() <= settings.api_poll_frequency + buffer:
             return ORJSONResponse(status_code=200, content={"status": "ok"})
 
     return ORJSONResponse(status_code=500, content={"status": "error"})
@@ -77,7 +77,7 @@ async def identity(
 
 @app.on_event("startup")
 @repeat_every(
-    seconds=settings.api_poll_frequency_seconds,
+    seconds=settings.api_poll_frequency,
     raise_exceptions=True,
     logger=structlog.get_logger(__name__),
 )

@@ -8,6 +8,8 @@
 #   with-sources: false
 
 -e file:.
+annotated-types==0.6.0
+    # via pydantic
 anyio==4.3.0
     # via httpx
     # via starlette
@@ -18,7 +20,7 @@ click==8.1.7
     # via uvicorn
 fastapi==0.110.1
     # via edge-proxy
-flagsmith-flag-engine==4.1.0
+flagsmith-flag-engine==5.1.1
     # via edge-proxy
 h11==0.14.0
     # via httpcore
@@ -36,18 +38,24 @@ orjson==3.10.0
     # via edge-proxy
 packaging==24.0
     # via marshmallow
-pydantic==1.10.15
+pydantic==2.7.1
     # via edge-proxy
     # via fastapi
     # via flagsmith-flag-engine
     # via pydantic-collections
+    # via pydantic-settings
 pydantic-collections==0.5.4
     # via flagsmith-flag-engine
+pydantic-core==2.18.2
+    # via pydantic
+pydantic-settings==2.2.1
+    # via edge-proxy
 python-decouple==3.8
     # via edge-proxy
 python-dotenv==1.0.1
     # via edge-proxy
-semver==2.13.0
+    # via pydantic-settings
+semver==3.0.2
     # via flagsmith-flag-engine
 sniffio==1.3.1
     # via anyio
@@ -60,5 +68,6 @@ typing-extensions==4.11.0
     # via fastapi
     # via pydantic
     # via pydantic-collections
+    # via pydantic-core
 uvicorn==0.29.0
     # via edge-proxy

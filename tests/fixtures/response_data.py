@@ -96,6 +96,25 @@ environment_1 = {
         _environment_feature_state_2,
         _environment_feature_state_3,
     ],
+    "identity_overrides": [
+        {
+            "identifier": "overridden-id",
+            "identity_uuid": "0f21cde8-63c5-4e50-baca-87897fa6cd01",
+            "created_date": "2019-08-27T14:53:45.698555Z",
+            "updated_at": "2023-07-14 16:12:00.000000",
+            "environment_api_key": environment_1_api_key,
+            "identity_features": [
+                {
+                    "id": 1,
+                    "feature": {"id": 1, "name": "feature_1", "type": "STANDARD"},
+                    "featurestate_uuid": "1bddb9a5-7e59-42c6-9be9-625fa369749f",
+                    "feature_state_value": "identity_override",
+                    "enabled": True,
+                    "environment": 1,
+                }
+            ],
+        }
+    ],
     "api_key": environment_1_api_key,
     "project": _project_1,
     "id": 1,

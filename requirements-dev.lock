@@ -8,6 +8,8 @@
 #   with-sources: false
 
 -e file:.
+annotated-types==0.6.0
+    # via pydantic
 anyio==4.3.0
     # via httpx
     # via starlette
@@ -26,7 +28,7 @@ fastapi==0.110.1
     # via edge-proxy
 filelock==3.13.3
     # via virtualenv
-flagsmith-flag-engine==4.1.0
+flagsmith-flag-engine==5.1.1
     # via edge-proxy
 freezegun==1.4.0
     # via pytest-freezegun
@@ -58,13 +60,18 @@ platformdirs==4.2.0
 pluggy==1.4.0
     # via pytest
 pre-commit==3.7.0
-pydantic==1.10.15
+pydantic==2.7.1
     # via edge-proxy
     # via fastapi
     # via flagsmith-flag-engine
     # via pydantic-collections
+    # via pydantic-settings
 pydantic-collections==0.5.4
     # via flagsmith-flag-engine
+pydantic-core==2.18.2
+    # via pydantic
+pydantic-settings==2.2.1
+    # via edge-proxy
 pytest==8.1.1
     # via pytest-asyncio
     # via pytest-freezegun
@@ -78,10 +85,11 @@ python-decouple==3.8
     # via edge-proxy
 python-dotenv==1.0.1
     # via edge-proxy
+    # via pydantic-settings
 pyyaml==6.0.1
     # via pre-commit
 reorder-python-imports==3.12.0
-semver==2.13.0
+semver==3.0.2
     # via flagsmith-flag-engine
 setuptools==69.2.0
     # via nodeenv
@@ -98,6 +106,7 @@ typing-extensions==4.11.0
     # via fastapi
     # via pydantic
     # via pydantic-collections
+    # via pydantic-core
 uvicorn==0.29.0
     # via edge-proxy
 virtualenv==20.25.1

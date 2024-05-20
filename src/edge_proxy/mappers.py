@@ -30,4 +30,4 @@ def map_feature_states_to_response_data(
 def map_traits_to_response_data(
     traits: list[TraitModel],
 ) -> list[dict[str, Any]]:
-    return [trait.dict() for trait in traits]
+    return [trait.model_dump() for trait in traits]

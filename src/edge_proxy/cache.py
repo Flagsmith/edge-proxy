@@ -1,4 +1,5 @@
-import typing
+from collections import defaultdict
+from typing import Any
 from abc import ABC
 
 
@@ -9,7 +10,7 @@ class BaseEnvironmentsCache(ABC):
     def put_environment(
         self,
         environment_api_key: str,
-        environment_document: typing.Dict[str, typing.Any],
+        environment_document: dict[str, Any],
     ) -> bool:
         """
         Update the environment cache for the given key with the given environment document.
@@ -26,29 +27,54 @@ class BaseEnvironmentsCache(ABC):
     def _put_environment(
         self,
         environment_api_key: str,
-        environment_document: typing.Dict[str, typing.Any],
+        environment_document: dict[str, Any],
     ) -> None:
         raise NotImplementedError()
 
-    def get_environment(
-        self, environment_api_key: str
-    ) -> typing.Dict[str, typing.Any] | None:
+    def get_environment(self, environment_api_key: str) -> dict[str, Any] | None:
         raise NotImplementedError()
+
+    def get_identity(
+        self,
+        environment_api_key: str,
+        identifier: str,
+    ) -> dict[str, Any]:
+        raise NotImplementedError()
+
+
+_LocalCacheDict = dict[str, dict[str, Any]]
 
 
 class LocalMemEnvironmentsCache(BaseEnvironmentsCache):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._cache = {}
+        self._environment_cache: _LocalCacheDict = {}
+        self._identity_override_cache = defaultdict[str, _LocalCacheDict](dict)
 
     def _put_environment(
         self,
         environment_api_key: str,
-        environment_document: typing.Dict[str, typing.Any],
+        environment_document: dict[str, Any],
     ) -> None:
-        self._cache[environment_api_key] = environment_document
+        self._environment_cache[environment_api_key] = environment_document
+        for identity_document in environment_document.get("identity_overrides") or []:
+            if identifier := identity_document.get("identifier"):
+                self._identity_override_cache[environment_api_key][identifier] = (
+                    identity_document
+                )
 
     def get_environment(
-        self, environment_api_key
-    ) -> typing.Dict[str, typing.Any] | None:
-        return self._cache.get(environment_api_key)
+        self,
+        environment_api_key: str,
+    ) -> dict[str, Any] | None:
+        return self._environment_cache.get(environment_api_key)
+
+    def get_identity(
+        self,
+        environment_api_key: str,
+        identifier: str,
+    ) -> dict[str, Any]:
+        return self._identity_override_cache[environment_api_key].get(identifier) or {
+            "environment_api_key": environment_api_key,
+            "identifier": identifier,
+        }

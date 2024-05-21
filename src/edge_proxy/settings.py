@@ -99,14 +99,8 @@ class AppSettings(BaseModel):
         )
     ]
     api_url: HttpUrl = "https://edge.api.flagsmith.com/api/v1"
-    api_poll_frequency_seconds: int = Field(
-        default=10,
-        aliases=["api_poll_frequency_seconds", "api_poll_frequency"],
-    )
-    api_poll_timeout_seconds: int = Field(
-        default=5,
-        aliases=["api_poll_timeout_seconds", "api_poll_timeout"],
-    )
+    api_poll_frequency: int = Field(default=10)
+    api_poll_timeout: int = Field(default=5)
     endpoint_caches: EndpointCachesSettings | None = None
     allow_origins: List[str] = ["*"]
     logging: LoggingSettings = LoggingSettings()

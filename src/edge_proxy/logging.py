@@ -3,7 +3,7 @@ import logging.handlers
 
 import structlog
 
-from edge_proxy.settings import LogFormat, LoggingSettings
+from edge_proxy.settings import LogFormat, LoggingSettings, LogHandler
 
 
 def _extract_gunicorn_access_log_event(
@@ -79,7 +79,12 @@ def setup_logging(settings: LoggingSettings) -> None:
         ],
     )
 
-    handler = logging.StreamHandler()
+    handler_kwargs = {}
+    if settings.log_handler == LogHandler.FILE:
+        handler_kwargs = {"filename": settings.log_file_path}
+
+    handler_class = logging.FileHandler if settings.log_handler == LogHandler.FILE else logging.StreamHandler
+    handler = handler_class(**handler_kwargs)
     handler.setFormatter(formatter)
 
     root = logging.getLogger()

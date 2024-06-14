@@ -4,7 +4,7 @@ import os
 import sys
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Type
 
 import structlog
 
@@ -19,6 +19,11 @@ CONFIG_PATH = os.environ.get(
 
 
 logger = structlog.get_logger()
+
+
+class LogHandler(Enum):
+    STREAM = "stream"
+    FILE = "file"
 
 
 class LogFormat(Enum):
@@ -83,6 +88,8 @@ class LoggingSettings(BaseModel):
     log_format: LogFormat = LogFormat.GENERIC
     log_level: LogLevel = LogLevel.INFO
     log_event_field_name: str = "message"
+    log_handler: LogHandler = LogHandler.STREAM
+    log_file_path: str = "/var/log/edge_proxy.log"
 
 
 class ServerSettings(BaseModel):

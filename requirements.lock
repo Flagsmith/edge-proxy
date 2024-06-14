@@ -36,7 +36,7 @@ orjson==3.10.0
     # via edge-proxy
 packaging==24.0
     # via marshmallow
-pydantic==1.10.15
+pydantic==1.10.16
     # via edge-proxy
     # via fastapi
     # via flagsmith-flag-engine

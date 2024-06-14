@@ -58,7 +58,7 @@ platformdirs==4.2.0
 pluggy==1.4.0
     # via pytest
 pre-commit==3.7.0
-pydantic==1.10.15
+pydantic==1.10.16
     # via edge-proxy
     # via fastapi
     # via flagsmith-flag-engine

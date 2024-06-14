@@ -4,12 +4,13 @@ import os
 import sys
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import structlog
 
-from pydantic import BaseModel, BaseSettings, HttpUrl, IPvAnyAddress, Field
-from pydantic.env_settings import SettingsSourceCallable
+from pydantic import AliasChoices, BaseModel, HttpUrl, IPvAnyAddress, Field
+
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
 
 
 CONFIG_PATH = os.environ.get(
@@ -41,7 +42,7 @@ class LogLevel(Enum):
 def ensure_defaults() -> None:
     if not os.path.exists(CONFIG_PATH):
         defaults = AppSettings()
-        defaults_json = defaults.json(indent=4, exclude_none=True)
+        defaults_json = defaults.model_dump_json(indent=4, exclude_none=True)
         print(defaults_json, file=sys.stdout)
         try:
             with open(CONFIG_PATH, "w") as fp:
@@ -54,7 +55,7 @@ def ensure_defaults() -> None:
             )
 
 
-def json_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
+def json_config_settings_source() -> dict[str, Any]:
     """
     A simple settings source that loads variables from a JSON file
     at the project's root.
@@ -92,31 +93,44 @@ class ServerSettings(BaseModel):
 
 
 class AppSettings(BaseModel):
-    environment_key_pairs: List[EnvironmentKeyPair] = [
+    environment_key_pairs: list[EnvironmentKeyPair] = [
         EnvironmentKeyPair(
             server_side_key="ser.environment_key",
             client_side_key="environment_key",
         )
     ]
     api_url: HttpUrl = "https://edge.api.flagsmith.com/api/v1"
-    api_poll_frequency: int = Field(default=10)
-    api_poll_timeout: int = Field(default=5)
+    api_poll_frequency_seconds: int = Field(
+        default=10,
+        validation_alias=AliasChoices(
+            "api_poll_frequency_seconds",
+            "api_poll_frequency",
+        ),
+    )
+    api_poll_timeout_seconds: int = Field(
+        default=5,
+        validation_alias=AliasChoices(
+            "api_poll_timeout_seconds",
+            "api_poll_timeout",
+        ),
+    )
     endpoint_caches: EndpointCachesSettings | None = None
-    allow_origins: List[str] = ["*"]
+    allow_origins: list[str] = Field(default_factory=lambda: ["*"])
     logging: LoggingSettings = LoggingSettings()
     server: ServerSettings = ServerSettings()
 
 
 class AppConfig(AppSettings, BaseSettings):
-    class Config:
-        @classmethod
-        def customise_sources(
-            cls,
-            init_settings: SettingsSourceCallable,
-            env_settings: SettingsSourceCallable,
-            file_secret_settings: SettingsSourceCallable,
-        ) -> Tuple[SettingsSourceCallable, ...]:
-            return init_settings, env_settings, json_config_settings_source
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        return init_settings, env_settings, json_config_settings_source
 
 
 def get_settings() -> AppConfig:

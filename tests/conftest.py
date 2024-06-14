@@ -5,6 +5,10 @@ from pytest_mock import MockerFixture
 from fastapi.testclient import TestClient
 
 
+if typing.TYPE_CHECKING:
+    from edge_proxy.environments import EnvironmentService
+
+
 @pytest.fixture
 def environment_1_feature_states_response_list() -> typing.List[dict]:
     return [
@@ -35,9 +39,27 @@ def environment_1_feature_states_response_list_response_with_segment_override(
     return environment_1_feature_states_response_list
 
 
+@pytest.fixture
+def environment_1_feature_states_response_list_response_with_identity_override(
+    environment_1_feature_states_response_list: list[dict[str, typing.Any]],
+) -> list[dict[str, typing.Any]]:
+    environment_1_feature_states_response_list[0]["feature_state_value"] = (
+        "identity_override"
+    )
+    environment_1_feature_states_response_list[0]["enabled"] = True
+    return environment_1_feature_states_response_list
+
+
 @pytest.fixture(autouse=True)
 def skip_json_config_settings_source(mocker: MockerFixture) -> None:
-    mocker.patch("edge_proxy.settings.json_config_settings_source", lambda _: {})
+    mocker.patch("edge_proxy.settings.json_config_settings_source", dict)
+
+
+@pytest.fixture
+def environment_service() -> "EnvironmentService":
+    from edge_proxy.server import environment_service
+
+    return environment_service
 
 
 @pytest.fixture

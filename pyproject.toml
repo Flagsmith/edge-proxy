@@ -2,16 +2,17 @@
 dynamic = ["version"]
 name = "edge-proxy"
 dependencies = [
-  "fastapi",
-  "flagsmith-flag-engine>4,<5",
-  "httpx",
-  "marshmallow",
-  "orjson",
-  "pydantic<2",
-  "python-decouple",
-  "python-dotenv",
-  "structlog",
-  "uvicorn",
+    "fastapi",
+    "flagsmith-flag-engine>5",
+    "httpx",
+    "marshmallow",
+    "orjson",
+    "pydantic",
+    "python-decouple",
+    "python-dotenv",
+    "structlog",
+    "uvicorn",
+    "pydantic-settings>=2.2.1",
 ]
 requires-python = ">= 3.12"
 

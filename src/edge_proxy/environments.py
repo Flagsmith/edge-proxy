@@ -9,7 +9,7 @@ from flag_engine.engine import (
     get_environment_feature_states,
     get_identity_feature_states,
 )
-from flag_engine.environments.builders import build_environment_model
+from flag_engine.environments.models import EnvironmentModel
 from flag_engine.identities.models import IdentityModel
 from orjson import orjson
 
@@ -37,7 +37,7 @@ class EnvironmentService:
         self.cache = cache or LocalMemEnvironmentsCache()
         self.settings = settings or AppSettings()
         self._client = client or httpx.AsyncClient(
-            timeout=settings.api_poll_timeout,
+            timeout=settings.api_poll_timeout_seconds,
         )
         self.last_updated_at = None
 
@@ -76,7 +76,7 @@ class EnvironmentService:
         self, environment_key: str, feature: str = None
     ) -> dict[str, typing.Any]:
         environment_document = self.get_environment(environment_key)
-        environment = build_environment_model(environment_document)
+        environment = EnvironmentModel.model_validate(environment_document)
 
         if feature:
             feature_state = get_environment_feature_state(environment, feature)
@@ -102,9 +102,12 @@ class EnvironmentService:
         self, input_data: IdentityWithTraits, environment_key: str
     ) -> dict[str, typing.Any]:
         environment_document = self.get_environment(environment_key)
-        environment = build_environment_model(environment_document)
-        identity = IdentityModel(
-            identifier=input_data.identifier, environment_api_key=environment_key
+        environment = EnvironmentModel.model_validate(environment_document)
+        identity = IdentityModel.model_validate(
+            self.cache.get_identity(
+                environment_api_key=environment_key,
+                identifier=input_data.identifier,
+            )
         )
         trait_models = input_data.traits
         flags = filter_out_server_key_only_feature_states(

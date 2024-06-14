@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import typing
 
 import orjson
 import pytest
@@ -6,6 +7,9 @@ from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
 from tests.fixtures.response_data import environment_1
+
+if typing.TYPE_CHECKING:
+    from edge_proxy.environments import EnvironmentService
 
 
 @pytest.mark.parametrize("endpoint", ["/proxy/health", "/health"])
@@ -129,10 +133,15 @@ def test_post_identity_with_traits(
     client: TestClient,
 ):
     environment_key = "test_environment_key"
+    identifier = "do_it_all_in_one_go_identity"
     mocked_environment_cache = mocker.patch(
         "edge_proxy.server.environment_service.cache"
     )
     mocked_environment_cache.get_environment.return_value = environment_1
+    mocked_environment_cache.get_identity.return_value = {
+        "environment_api_key": environment_key,
+        "identifier": identifier,
+    }
     data = {
         "traits": [{"trait_value": "test", "trait_key": "first_name"}],
         "identifier": "do_it_all_in_one_go_identity",
@@ -147,6 +156,39 @@ def test_post_identity_with_traits(
         "traits": data["traits"],
     }
     mocked_environment_cache.get_environment.assert_called_with(environment_key)
+    mocked_environment_cache.get_identity.assert_called_with(
+        environment_api_key=environment_key,
+        identifier=identifier,
+    )
+
+
+def test_post_identity__environment_with_overrides__expected_response(
+    environment_service: "EnvironmentService",
+    environment_1_feature_states_response_list_response_with_identity_override: list[
+        dict[str, typing.Any]
+    ],
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    identifier = "overridden-id"
+
+    environment_service.cache.put_environment(environment_key, environment_1)
+
+    data = {"identifier": identifier}
+
+    # When
+    response = client.post(
+        "/api/v1/identities/",
+        headers={"X-Environment-Key": environment_key},
+        content=orjson.dumps(data),
+    )
+
+    # Then
+    assert response.json() == {
+        "flags": environment_1_feature_states_response_list_response_with_identity_override,
+        "traits": [],
+    }
 
 
 def test_post_identity__invalid_trait_data__expected_response(
@@ -173,5 +215,11 @@ def test_post_identity__invalid_trait_data__expected_response(
 
     # Then
     assert response.status_code == 422
-    assert response.json()["detail"][-1]["loc"] == ["body", "traits", 0, "trait_value"]
-    assert response.json()["detail"][-1]["type"] == "value_error.any_str.max_length"
+    assert response.json()["detail"][-1]["loc"] == [
+        "body",
+        "traits",
+        0,
+        "trait_value",
+        "constrained-str",
+    ]
+    assert response.json()["detail"][-1]["type"] == "string_too_long"

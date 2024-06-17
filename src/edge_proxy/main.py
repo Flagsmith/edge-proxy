@@ -10,6 +10,7 @@ def serve():
         host=str(settings.server.host),
         port=settings.server.port,
         reload=settings.server.reload,
+        log_config=settings.server.log_config,
     )
 
 

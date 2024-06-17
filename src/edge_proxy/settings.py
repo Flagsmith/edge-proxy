@@ -84,6 +84,14 @@ class LoggingSettings(BaseModel):
     log_format: LogFormat = LogFormat.GENERIC
     log_level: LogLevel = LogLevel.INFO
     log_event_field_name: str = "message"
+    colours: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "colours",
+            "colors",
+        ),
+    )
+    override: dict[str, Any] = Field(default_factory=dict)
 
 
 class ServerSettings(BaseModel):
@@ -93,12 +101,14 @@ class ServerSettings(BaseModel):
 
 
 class AppSettings(BaseModel):
-    environment_key_pairs: list[EnvironmentKeyPair] = [
-        EnvironmentKeyPair(
-            server_side_key="ser.environment_key",
-            client_side_key="environment_key",
-        )
-    ]
+    environment_key_pairs: list[EnvironmentKeyPair] = Field(
+        default_factory=lambda: [
+            EnvironmentKeyPair(
+                server_side_key="ser.environment_key",
+                client_side_key="environment_key",
+            )
+        ]
+    )
     api_url: HttpUrl = "https://edge.api.flagsmith.com/api/v1"
     api_poll_frequency_seconds: int = Field(
         default=10,

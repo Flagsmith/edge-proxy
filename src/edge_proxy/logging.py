@@ -1,4 +1,5 @@
 import logging
+import logging.config
 import logging.handlers
 
 import structlog
@@ -24,36 +25,37 @@ def _extract_gunicorn_access_log_event(
     return event_dict
 
 
+def _drop_color_message(
+    record: logging.LogRecord,
+    name: str,
+    event_dict: structlog.types.EventDict,
+) -> structlog.types.EventDict:
+    # Uvicorn logs the message a second time in the extra `color_message`, but we don't
+    # need it. This processor drops the key from the event dict if it exists.
+    event_dict.pop("color_message", None)
+    return event_dict
+
+
+COMMON_PROCESSORS: list[structlog.types.Processor] = [
+    structlog.contextvars.merge_contextvars,
+    structlog.stdlib.add_logger_name,
+    structlog.stdlib.add_log_level,
+    _extract_gunicorn_access_log_event,
+    structlog.stdlib.PositionalArgumentsFormatter(),
+    structlog.stdlib.ExtraAdder(),
+    _drop_color_message,
+    structlog.processors.StackInfoRenderer(),
+    structlog.processors.TimeStamper(fmt="iso"),
+]
+
+
 def setup_logging(settings: LoggingSettings) -> None:
-    """
-    Configure stdlib logger to use structlog processors and formatters so that
-    uvicorn and application logs are consistent.
-    """
-    is_generic_format = settings.log_format is LogFormat.GENERIC
-
-    processors: list[structlog.types.Processor] = [
-        structlog.contextvars.merge_contextvars,
-        structlog.stdlib.add_logger_name,
-        structlog.stdlib.add_log_level,
-        _extract_gunicorn_access_log_event,
-        structlog.stdlib.PositionalArgumentsFormatter(),
-        structlog.stdlib.ExtraAdder(),
-        structlog.processors.StackInfoRenderer(),
-        structlog.processors.TimeStamper(fmt="iso"),
+    processors = [
+        *COMMON_PROCESSORS,
+        structlog.processors.EventRenamer(settings.log_event_field_name),
+        structlog.dev.set_exc_info,
+        structlog.processors.format_exc_info,
     ]
-
-    if is_generic_format:
-        # For `generic` format, set `exc_info` on the log event if the log method is
-        # `exception` and `exc_info` is not already set.
-        #
-        # Rendering of `exc_info` is handled by ConsoleRenderer.
-        processors.append(structlog.dev.set_exc_info)
-    else:
-        # For `json` format `exc_info` must be set explicitly when
-        # needed, and is translated into a formatted `exception` field.
-        processors.append(structlog.processors.format_exc_info)
-
-    processors.append(structlog.processors.EventRenamer(settings.log_event_field_name))
 
     structlog.configure(
         processors=processors
@@ -62,30 +64,6 @@ def setup_logging(settings: LoggingSettings) -> None:
         cache_logger_on_first_use=True,
     )
 
-    if is_generic_format:
-        log_renderer = structlog.dev.ConsoleRenderer(
-            event_key=settings.log_event_field_name
-        )
-    else:
-        log_renderer = structlog.processors.JSONRenderer()
-
-    formatter = structlog.stdlib.ProcessorFormatter(
-        use_get_message=False,
-        pass_foreign_args=True,
-        foreign_pre_chain=processors,
-        processors=[
-            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-            log_renderer,
-        ],
-    )
-
-    handler = logging.StreamHandler()
-    handler.setFormatter(formatter)
-
-    root = logging.getLogger()
-    root.addHandler(handler)
-    root.setLevel(settings.log_level.to_logging_log_level())
-
     # Propagate uvicorn logs instead of letting uvicorn configure the format
     for name in ["uvicorn", "uvicorn.error"]:
         logging.getLogger(name).handlers.clear()
@@ -93,3 +71,53 @@ def setup_logging(settings: LoggingSettings) -> None:
 
     logging.getLogger("uvicorn.access").handlers.clear()
     logging.getLogger("uvicorn.access").propagate = settings.enable_access_log
+
+    override = settings.override
+    logging.config.dictConfig(
+        {
+            "version": 1,
+            "disable_existing_loggers": False,
+            "formatters": {
+                LogFormat.GENERIC.value: {
+                    "()": structlog.stdlib.ProcessorFormatter,
+                    "use_get_message": False,
+                    "pass_foreign_args": True,
+                    "processors": [
+                        structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                        structlog.dev.ConsoleRenderer(
+                            event_key=settings.log_event_field_name,
+                            colors=settings.colours,
+                        ),
+                    ],
+                    "foreign_pre_chain": processors,
+                },
+                LogFormat.JSON.value: {
+                    "()": structlog.stdlib.ProcessorFormatter,
+                    "use_get_message": False,
+                    "pass_foreign_args": True,
+                    "processors": [
+                        structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                        structlog.processors.JSONRenderer(),
+                    ],
+                    "foreign_pre_chain": processors,
+                },
+                **(override.get("formatters") or {}),
+            },
+            "handlers": {
+                "default": {
+                    "level": settings.log_level.to_logging_log_level(),
+                    "class": "logging.StreamHandler",
+                    "formatter": settings.log_format.value,
+                },
+                **(override.get("handlers") or {}),
+            },
+            "loggers": {
+                "": {
+                    "handlers": ["default"],
+                    "level": settings.log_level.to_logging_log_level(),
+                    "propagate": True,
+                },
+                **(override.get("loggers") or {}),
+            },
+        }
+    )

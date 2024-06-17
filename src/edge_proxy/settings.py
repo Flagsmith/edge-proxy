@@ -84,7 +84,6 @@ class LoggingSettings(BaseModel):
     log_format: LogFormat = LogFormat.GENERIC
     log_level: LogLevel = LogLevel.INFO
     log_event_field_name: str = "message"
-    log_filename: str | None = None
     override: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -92,7 +91,6 @@ class ServerSettings(BaseModel):
     host: IPvAnyAddress = "0.0.0.0"
     port: int = 8000
     reload: bool = False
-    log_config: dict[str, Any] | str | None = None
 
 
 class AppSettings(BaseModel):

@@ -108,6 +108,13 @@ def setup_logging(settings: LoggingSettings) -> None:
                     "level": settings.log_level.to_logging_log_level(),
                     "propagate": True,
                 },
+                "uvicorn.access": {
+                    "handlers": ["default"],
+                    "disabled": not settings.enable_access_log,
+                },
+                "uvicorn.error": {
+                    "handlers": ["default"],
+                },
                 **(override.get("loggers") or {}),
             },
         }

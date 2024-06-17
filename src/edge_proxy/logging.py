@@ -64,6 +64,14 @@ def setup_logging(settings: LoggingSettings) -> None:
         cache_logger_on_first_use=True,
     )
 
+    # Propagate uvicorn logs instead of letting uvicorn configure the format
+    for name in ["uvicorn", "uvicorn.error"]:
+        logging.getLogger(name).handlers.clear()
+        logging.getLogger(name).propagate = True
+
+    logging.getLogger("uvicorn.access").handlers.clear()
+    logging.getLogger("uvicorn.access").propagate = settings.enable_access_log
+
     override = settings.override
     logging.config.dictConfig(
         {
@@ -77,7 +85,8 @@ def setup_logging(settings: LoggingSettings) -> None:
                     "processors": [
                         structlog.stdlib.ProcessorFormatter.remove_processors_meta,
                         structlog.dev.ConsoleRenderer(
-                            event_key=settings.log_event_field_name, colors=True
+                            event_key=settings.log_event_field_name,
+                            colors=settings.colors,
                         ),
                     ],
                     "foreign_pre_chain": processors,
@@ -107,13 +116,6 @@ def setup_logging(settings: LoggingSettings) -> None:
                     "handlers": ["default"],
                     "level": settings.log_level.to_logging_log_level(),
                     "propagate": True,
-                },
-                "uvicorn.access": {
-                    "handlers": ["default"],
-                    "disabled": not settings.enable_access_log,
-                },
-                "uvicorn.error": {
-                    "handlers": ["default"],
                 },
                 **(override.get("loggers") or {}),
             },

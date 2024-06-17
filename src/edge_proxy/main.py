@@ -10,7 +10,7 @@ def serve():
         host=str(settings.server.host),
         port=settings.server.port,
         reload=settings.server.reload,
-        use_colors=settings.logging.colors,
+        use_colors=settings.logging.colours,
     )
 
 

@@ -86,7 +86,7 @@ def setup_logging(settings: LoggingSettings) -> None:
                         structlog.stdlib.ProcessorFormatter.remove_processors_meta,
                         structlog.dev.ConsoleRenderer(
                             event_key=settings.log_event_field_name,
-                            colors=settings.colors,
+                            colors=settings.colours,
                         ),
                     ],
                     "foreign_pre_chain": processors,

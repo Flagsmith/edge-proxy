@@ -84,7 +84,13 @@ class LoggingSettings(BaseModel):
     log_format: LogFormat = LogFormat.GENERIC
     log_level: LogLevel = LogLevel.INFO
     log_event_field_name: str = "message"
-    colors: bool = True
+    colours: bool = Field(
+        default=False,
+        validation_alias=AliasChoices(
+            "colours",
+            "colors",
+        ),
+    )
     override: dict[str, Any] = Field(default_factory=dict)
 
 

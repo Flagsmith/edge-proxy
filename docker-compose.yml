@@ -1,0 +1,9 @@
+services:
+ edge_proxy:
+  image: flagsmith/edge-proxy:latest
+  volumes:
+   - type: bind
+     source: ./config.json
+     target: /app/config.json
+  ports:
+   - "8000:8000"

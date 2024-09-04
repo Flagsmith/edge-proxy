@@ -50,9 +50,8 @@ async def health_check():
             last_successful_update=None,
         )
 
-    if (
-        grace_period := settings.health_check.environment_update_grace_period_seconds
-    ) is not None:
+    grace_period = settings.health_check.environment_update_grace_period_seconds
+    if grace_period is not None:
         buffer = grace_period * len(settings.environment_key_pairs)
         threshold = datetime.now() - timedelta(
             seconds=settings.api_poll_frequency_seconds + buffer

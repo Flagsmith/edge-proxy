@@ -51,7 +51,7 @@ async def health_check():
         )
 
     if settings.health_check.count_stale_documents_as_failing:
-        buffer = (settings.health_check.grace_period_seconds or 30) * len(
+        buffer = settings.health_check.grace_period_seconds * len(
             settings.environment_key_pairs
         )
         threshold = datetime.now() - timedelta(seconds=buffer)

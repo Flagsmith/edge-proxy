@@ -1,5 +1,4 @@
-from contextlib import suppress
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import httpx
 import structlog
@@ -8,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import ORJSONResponse
 
+from edge_proxy.health_check.responses import HealthCheckResponse
 from fastapi_utils.tasks import repeat_every
 
 from edge_proxy.cache import LocalMemEnvironmentsCache
@@ -41,13 +41,27 @@ async def unknown_key_error(request, exc):
 @app.get("/health", response_class=ORJSONResponse, deprecated=True)
 @app.get("/proxy/health", response_class=ORJSONResponse)
 async def health_check():
-    with suppress(TypeError):
-        last_updated = datetime.now() - environment_service.last_updated_at
-        buffer = 30 * len(settings.environment_key_pairs)  # 30s per environment
-        if last_updated.total_seconds() <= settings.api_poll_frequency_seconds + buffer:
-            return ORJSONResponse(status_code=200, content={"status": "ok"})
+    last_updated_at = environment_service.last_updated_at
+    if not last_updated_at:
+        return HealthCheckResponse(
+            status_code=500,
+            status="error",
+            reason="environment document(s) not updated.",
+            last_successful_update=None,
+        )
 
-    return ORJSONResponse(status_code=500, content={"status": "error"})
+    if settings.health_check.count_stale_documents_as_failing:
+        buffer = (settings.health_check.grace_period_seconds or 30) * len(settings.environment_key_pairs)
+        threshold = datetime.now() - timedelta(seconds=buffer)
+        if last_updated_at < threshold:
+            return HealthCheckResponse(
+                status_code=500,
+                status="error",
+                reason="environment document(s) stale.",
+                last_successful_update=last_updated_at,
+            )
+
+    return HealthCheckResponse(last_successful_update=last_updated_at)
 
 
 @app.get("/api/v1/flags/", response_class=ORJSONResponse)

@@ -60,7 +60,7 @@ def test_health_check_returns_200_if_cache_is_stale_and_health_check_configured_
 ) -> None:
     # Given
     settings = AppSettings(
-        health_check=HealthCheckSettings(count_stale_documents_as_failing=False)
+        health_check=HealthCheckSettings(environment_update_grace_period_seconds=None)
     )
     mocker.patch("edge_proxy.server.settings", settings)
 

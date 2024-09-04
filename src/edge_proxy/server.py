@@ -50,10 +50,10 @@ async def health_check():
             last_successful_update=None,
         )
 
-    if settings.health_check.count_stale_documents_as_failing:
-        buffer = settings.health_check.grace_period_seconds * len(
-            settings.environment_key_pairs
-        )
+    if (
+        grace_period := settings.health_check.environment_update_grace_period_seconds
+    ) is not None:
+        buffer = grace_period * len(settings.environment_key_pairs)
         threshold = datetime.now() - timedelta(
             seconds=settings.api_poll_frequency_seconds + buffer
         )

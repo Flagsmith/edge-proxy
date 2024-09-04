@@ -4,7 +4,7 @@ import os
 import sys
 from enum import Enum
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import structlog
 
@@ -101,8 +101,7 @@ class ServerSettings(BaseModel):
 
 
 class HealthCheckSettings(BaseModel):
-    count_stale_documents_as_failing: bool = True
-    grace_period_seconds: int = 30
+    environment_update_grace_period_seconds: Optional[int] = 30
 
 
 class AppSettings(BaseModel):

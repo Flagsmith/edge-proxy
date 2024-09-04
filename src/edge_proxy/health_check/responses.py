@@ -22,4 +22,10 @@ class HealthCheckResponse(ORJSONResponse):
             "reason": reason,
             "last_successful_update": last_successful_update,
         }
-        super().__init__(status_code=status_code, content=content, headers=headers, media_type=media_type, background=background)
+        super().__init__(
+            status_code=status_code,
+            content=content,
+            headers=headers,
+            media_type=media_type,
+            background=background,
+        )

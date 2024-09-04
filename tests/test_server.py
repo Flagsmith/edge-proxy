@@ -6,6 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
+from edge_proxy.settings import AppSettings, HealthCheckSettings
 from tests.fixtures.response_data import environment_1
 
 if typing.TYPE_CHECKING:
@@ -30,18 +31,53 @@ def test_health_check_returns_500_if_cache_was_not_updated(
 ) -> None:
     response = client.get("/proxy/health")
     assert response.status_code == 500
-    assert response.json() == {"status": "error"}
+    assert response.json() == {
+        "status": "error",
+        "reason": "environment document(s) not updated.",
+        "last_successful_update": None,
+    }
 
 
 def test_health_check_returns_500_if_cache_is_stale(
     mocker: MockerFixture,
     client: TestClient,
 ) -> None:
+    last_updated_at = datetime.now() - timedelta(days=10)
     mocked_environment_service = mocker.patch("edge_proxy.server.environment_service")
-    mocked_environment_service.last_updated_at = datetime.now() - timedelta(days=10)
+    mocked_environment_service.last_updated_at = last_updated_at
     response = client.get("/proxy/health")
     assert response.status_code == 500
-    assert response.json() == {"status": "error"}
+    assert response.json() == {
+        "status": "error",
+        "reason": "environment document(s) stale.",
+        "last_successful_update": last_updated_at.isoformat(),
+    }
+
+
+def test_health_check_returns_200_if_cache_is_stale_and_health_check_configured_correctly(
+    mocker: MockerFixture,
+    client: TestClient,
+) -> None:
+    # Given
+    settings = AppSettings(
+        health_check=HealthCheckSettings(count_stale_documents_as_failing=False)
+    )
+    mocker.patch("edge_proxy.server.settings", settings)
+
+    last_updated_at = datetime.now() - timedelta(days=10)
+    mocked_environment_service = mocker.patch("edge_proxy.server.environment_service")
+    mocked_environment_service.last_updated_at = last_updated_at
+
+    # When
+    response = client.get("/proxy/health")
+
+    # Then
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "ok",
+        "reason": None,
+        "last_successful_update": last_updated_at.isoformat(),
+    }
 
 
 def test_get_flags(

@@ -54,7 +54,9 @@ async def health_check():
         buffer = settings.health_check.grace_period_seconds * len(
             settings.environment_key_pairs
         )
-        threshold = datetime.now() - timedelta(seconds=buffer)
+        threshold = datetime.now() - timedelta(
+            seconds=settings.api_poll_frequency_seconds + buffer
+        )
         if last_updated_at < threshold:
             return HealthCheckResponse(
                 status_code=500,

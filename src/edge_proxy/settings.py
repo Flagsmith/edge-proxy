@@ -100,6 +100,11 @@ class ServerSettings(BaseModel):
     reload: bool = False
 
 
+class HealthCheckSettings(BaseModel):
+    count_stale_documents_as_failing: bool = True
+    grace_period_seconds: int = 30
+
+
 class AppSettings(BaseModel):
     environment_key_pairs: list[EnvironmentKeyPair] = Field(
         default_factory=lambda: [
@@ -128,6 +133,7 @@ class AppSettings(BaseModel):
     allow_origins: list[str] = Field(default_factory=lambda: ["*"])
     logging: LoggingSettings = LoggingSettings()
     server: ServerSettings = ServerSettings()
+    health_check: HealthCheckSettings = HealthCheckSettings()
 
 
 class AppConfig(AppSettings, BaseSettings):

@@ -26,6 +26,7 @@ from edge_proxy.settings import AppSettings
 
 logger = structlog.get_logger(__name__)
 
+SERVER_API_KEY_PREFIX = "ser."
 
 class EnvironmentService:
     def __init__(
@@ -77,11 +78,12 @@ class EnvironmentService:
     ) -> dict[str, typing.Any]:
         environment_document = self.get_environment(environment_key)
         environment = EnvironmentModel.model_validate(environment_document)
+        is_server_key = environment_key.startswith(SERVER_API_KEY_PREFIX)
 
         if feature:
             feature_state = get_environment_feature_state(environment, feature)
 
-            if not filter_out_server_key_only_feature_states(
+            if not is_server_key and not filter_out_server_key_only_feature_states(
                 feature_states=[feature_state],
                 environment=environment,
             ):
@@ -90,10 +92,12 @@ class EnvironmentService:
             data = map_feature_state_to_response_data(feature_state)
 
         else:
-            feature_states = filter_out_server_key_only_feature_states(
-                feature_states=get_environment_feature_states(environment),
-                environment=environment,
-            )
+            feature_states = get_environment_feature_states(environment)
+            if not is_server_key:
+                feature_states = filter_out_server_key_only_feature_states(
+                    feature_states=feature_states,
+                    environment=environment,
+                )
             data = map_feature_states_to_response_data(feature_states)
 
         return data
@@ -103,6 +107,8 @@ class EnvironmentService:
     ) -> dict[str, typing.Any]:
         environment_document = self.get_environment(environment_key)
         environment = EnvironmentModel.model_validate(environment_document)
+        is_server_key = environment_key.startswith(SERVER_API_KEY_PREFIX)
+
         identity = IdentityModel.model_validate(
             self.cache.get_identity(
                 environment_api_key=environment_key,
@@ -110,14 +116,17 @@ class EnvironmentService:
             )
         )
         trait_models = input_data.traits
-        flags = filter_out_server_key_only_feature_states(
-            feature_states=get_identity_feature_states(
-                environment,
-                identity,
-                override_traits=trait_models,
-            ),
-            environment=environment,
+        flags = get_identity_feature_states(
+            environment,
+            identity,
+            override_traits=trait_models,
         )
+
+        if not is_server_key:
+            flags = filter_out_server_key_only_feature_states(
+                feature_states=flags,
+                environment=environment,
+            )
         data = {
             "traits": map_traits_to_response_data(trait_models),
             "flags": map_feature_states_to_response_data(

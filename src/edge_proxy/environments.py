@@ -28,6 +28,7 @@ logger = structlog.get_logger(__name__)
 
 SERVER_API_KEY_PREFIX = "ser."
 
+
 class EnvironmentService:
     def __init__(
         self,

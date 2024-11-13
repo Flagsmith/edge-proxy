@@ -234,6 +234,7 @@ async def test_get_identity_flags_response_skips_cache_for_different_identity(
     assert environment_service.get_identity_response_data.cache_info().misses == 2
     assert environment_service.get_identity_response_data.cache_info().hits == 0
 
+
 @pytest.mark.asyncio
 async def test_get_flags_response_data_skips_filter_for_server_key(
     mocker: MockerFixture,
@@ -266,6 +267,7 @@ async def test_get_flags_response_data_skips_filter_for_server_key(
     assert flags[2].get("feature").get("name") == "feature_3"
     assert specific_flag.get("feature").get("name") == "feature_3"
 
+
 @pytest.mark.asyncio
 async def test_get_flags_response_data_filters_server_side_features_for_client_key(
     mocker: MockerFixture,
@@ -295,6 +297,7 @@ async def test_get_flags_response_data_filters_server_side_features_for_client_k
     # Then
     # we only get the two client side flags
     assert len(flags) == 2
+
 
 @pytest.mark.asyncio
 async def test_get_identity_flags_response_skips_filter_for_server_key(

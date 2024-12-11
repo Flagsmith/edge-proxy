@@ -1,3 +1,4 @@
+import http
 from datetime import datetime, timedelta
 
 import httpx
@@ -85,11 +86,24 @@ async def flags(feature: str = None, x_environment_key: str = Header(None)):
 
 @app.post("/api/v1/identities/", response_class=ORJSONResponse)
 async def identity(
-    input_data: IdentityWithTraits,
-    x_environment_key: str = Header(None),
+        input_data: IdentityWithTraits,
+        x_environment_key: str = Header(None),
 ):
     data = environment_service.get_identity_response_data(input_data, x_environment_key)
     return ORJSONResponse(data)
+
+
+@app.get("/api/v1/environment-document/")
+def environment_document():
+    return ORJSONResponse(
+        status_code=http.HTTPStatus.BAD_REQUEST,
+        content={
+            "message": "The Edge Proxy does not serve environment documents and cannot be consumed using local "
+                       "evaluation. Make sure your Flagsmith client application is consuming the Edge Proxy using "
+                       "remote evaluation, i.e. using a client-side environment key and with local evaluation "
+                       "disabled. See https://docs.flagsmith.com/clients/"
+        }
+    )
 
 
 @app.on_event("startup")

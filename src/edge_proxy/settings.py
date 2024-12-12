@@ -133,6 +133,7 @@ class AppSettings(BaseModel):
     logging: LoggingSettings = LoggingSettings()
     server: ServerSettings = ServerSettings()
     health_check: HealthCheckSettings = HealthCheckSettings()
+    proxy: Optional[str] = None
 
 
 class AppConfig(AppSettings, BaseSettings):

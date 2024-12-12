@@ -39,8 +39,7 @@ class EnvironmentService:
         self.cache = cache or LocalMemEnvironmentsCache()
         self.settings = settings or AppSettings()
         self._client = client or httpx.AsyncClient(
-            timeout=settings.api_poll_timeout_seconds,
-            proxy=settings.proxy
+            timeout=settings.api_poll_timeout_seconds, proxy=settings.proxy
         )
         self.last_updated_at = None
 

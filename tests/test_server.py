@@ -259,3 +259,27 @@ def test_post_identity__invalid_trait_data__expected_response(
         "constrained-str",
     ]
     assert response.json()["detail"][-1]["type"] == "string_too_long"
+
+
+def test_get_identities(mocker: MockerFixture, client: TestClient):
+    x_environment_key = "test_environment_key"
+    identifier = "test_identifier"
+
+    mocked_environment_cache = mocker.patch(
+        "edge_proxy.server.environment_service.cache"
+    )
+    mocked_environment_cache.get_environment.return_value = environment_1
+    mocked_environment_cache.get_identity.return_value = {
+        "environment_api_key": x_environment_key,
+        "identifier": identifier,
+    }
+
+    response = client.get(
+        "/api/v1/identities/",
+        headers={"x-environment-key": x_environment_key},
+        params={"identifier": identifier}
+    )
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data["traits"] == []

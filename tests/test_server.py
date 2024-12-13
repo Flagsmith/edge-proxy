@@ -277,7 +277,7 @@ def test_get_identities(mocker: MockerFixture, client: TestClient):
     response = client.get(
         "/api/v1/identities/",
         headers={"x-environment-key": x_environment_key},
-        params={"identifier": identifier}
+        params={"identifier": identifier},
     )
     data = response.json()
 

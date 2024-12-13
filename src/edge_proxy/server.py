@@ -91,12 +91,15 @@ async def identity(
     data = environment_service.get_identity_response_data(input_data, x_environment_key)
     return ORJSONResponse(data)
 
+
 @app.get("/api/v1/identities/", response_class=ORJSONResponse)
 async def get_identities(
     identifier: str,
     x_environment_key: str = Header(None),
 ):
-    data = environment_service.get_identity_response_data(IdentityWithTraits(identifier=identifier), x_environment_key)
+    data = environment_service.get_identity_response_data(
+        IdentityWithTraits(identifier=identifier), x_environment_key
+    )
     return ORJSONResponse(data)
 
 

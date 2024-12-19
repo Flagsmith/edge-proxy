@@ -261,7 +261,10 @@ def test_post_identity__invalid_trait_data__expected_response(
     assert response.json()["detail"][-1]["type"] == "string_too_long"
 
 
-def test_get_identities(mocker: MockerFixture, client: TestClient):
+def test_get_identities(
+    mocker: MockerFixture,
+    client: TestClient,
+) -> None:
     x_environment_key = "test_environment_key"
     identifier = "test_identifier"
 

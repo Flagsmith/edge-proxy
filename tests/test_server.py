@@ -286,4 +286,4 @@ def test_get_identities(
 
     assert response.status_code == 200
     assert data["traits"] == []
-    assert len(data["flags"]) > 0
+    assert data["flags"]

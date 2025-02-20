@@ -63,7 +63,7 @@ Create an example configuration by running the `edge-proxy-render-config` entryp
 rye run edge-proxy-render-config
 ```
 
-This will output the example configuration to stdout and write it to `./config.json`.
+This will write the default settings to `./config.json`.
 
 Here's how to mount the file into Edge Proxy's Docker container:
 

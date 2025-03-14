@@ -1,4 +1,4 @@
-class FlagsmithUnknownKeyError(KeyError):
+class UnknownEnvironmentKeyError(KeyError):
     pass
 
 

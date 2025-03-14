@@ -5,14 +5,14 @@ import structlog
 from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import ORJSONResponse, Response
 
 from edge_proxy.health_check.responses import HealthCheckResponse
 from fastapi_utils.tasks import repeat_every
 
 from edge_proxy.cache import LocalMemEnvironmentsCache
 from edge_proxy.environments import EnvironmentService
-from edge_proxy.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
+from edge_proxy.exceptions import FeatureNotFoundError, UnknownEnvironmentKeyError
 from edge_proxy.logging import setup_logging
 from edge_proxy.models import IdentityWithTraits
 from edge_proxy.settings import get_settings
@@ -27,15 +27,9 @@ environment_service = EnvironmentService(
 app = FastAPI()
 
 
-@app.exception_handler(FlagsmithUnknownKeyError)
+@app.exception_handler(UnknownEnvironmentKeyError)
 async def unknown_key_error(request, exc):
-    return ORJSONResponse(
-        status_code=401,
-        content={
-            "status": "unauthorized",
-            "message": f"unknown key {exc}",
-        },
-    )
+    return Response(status_code=404)
 
 
 @app.get("/health", response_class=ORJSONResponse, deprecated=True)

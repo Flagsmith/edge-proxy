@@ -11,7 +11,7 @@ from fastapi.responses import ORJSONResponse
 from edge_proxy.health_check.responses import HealthCheckResponse
 
 from edge_proxy.cache import LocalMemEnvironmentsCache
-from edge_proxy.environments import EnvironmentService, SERVER_API_KEY_PREFIX
+from edge_proxy.environments import EnvironmentService
 from edge_proxy.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
 from edge_proxy.logging import setup_logging
 from edge_proxy.models import IdentityWithTraits
@@ -32,14 +32,12 @@ async def poll_environments():
         await asyncio.sleep(settings.api_poll_frequency_seconds)
 
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await environment_service.refresh_environment_caches()
     poll = asyncio.create_task(poll_environments())
     yield
     poll.cancel()
-
 
 
 app = FastAPI(lifespan=lifespan)

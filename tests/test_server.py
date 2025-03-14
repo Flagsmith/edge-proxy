@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
-from edge_proxy.settings import AppSettings, HealthCheckSettings
+from edge_proxy.settings import HealthCheckSettings
 from tests.fixtures.response_data import environment_1
 
 if typing.TYPE_CHECKING:
@@ -59,10 +59,8 @@ def test_health_check_returns_200_if_cache_is_stale_and_health_check_configured_
     client: TestClient,
 ) -> None:
     # Given
-    settings = AppSettings(
-        health_check=HealthCheckSettings(environment_update_grace_period_seconds=None)
-    )
-    mocker.patch("edge_proxy.server.settings", settings)
+    health_check = HealthCheckSettings(environment_update_grace_period_seconds=None)
+    mocker.patch("edge_proxy.server.settings.health_check", health_check)
 
     last_updated_at = datetime.now() - timedelta(days=10)
     mocked_environment_service = mocker.patch("edge_proxy.server.environment_service")

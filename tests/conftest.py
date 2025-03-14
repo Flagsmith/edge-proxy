@@ -51,8 +51,15 @@ def environment_1_feature_states_response_list_response_with_identity_override(
 
 
 @pytest.fixture(autouse=True)
-def skip_json_config_settings_source(mocker: MockerFixture) -> None:
-    mocker.patch("edge_proxy.settings.json_config_settings_source", dict)
+def mock_settings(mocker: MockerFixture) -> None:
+    mock_config = {
+        "environment_key_pairs": [
+            {"server_side_key": "ser.abc123", "client_side_key": "def456"}
+        ]
+    }
+    mocker.patch(
+        "edge_proxy.settings.json_config_settings_source", return_value=mock_config
+    )
 
 
 @pytest.fixture

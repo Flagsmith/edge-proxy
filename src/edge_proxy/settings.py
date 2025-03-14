@@ -8,16 +8,14 @@ from typing import Any, Optional
 
 import structlog
 
-from pydantic import AliasChoices, BaseModel, HttpUrl, IPvAnyAddress, Field
+from pydantic import AliasChoices, BaseModel, HttpUrl, IPvAnyAddress, Field, constr
 
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
-
 
 CONFIG_PATH = os.environ.get(
     "CONFIG_PATH",
     default="config.json",
 )
-
 
 logger = structlog.get_logger()
 
@@ -65,8 +63,8 @@ def json_config_settings_source() -> dict[str, Any]:
 
 
 class EnvironmentKeyPair(BaseModel):
-    server_side_key: str
-    client_side_key: str
+    server_side_key: constr(pattern=r"ser\.*", strip_whitespace=True)
+    client_side_key: constr(min_length=1, strip_whitespace=True)
 
 
 class EndpointCacheSettings(BaseModel):
@@ -105,14 +103,7 @@ class HealthCheckSettings(BaseModel):
 
 
 class AppSettings(BaseModel):
-    environment_key_pairs: list[EnvironmentKeyPair] = Field(
-        default_factory=lambda: [
-            EnvironmentKeyPair(
-                server_side_key="ser.environment_key",
-                client_side_key="environment_key",
-            )
-        ]
-    )
+    environment_key_pairs: list[EnvironmentKeyPair]
     api_url: HttpUrl = HttpUrl("https://edge.api.flagsmith.com/api/v1")
     api_poll_frequency_seconds: int = Field(
         default=10,

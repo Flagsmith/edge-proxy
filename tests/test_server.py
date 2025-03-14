@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
-from edge_proxy.settings import AppSettings, HealthCheckSettings
+from edge_proxy.settings import AppSettings, HealthCheckSettings, EnvironmentKeyPair
 from tests.fixtures.response_data import environment_1
 
 if typing.TYPE_CHECKING:
@@ -287,3 +287,40 @@ def test_get_identities(
     assert response.status_code == 200
     assert data["traits"] == []
     assert data["flags"]
+
+
+@pytest.mark.parametrize(
+    "environment_key,expected_status",
+    [
+        ("ser.good", 200),
+        ("ser.bad", 401),
+        (None, 401),
+    ],
+)
+def test_get_environment_document(
+    mocker: MockerFixture,
+    client: TestClient,
+    environment_key: str,
+    expected_status: int,
+) -> None:
+    # Given
+    environment_key_pairs = [
+        EnvironmentKeyPair(server_side_key="ser.good", client_side_key="foo")
+    ]
+    mocker.patch(
+        "edge_proxy.server.settings.environment_key_pairs", environment_key_pairs
+    )
+    mocker.patch(
+        "edge_proxy.server.environment_service.cache"
+    ).get_environment.return_value = environment_1
+
+    # When
+    response = client.get(
+        "/api/v1/environment-document",
+        headers={"X-Environment-Key": environment_key} if environment_key else None,
+    )
+
+    # Then
+    assert response.status_code == expected_status
+    if expected_status == 200:
+        assert response.json() == environment_1

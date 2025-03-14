@@ -32,12 +32,14 @@ async def poll_environments():
         await asyncio.sleep(settings.api_poll_frequency_seconds)
 
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await environment_service.refresh_environment_caches()
     poll = asyncio.create_task(poll_environments())
     yield
     poll.cancel()
+
 
 
 app = FastAPI(lifespan=lifespan)

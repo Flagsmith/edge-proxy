@@ -13,7 +13,7 @@ from edge_proxy.mappers import (
 
 @pytest.fixture()
 def feature_state_model() -> FeatureStateModel:
-    return FeatureStateModel.parse_obj(
+    return FeatureStateModel.model_validate(
         {
             "multivariate_feature_state_values": [],
             "feature_state_value": "feature_1_value",
@@ -32,7 +32,7 @@ def feature_state_model() -> FeatureStateModel:
 
 @pytest.fixture()
 def multivariate_feature_state_model() -> FeatureStateModel:
-    return FeatureStateModel.parse_obj(
+    return FeatureStateModel.model_validate(
         {
             "multivariate_feature_state_values": [
                 {

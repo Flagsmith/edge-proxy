@@ -9,7 +9,10 @@ from orjson import orjson
 from pytest_mock import MockerFixture
 
 from edge_proxy.environments import EnvironmentService
-from edge_proxy.exceptions import FlagsmithUnknownKeyError
+from edge_proxy.exceptions import (
+    FeatureNotFoundError,
+    FlagsmithUnknownKeyError,
+)
 from edge_proxy.models import IdentityWithTraits
 from edge_proxy.settings import (
     EndpointCacheSettings,
@@ -230,3 +233,101 @@ async def test_get_identity_flags_response_skips_cache_for_different_identity(
     assert environment_service.get_identity_response_data.cache_info().currsize == 2
     assert environment_service.get_identity_response_data.cache_info().misses == 2
     assert environment_service.get_identity_response_data.cache_info().hits == 0
+
+
+@pytest.mark.asyncio
+async def test_get_flags_response_data_skips_filter_for_server_key(
+    mocker: MockerFixture,
+) -> None:
+    # Given
+    # We create a new settings object that contains a server key as a client_side_key
+    api_key = "ser." + environment_1_api_key
+    _settings = AppSettings(
+        environment_key_pairs=[
+            {"client_side_key": api_key, "server_side_key": "ser.key"}
+        ]
+    )
+
+    mocked_client = mocker.AsyncMock()
+    mocked_client.get.return_value = mocker.MagicMock(
+        text=orjson.dumps(environment_1), raise_for_status=lambda: None
+    )
+
+    environment_service = EnvironmentService(settings=_settings, client=mocked_client)
+    await environment_service.refresh_environment_caches()
+
+    # When
+    # We retrieve the flag response data
+    flags = environment_service.get_flags_response_data(api_key)
+    specific_flag = environment_service.get_flags_response_data(api_key, "feature_3")
+
+    # Then
+    # we get the server-side only flag
+    assert len(flags) == 3
+    assert flags[2].get("feature").get("name") == "feature_3"
+    assert specific_flag.get("feature").get("name") == "feature_3"
+
+
+@pytest.mark.asyncio
+async def test_get_flags_response_data_filters_server_side_features_for_client_key(
+    mocker: MockerFixture,
+) -> None:
+    # Given
+    # We create a new settings object that contains a client side key
+    _settings = AppSettings(
+        environment_key_pairs=[
+            {"client_side_key": environment_1_api_key, "server_side_key": "ser.key"}
+        ]
+    )
+
+    mocked_client = mocker.AsyncMock()
+    mocked_client.get.return_value = mocker.MagicMock(
+        text=orjson.dumps(environment_1), raise_for_status=lambda: None
+    )
+
+    environment_service = EnvironmentService(settings=_settings, client=mocked_client)
+    await environment_service.refresh_environment_caches()
+
+    # When
+    # We retrieve the flag response data
+    flags = environment_service.get_flags_response_data(environment_1_api_key)
+    with pytest.raises(FeatureNotFoundError):
+        environment_service.get_flags_response_data(environment_1_api_key, "feature_3")
+
+    # Then
+    # we only get the two client side flags
+    assert len(flags) == 2
+
+
+@pytest.mark.asyncio
+async def test_get_identity_flags_response_skips_filter_for_server_key(
+    mocker: MockerFixture,
+) -> None:
+    # Given
+    # We create a new settings object that contains a server key as a client_side_key
+    api_key = "ser." + environment_1_api_key
+    _settings = AppSettings(
+        environment_key_pairs=[
+            {"client_side_key": api_key, "server_side_key": "ser.key"}
+        ]
+    )
+
+    mocked_client = mocker.AsyncMock()
+    mocked_client.get.return_value = mocker.MagicMock(
+        text=orjson.dumps(environment_1), raise_for_status=lambda: None
+    )
+
+    environment_service = EnvironmentService(settings=_settings, client=mocked_client)
+    await environment_service.refresh_environment_caches()
+
+    # When
+    # We retrieve the flags for an identity
+    result = environment_service.get_identity_response_data(
+        IdentityWithTraits(identifier="foo"), api_key
+    )
+
+    # Then
+    # we get the server-side only flag
+    flags = result.get("flags")
+    assert len(flags) == 3
+    assert flags[2].get("feature").get("name") == "feature_3"

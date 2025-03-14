@@ -11,7 +11,7 @@ from pytest_mock import MockerFixture
 from edge_proxy.environments import EnvironmentService
 from edge_proxy.exceptions import (
     FeatureNotFoundError,
-    FlagsmithUnknownKeyError,
+    UnknownEnvironmentKeyError,
 )
 from edge_proxy.models import IdentityWithTraits
 from edge_proxy.settings import (
@@ -135,7 +135,7 @@ async def test_get_environment_works_correctly(mocker: MockerFixture):
 
 def test_get_environment_raises_for_unknown_keys():
     environment_service = EnvironmentService(settings=settings)
-    with pytest.raises(FlagsmithUnknownKeyError):
+    with pytest.raises(UnknownEnvironmentKeyError):
         environment_service.get_environment("test_env_key_unknown")
 
 

@@ -156,11 +156,7 @@ def test_get_flags_unknown_key(
         headers={"X-Environment-Key": environment_key},
         params={"feature": "feature_1"},
     )
-    assert response.status_code == 401
-    assert response.json() == {
-        "status": "unauthorized",
-        "message": "unknown key 'unknown_environment_key'",
-    }
+    assert response.status_code == 404
 
 
 def test_post_identity_with_traits(

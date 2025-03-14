@@ -8,7 +8,7 @@ from typing import Any, Optional
 
 import structlog
 
-from pydantic import AliasChoices, BaseModel, HttpUrl, IPvAnyAddress, Field
+from pydantic import AliasChoices, BaseModel, HttpUrl, IPvAnyAddress, Field, ConfigDict
 
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
 
@@ -113,7 +113,7 @@ class AppSettings(BaseModel):
             )
         ]
     )
-    api_url: HttpUrl = "https://edge.api.flagsmith.com/api/v1"
+    api_url: HttpUrl = HttpUrl("https://edge.api.flagsmith.com/api/v1")
     api_poll_frequency_seconds: int = Field(
         default=10,
         validation_alias=AliasChoices(
@@ -136,6 +136,8 @@ class AppSettings(BaseModel):
 
 
 class AppConfig(AppSettings, BaseSettings):
+    model_config = ConfigDict(extra="ignore")
+
     @classmethod
     def settings_customise_sources(
         cls,

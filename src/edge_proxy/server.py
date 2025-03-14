@@ -1,17 +1,17 @@
 from datetime import datetime, timedelta
+import asyncio
 
 import httpx
-import structlog
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Header
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import ORJSONResponse
 
 from edge_proxy.health_check.responses import HealthCheckResponse
-from fastapi_utils.tasks import repeat_every
 
 from edge_proxy.cache import LocalMemEnvironmentsCache
-from edge_proxy.environments import EnvironmentService
+from edge_proxy.environments import EnvironmentService, SERVER_API_KEY_PREFIX
 from edge_proxy.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
 from edge_proxy.logging import setup_logging
 from edge_proxy.models import IdentityWithTraits
@@ -24,7 +24,23 @@ environment_service = EnvironmentService(
     httpx.AsyncClient(timeout=settings.api_poll_timeout_seconds),
     settings,
 )
-app = FastAPI()
+
+
+async def poll_environments():
+    while True:
+        await environment_service.refresh_environment_caches()
+        await asyncio.sleep(settings.api_poll_frequency_seconds)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await environment_service.refresh_environment_caches()
+    poll = asyncio.create_task(poll_environments())
+    yield
+    poll.cancel()
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.exception_handler(FlagsmithUnknownKeyError)
@@ -92,14 +108,15 @@ async def identity(
     return ORJSONResponse(data)
 
 
-@app.on_event("startup")
-@repeat_every(
-    seconds=settings.api_poll_frequency_seconds,
-    raise_exceptions=True,
-    logger=structlog.get_logger(__name__),
-)
-async def refresh_cache():
-    await environment_service.refresh_environment_caches()
+@app.get("/api/v1/identities/", response_class=ORJSONResponse)
+async def get_identities(
+    identifier: str,
+    x_environment_key: str = Header(None),
+) -> ORJSONResponse:
+    data = environment_service.get_identity_response_data(
+        IdentityWithTraits(identifier=identifier), x_environment_key
+    )
+    return ORJSONResponse(data)
 
 
 app.add_middleware(

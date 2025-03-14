@@ -300,7 +300,7 @@ def test_get_identities(
 def test_get_environment_document(
     mocker: MockerFixture,
     client: TestClient,
-    environment_key: str,
+    environment_key: str | None,
     expected_status: int,
 ) -> None:
     # Given

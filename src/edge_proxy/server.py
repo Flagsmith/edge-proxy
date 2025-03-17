@@ -108,12 +108,10 @@ async def environment_document(
     x_environment_key: str = Header(None),
 ) -> ORJSONResponse:
     for key_pair in settings.environment_key_pairs:
-        print(key_pair)
         if key_pair.server_side_key == x_environment_key:
             environment_doc = environment_service.get_environment(
                 key_pair.client_side_key
             )
-            print(environment_doc is None)
             if environment_doc:
                 return ORJSONResponse(environment_doc)
     return ORJSONResponse(status_code=401, content=None)

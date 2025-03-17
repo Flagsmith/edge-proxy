@@ -14,7 +14,7 @@ from flag_engine.identities.models import IdentityModel
 from orjson import orjson
 
 from edge_proxy.cache import BaseEnvironmentsCache, LocalMemEnvironmentsCache
-from edge_proxy.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
+from edge_proxy.exceptions import FeatureNotFoundError, UnknownEnvironmentKeyError
 from edge_proxy.feature_utils import filter_out_server_key_only_feature_states
 from edge_proxy.mappers import (
     map_feature_state_to_response_data,
@@ -140,7 +140,7 @@ class EnvironmentService:
     def get_environment(self, client_side_key: str) -> dict[str, typing.Any]:
         if environment_document := self.cache.get_environment(client_side_key):
             return environment_document
-        raise FlagsmithUnknownKeyError(client_side_key)
+        raise UnknownEnvironmentKeyError(client_side_key)
 
     async def _fetch_document(self, server_side_key: str) -> dict[str, typing.Any]:
         response = await self._client.get(

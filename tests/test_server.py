@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
-from edge_proxy.settings import AppSettings, HealthCheckSettings, EnvironmentKeyPair
+from edge_proxy.settings import HealthCheckSettings, EnvironmentKeyPair
 from tests.fixtures.response_data import environment_1
 
 if typing.TYPE_CHECKING:

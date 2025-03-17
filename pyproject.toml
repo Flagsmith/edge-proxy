@@ -1,6 +1,7 @@
 [project]
 dynamic = ["version"]
 name = "edge-proxy"
+license = { file = "LICENSE" }
 dependencies = [
     "fastapi",
     "flagsmith-flag-engine>5",

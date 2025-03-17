@@ -289,19 +289,9 @@ def test_get_identities(
     assert data["flags"]
 
 
-@pytest.mark.parametrize(
-    "environment_key,expected_status",
-    [
-        ("ser.good", 200),
-        ("ser.bad", 401),
-        (None, 401),
-    ],
-)
 def test_get_environment_document(
     mocker: MockerFixture,
     client: TestClient,
-    environment_key: str | None,
-    expected_status: int,
 ) -> None:
     # Given
     environment_key_pairs = [
@@ -317,10 +307,31 @@ def test_get_environment_document(
     # When
     response = client.get(
         "/api/v1/environment-document",
-        headers={"X-Environment-Key": environment_key} if environment_key else None,
+        headers={"X-Environment-Key": environment_key_pairs[0].server_side_key},
     )
 
     # Then
-    assert response.status_code == expected_status
-    if expected_status == 200:
-        assert response.json() == environment_1
+    assert response.status_code == 200
+    assert response.json() == environment_1
+
+
+def test_get_environment_document_missing_key(
+    client: TestClient,
+) -> None:
+    # When
+    response = client.get(
+        "/api/v1/environment-document",
+    )
+    # Then
+    assert response.status_code == 401
+
+
+def test_get_environment_document_wrong_key(
+    client: TestClient,
+) -> None:
+    # When
+    response = client.get(
+        "/api/v1/environment-document", headers={"X-Environment-Key": "ser.bad"}
+    )
+    # Then
+    assert response.status_code == 401

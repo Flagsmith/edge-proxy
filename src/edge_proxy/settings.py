@@ -136,7 +136,8 @@ class AppSettings(BaseModel):
 
 
 class AppConfig(AppSettings, BaseSettings):
-    model_config = {"extra": "ignore"}
+    class Config:
+        extra = "ignore"
 
     @classmethod
     def settings_customise_sources(

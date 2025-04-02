@@ -6,18 +6,19 @@ from pytest_mock import MockerFixture
 
 from edge_proxy.settings import HealthCheckSettings
 
-pytestmark = [
-    pytest.mark.parametrize(
-        "endpoint",
-        [
-            "/proxy/health/readiness",
-            "/proxy/health",
-            "/health",
-        ],
-    )
+READINESS_ENDPOINTS = [
+    "/proxy/health/readiness",
+    "/proxy/health",
+    "/health",
 ]
 
 
+def test_liveness_check(client: TestClient) -> None:
+    response = client.get("/proxy/health/liveness")
+    assert response.status_code == 200
+
+
+@pytest.mark.parametrize("endpoint", READINESS_ENDPOINTS)
 def test_health_check_returns_200_if_cache_was_updated_recently(
     mocker: MockerFixture,
     client: TestClient,
@@ -30,6 +31,7 @@ def test_health_check_returns_200_if_cache_was_updated_recently(
     assert response.status_code == 200
 
 
+@pytest.mark.parametrize("endpoint", READINESS_ENDPOINTS)
 def test_health_check_returns_503_if_cache_was_not_updated(
     client: TestClient,
     endpoint: str,
@@ -43,6 +45,7 @@ def test_health_check_returns_503_if_cache_was_not_updated(
     }
 
 
+@pytest.mark.parametrize("endpoint", READINESS_ENDPOINTS)
 def test_health_check_returns_503_if_cache_is_stale(
     mocker: MockerFixture,
     client: TestClient,
@@ -51,7 +54,9 @@ def test_health_check_returns_503_if_cache_is_stale(
     last_updated_at = datetime.now() - timedelta(days=10)
     mocked_environment_service = mocker.patch("edge_proxy.server.environment_service")
     mocked_environment_service.last_updated_at = last_updated_at
+
     response = client.get(endpoint)
+
     assert response.status_code == 503
     assert response.json() == {
         "status": "error",
@@ -60,6 +65,7 @@ def test_health_check_returns_503_if_cache_is_stale(
     }
 
 
+@pytest.mark.parametrize("endpoint", READINESS_ENDPOINTS)
 def test_health_check_returns_200_if_cache_is_never_stale(
     mocker: MockerFixture,
     client: TestClient,

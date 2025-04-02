@@ -10,11 +10,6 @@ if typing.TYPE_CHECKING:
     from edge_proxy.environments import EnvironmentService
 
 
-def test_liveness_check(client: TestClient) -> None:
-    response = client.get("/proxy/health/liveness")
-    assert response.status_code == 200
-
-
 def test_get_flags(
     mocker: MockerFixture,
     environment_1_feature_states_response_list: list[dict],

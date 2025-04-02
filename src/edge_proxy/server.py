@@ -14,6 +14,7 @@ from edge_proxy.cache import LocalMemEnvironmentsCache
 from edge_proxy.environments import EnvironmentService
 from edge_proxy.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
 from edge_proxy.logging import setup_logging
+from edge_proxy.middleware import RequestLoggingMiddleware
 from edge_proxy.models import IdentityWithTraits
 from edge_proxy.settings import get_settings
 
@@ -113,6 +114,7 @@ async def refresh_cache():
     await environment_service.refresh_environment_caches()
 
 
+app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allow_origins,

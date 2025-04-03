@@ -36,9 +36,6 @@ dev-dependencies = [
 [tool.ruff]
 line-length = 88
 
-[tool.ruff.lint.isort]
-known-first-party = ['fastapi_utils']
-
 [tool.ruff.lint.mccabe]
 max-complexity = 10
 

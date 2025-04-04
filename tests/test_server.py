@@ -4,6 +4,7 @@ import orjson
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
+from edge_proxy.main import serve
 from tests.fixtures.response_data import environment_1
 
 if typing.TYPE_CHECKING:
@@ -217,3 +218,18 @@ def test_get_identities(
     assert response.status_code == 200
     assert data["traits"] == []
     assert data["flags"]
+
+
+def test_serve_passes_proxy_headers_setting(mocker: MockerFixture) -> None:
+    # Given
+    mock_settings = mocker.patch("edge_proxy.main.get_settings")
+    mock_settings.return_value.server.proxy_headers = True
+
+    mock_uvicorn = mocker.patch("edge_proxy.main.uvicorn.run")
+
+    # When
+    serve()
+
+    # Then
+    _, kwargs = mock_uvicorn.call_args
+    assert kwargs.get("proxy_headers") is True

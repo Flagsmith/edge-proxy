@@ -96,6 +96,7 @@ class ServerSettings(BaseModel):
     host: IPvAnyAddress = "0.0.0.0"
     port: int = 8000
     reload: bool = False
+    proxy_headers: bool = False
 
 
 class HealthCheckSettings(BaseModel):

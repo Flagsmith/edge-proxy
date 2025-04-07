@@ -59,7 +59,13 @@ def json_config_settings_source() -> dict[str, Any]:
     at the project's root.
     """
     encoding = "utf-8"
-    return json.loads(Path(CONFIG_PATH).read_text(encoding))
+    try:
+        config = json.loads(Path(CONFIG_PATH).read_text(encoding))
+        logger.info(f"Loaded configuration from {CONFIG_PATH}")
+        return config
+    except FileNotFoundError:
+        logger.info(f"Configuration file at {CONFIG_PATH} not found")
+        return {}
 
 
 class EnvironmentKeyPair(BaseModel):

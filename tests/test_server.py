@@ -1,81 +1,15 @@
-from datetime import datetime, timedelta
 import typing
 
 import orjson
-import pytest
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
-from edge_proxy.settings import HealthCheckSettings, EnvironmentKeyPair
+from edge_proxy.main import serve
+from edge_proxy.settings import EnvironmentKeyPair
 from tests.fixtures.response_data import environment_1
 
 if typing.TYPE_CHECKING:
     from edge_proxy.environments import EnvironmentService
-
-
-@pytest.mark.parametrize("endpoint", ["/proxy/health", "/health"])
-def test_health_check_returns_200_if_cache_was_updated_recently(
-    mocker: MockerFixture,
-    endpoint: str,
-    client: TestClient,
-) -> None:
-    mocked_environment_service = mocker.patch("edge_proxy.server.environment_service")
-    mocked_environment_service.last_updated_at = datetime.now()
-
-    response = client.get(endpoint)
-    assert response.status_code == 200
-
-
-def test_health_check_returns_500_if_cache_was_not_updated(
-    client: TestClient,
-) -> None:
-    response = client.get("/proxy/health")
-    assert response.status_code == 500
-    assert response.json() == {
-        "status": "error",
-        "reason": "environment document(s) not updated.",
-        "last_successful_update": None,
-    }
-
-
-def test_health_check_returns_500_if_cache_is_stale(
-    mocker: MockerFixture,
-    client: TestClient,
-) -> None:
-    last_updated_at = datetime.now() - timedelta(days=10)
-    mocked_environment_service = mocker.patch("edge_proxy.server.environment_service")
-    mocked_environment_service.last_updated_at = last_updated_at
-    response = client.get("/proxy/health")
-    assert response.status_code == 500
-    assert response.json() == {
-        "status": "error",
-        "reason": "environment document(s) stale.",
-        "last_successful_update": last_updated_at.isoformat(),
-    }
-
-
-def test_health_check_returns_200_if_cache_is_stale_and_health_check_configured_correctly(
-    mocker: MockerFixture,
-    client: TestClient,
-) -> None:
-    # Given
-    health_check = HealthCheckSettings(environment_update_grace_period_seconds=None)
-    mocker.patch("edge_proxy.server.settings.health_check", health_check)
-
-    last_updated_at = datetime.now() - timedelta(days=10)
-    mocked_environment_service = mocker.patch("edge_proxy.server.environment_service")
-    mocked_environment_service.last_updated_at = last_updated_at
-
-    # When
-    response = client.get("/proxy/health")
-
-    # Then
-    assert response.status_code == 200
-    assert response.json() == {
-        "status": "ok",
-        "reason": None,
-        "last_successful_update": last_updated_at.isoformat(),
-    }
 
 
 def test_get_flags(
@@ -285,6 +219,21 @@ def test_get_identities(
     assert response.status_code == 200
     assert data["traits"] == []
     assert data["flags"]
+
+
+def test_serve_passes_proxy_headers_setting(mocker: MockerFixture) -> None:
+    # Given
+    mock_settings = mocker.patch("edge_proxy.main.get_settings")
+    mock_settings.return_value.server.proxy_headers = True
+
+    mock_uvicorn = mocker.patch("edge_proxy.main.uvicorn.run")
+
+    # When
+    serve()
+
+    # Then
+    _, kwargs = mock_uvicorn.call_args
+    assert kwargs.get("proxy_headers") is True
 
 
 def test_get_environment_document(

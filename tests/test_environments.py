@@ -197,6 +197,41 @@ async def test_refresh_environment_caches_clears_endpoint_caches_if_environment_
 
 
 @pytest.mark.asyncio
+async def test_refresh_environment_caches_sets_last_modified_if_environment_was_cached(
+    mocker: MockerFixture,
+):
+    # Given
+    # An EnvironmentService that saves the last If-Modified-Since request header its client used
+    if_modified_since = ""
+
+    def save_if_modified_since(**kwargs):
+        nonlocal if_modified_since
+        if headers := kwargs.get("headers"):
+            if_modified_since = headers.get("If-Modified-Since")
+        return mocker.MagicMock(
+            text=orjson.dumps(environment_1),
+        )
+
+    mocked_client = mocker.AsyncMock()
+    mocked_client.get.side_effect = save_if_modified_since
+    environment_service = EnvironmentService(settings=settings, client=mocked_client)
+
+    # When
+    # We refresh its environment caches
+    await environment_service.refresh_environment_caches()
+    # Then
+    # No If-Modified-Since request header is sent initially
+    assert not if_modified_since
+
+    # When
+    # We refresh the caches while having an existing valid cache
+    await environment_service.refresh_environment_caches()
+    # Then
+    # If-Modified-Since is set to the environment's updated_at in HTTP date format
+    assert if_modified_since == "Sun, 20 Jul 1969 20:17:40 GMT"
+
+
+@pytest.mark.asyncio
 async def test_get_identity_flags_response_skips_cache_for_different_identity(
     mocker: MockerFixture,
 ) -> None:

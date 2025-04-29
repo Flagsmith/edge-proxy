@@ -162,7 +162,7 @@ class EnvironmentService:
                     )
                 except ValueError:
                     logger.warning(
-                        f"failed to parse updated_at ISO date timestamp, environment={key_pair.client_side_key} updated_at={updated_at}"
+                        f"failed to parse updated_at, environment={key_pair.client_side_key} updated_at={updated_at}"
                     )
             else:
                 logger.warning(

@@ -1,8 +1,10 @@
 import typing
 from datetime import datetime
+from email.utils import formatdate
 from functools import lru_cache
 
 import httpx
+import starlette.status
 import structlog
 from flag_engine.engine import (
     get_environment_feature_state,
@@ -22,7 +24,7 @@ from edge_proxy.mappers import (
     map_traits_to_response_data,
 )
 from edge_proxy.models import IdentityWithTraits
-from edge_proxy.settings import AppSettings
+from edge_proxy.settings import AppSettings, EnvironmentKeyPair
 
 logger = structlog.get_logger(__name__)
 
@@ -58,9 +60,7 @@ class EnvironmentService:
         received_error = False
         for key_pair in self.settings.environment_key_pairs:
             try:
-                environment_document = await self._fetch_document(
-                    key_pair.server_side_key
-                )
+                environment_document = await self._fetch_document(key_pair)
                 if self.cache.put_environment(
                     environment_api_key=key_pair.client_side_key,
                     environment_document=environment_document,
@@ -142,11 +142,41 @@ class EnvironmentService:
             return environment_document
         raise FlagsmithUnknownKeyError(client_side_key)
 
-    async def _fetch_document(self, server_side_key: str) -> dict[str, typing.Any]:
+    async def _fetch_document(
+        self, key_pair: EnvironmentKeyPair
+    ) -> dict[str, typing.Any]:
+        headers = {
+            "X-Environment-Key": key_pair.server_side_key,
+        }
+        environment_document = self.cache.get_environment(
+            environment_api_key=key_pair.client_side_key
+        )
+        if environment_document:
+            updated_at: str = environment_document.get("updated_at")
+            if updated_at:
+                try:
+                    epoch_seconds = datetime.fromisoformat(updated_at).timestamp()
+                    # Same implementation as https://docs.djangoproject.com/en/4.2/ref/utils/#django.utils.http.http_date
+                    headers["If-Modified-Since"] = formatdate(
+                        epoch_seconds, usegmt=True
+                    )
+                except ValueError:
+                    logger.warning(
+                        f"failed to parse updated_at, environment={key_pair.client_side_key} updated_at={updated_at}"
+                    )
+            else:
+                logger.warning(
+                    f"received environment with no updated_at: {key_pair.client_side_key}"
+                )
         response = await self._client.get(
             url=f"{self.settings.api_url}/environment-document/",
-            headers={"X-Environment-Key": server_side_key},
+            headers=headers,
         )
+        if response.status_code == starlette.status.HTTP_304_NOT_MODIFIED:
+            assert environment_document, (
+                f"GET /environment-document returned 304 without a cached document. environment={key_pair.client_side_key}"
+            )
+            return environment_document
         response.raise_for_status()
         return orjson.loads(response.text)
 

@@ -91,6 +91,7 @@ environment_1_api_key = "environment_1_api_key"
 
 
 environment_1 = {
+    "updated_at": "1969-07-20T20:17:40Z",
     "feature_states": [
         _environment_feature_state_1,
         _environment_feature_state_2,

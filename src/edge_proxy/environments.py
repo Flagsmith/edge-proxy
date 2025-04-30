@@ -173,6 +173,9 @@ class EnvironmentService:
             headers=headers,
         )
         if response.status_code == starlette.status.HTTP_304_NOT_MODIFIED:
+            if not environment_document:
+                # This is an API error and should never happen
+                raise f"GET /environment-document returned 304 without a cached document. environment={key_pair.client_side_key}"
             return environment_document
         response.raise_for_status()
         return orjson.loads(response.text)

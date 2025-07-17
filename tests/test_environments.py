@@ -278,9 +278,7 @@ async def test_get_flags_response_data_skips_filter_for_server_key(
     # We create a new settings object that contains a server key as a client_side_key
     api_key = "ser." + environment_1_api_key
     _settings = AppSettings(
-        environment_key_pairs=[
-            {"client_side_key": api_key, "server_side_key": "ser.key"}
-        ]
+        environment_key_pairs=[{"client_side_key": api_key, "server_side_key": api_key}]
     )
 
     mocked_client = mocker.AsyncMock()
@@ -342,9 +340,7 @@ async def test_get_identity_flags_response_skips_filter_for_server_key(
     # We create a new settings object that contains a server key as a client_side_key
     api_key = "ser." + environment_1_api_key
     _settings = AppSettings(
-        environment_key_pairs=[
-            {"client_side_key": api_key, "server_side_key": "ser.key"}
-        ]
+        environment_key_pairs=[{"client_side_key": api_key, "server_side_key": api_key}]
     )
 
     mocked_client = mocker.AsyncMock()

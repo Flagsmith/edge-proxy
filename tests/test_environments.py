@@ -111,13 +111,13 @@ async def test_get_environment_works_correctly(mocker: MockerFixture):
     # Next, test that get environment return correct document
     assert (
         environment_service.get_environment(
-            client_side_key=settings.environment_key_pairs[0].client_side_key
+            environment_key=settings.environment_key_pairs[0].client_side_key
         )
         == doc_1
     )
     assert (
         environment_service.get_environment(
-            client_side_key=settings.environment_key_pairs[1].client_side_key
+            environment_key=settings.environment_key_pairs[1].client_side_key
         )
         == doc_2
     )
@@ -125,10 +125,10 @@ async def test_get_environment_works_correctly(mocker: MockerFixture):
 
     # Next, let's verify that any additional call to get_environment does not call fetch document
     environment_service.get_environment(
-        client_side_key=settings.environment_key_pairs[0].client_side_key
+        environment_key=settings.environment_key_pairs[0].client_side_key
     )
     environment_service.get_environment(
-        client_side_key=settings.environment_key_pairs[1].client_side_key
+        environment_key=settings.environment_key_pairs[1].client_side_key
     )
     assert mock_client.get.call_count == 2
 
@@ -136,7 +136,7 @@ async def test_get_environment_works_correctly(mocker: MockerFixture):
 def test_get_environment_raises_for_unknown_keys():
     environment_service = EnvironmentService(settings=settings)
     with pytest.raises(FlagsmithUnknownKeyError):
-        environment_service.get_environment(client_side_key="test_env_key_unknown")
+        environment_service.get_environment(environment_key="test_env_key_unknown")
 
 
 @pytest.mark.asyncio

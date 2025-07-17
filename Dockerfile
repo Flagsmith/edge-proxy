@@ -1,4 +1,4 @@
-FROM python:3.12-slim as application
+FROM python:3.12-slim AS application
 
 WORKDIR /app
 
@@ -10,7 +10,6 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 COPY src /app/src
 COPY requirements.lock pyproject.toml /app/
 RUN pip install --no-cache-dir -r requirements.lock
-RUN edge-proxy-render-config
 
 EXPOSE 8000
 

@@ -1,4 +1,4 @@
-import typing
+from typing import Any, Optional
 from datetime import datetime
 from email.utils import formatdate
 from functools import lru_cache
@@ -76,8 +76,8 @@ class EnvironmentService:
 
     def get_flags_response_data(
         self, environment_key: str, feature: str = None
-    ) -> dict[str, typing.Any]:
-        environment_document = self.get_environment(environment_key)
+    ) -> dict[str, Any]:
+        environment_document = self.get_environment(environment_key=environment_key)
         environment = EnvironmentModel.model_validate(environment_document)
         is_server_key = environment_key.startswith(SERVER_API_KEY_PREFIX)
 
@@ -105,8 +105,8 @@ class EnvironmentService:
 
     def get_identity_response_data(
         self, input_data: IdentityWithTraits, environment_key: str
-    ) -> dict[str, typing.Any]:
-        environment_document = self.get_environment(environment_key)
+    ) -> dict[str, Any]:
+        environment_document = self.get_environment(environment_key=environment_key)
         environment = EnvironmentModel.model_validate(environment_document)
         is_server_key = environment_key.startswith(SERVER_API_KEY_PREFIX)
 
@@ -137,14 +137,22 @@ class EnvironmentService:
         }
         return data
 
-    def get_environment(self, client_side_key: str) -> dict[str, typing.Any]:
+    def get_environment(
+        self,
+        *,
+        environment_key: Optional[str] = None,
+    ) -> dict[str, Any]:
+        if environment_key and environment_key.startswith(SERVER_API_KEY_PREFIX):
+            client_side_key = self._get_client_key_from_server_key(environment_key)
+        else:
+            client_side_key = environment_key
+
         if environment_document := self.cache.get_environment(client_side_key):
             return environment_document
-        raise FlagsmithUnknownKeyError(client_side_key)
 
-    async def _fetch_document(
-        self, key_pair: EnvironmentKeyPair
-    ) -> dict[str, typing.Any]:
+        raise FlagsmithUnknownKeyError(environment_key)
+
+    async def _fetch_document(self, key_pair: EnvironmentKeyPair) -> dict[str, Any]:
         headers = {
             "X-Environment-Key": key_pair.server_side_key,
         }
@@ -186,3 +194,9 @@ class EnvironmentService:
                 func.cache_clear()
             except AttributeError:
                 pass
+
+    def _get_client_key_from_server_key(self, server_key: str) -> str:
+        for key_pair in self.settings.environment_key_pairs:
+            if key_pair.server_side_key == server_key:
+                return key_pair.client_side_key
+        raise FlagsmithUnknownKeyError(server_key)

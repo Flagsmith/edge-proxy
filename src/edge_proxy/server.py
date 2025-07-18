@@ -125,6 +125,17 @@ async def get_identities(
     return ORJSONResponse(data)
 
 
+@app.get("/api/v1/environment-document", response_class=ORJSONResponse)
+async def environment_document(
+    x_environment_key: str = Header(None),
+) -> ORJSONResponse:
+    if environment_doc := environment_service.get_environment(
+        environment_key=x_environment_key,
+    ):
+        return ORJSONResponse(environment_doc)
+    return ORJSONResponse(status_code=401, content=None)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allow_origins,

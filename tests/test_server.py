@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
 from edge_proxy.main import serve
+from edge_proxy.settings import EnvironmentKeyPair
 from tests.fixtures.response_data import environment_1
 
 if typing.TYPE_CHECKING:
@@ -233,3 +234,51 @@ def test_serve_passes_proxy_headers_setting(mocker: MockerFixture) -> None:
     # Then
     _, kwargs = mock_uvicorn.call_args
     assert kwargs.get("proxy_headers") is True
+
+
+def test_get_environment_document(
+    mocker: MockerFixture,
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key_pairs = [
+        EnvironmentKeyPair(server_side_key="ser.good", client_side_key="foo")
+    ]
+    mocker.patch(
+        "edge_proxy.server.settings.environment_key_pairs", environment_key_pairs
+    )
+    mocker.patch(
+        "edge_proxy.server.environment_service.cache"
+    ).get_environment.return_value = environment_1
+
+    # When
+    response = client.get(
+        "/api/v1/environment-document",
+        headers={"X-Environment-Key": environment_key_pairs[0].server_side_key},
+    )
+
+    # Then
+    assert response.status_code == 200
+    assert response.json() == environment_1
+
+
+def test_get_environment_document_missing_key(
+    client: TestClient,
+) -> None:
+    # When
+    response = client.get(
+        "/api/v1/environment-document",
+    )
+    # Then
+    assert response.status_code == 401
+
+
+def test_get_environment_document_wrong_key(
+    client: TestClient,
+) -> None:
+    # When
+    response = client.get(
+        "/api/v1/environment-document", headers={"X-Environment-Key": "ser.bad"}
+    )
+    # Then
+    assert response.status_code == 401

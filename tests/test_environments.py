@@ -111,13 +111,13 @@ async def test_get_environment_works_correctly(mocker: MockerFixture):
     # Next, test that get environment return correct document
     assert (
         environment_service.get_environment(
-            settings.environment_key_pairs[0].client_side_key
+            environment_key=settings.environment_key_pairs[0].client_side_key
         )
         == doc_1
     )
     assert (
         environment_service.get_environment(
-            settings.environment_key_pairs[1].client_side_key
+            environment_key=settings.environment_key_pairs[1].client_side_key
         )
         == doc_2
     )
@@ -125,10 +125,10 @@ async def test_get_environment_works_correctly(mocker: MockerFixture):
 
     # Next, let's verify that any additional call to get_environment does not call fetch document
     environment_service.get_environment(
-        settings.environment_key_pairs[0].client_side_key
+        environment_key=settings.environment_key_pairs[0].client_side_key
     )
     environment_service.get_environment(
-        settings.environment_key_pairs[1].client_side_key
+        environment_key=settings.environment_key_pairs[1].client_side_key
     )
     assert mock_client.get.call_count == 2
 
@@ -136,7 +136,7 @@ async def test_get_environment_works_correctly(mocker: MockerFixture):
 def test_get_environment_raises_for_unknown_keys():
     environment_service = EnvironmentService(settings=settings)
     with pytest.raises(FlagsmithUnknownKeyError):
-        environment_service.get_environment("test_env_key_unknown")
+        environment_service.get_environment(environment_key="test_env_key_unknown")
 
 
 @pytest.mark.asyncio
@@ -278,9 +278,7 @@ async def test_get_flags_response_data_skips_filter_for_server_key(
     # We create a new settings object that contains a server key as a client_side_key
     api_key = "ser." + environment_1_api_key
     _settings = AppSettings(
-        environment_key_pairs=[
-            {"client_side_key": api_key, "server_side_key": "ser.key"}
-        ]
+        environment_key_pairs=[{"client_side_key": api_key, "server_side_key": api_key}]
     )
 
     mocked_client = mocker.AsyncMock()
@@ -342,9 +340,7 @@ async def test_get_identity_flags_response_skips_filter_for_server_key(
     # We create a new settings object that contains a server key as a client_side_key
     api_key = "ser." + environment_1_api_key
     _settings = AppSettings(
-        environment_key_pairs=[
-            {"client_side_key": api_key, "server_side_key": "ser.key"}
-        ]
+        environment_key_pairs=[{"client_side_key": api_key, "server_side_key": api_key}]
     )
 
     mocked_client = mocker.AsyncMock()

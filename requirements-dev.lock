@@ -6,6 +6,8 @@
 #   features: []
 #   all-features: false
 #   with-sources: false
+#   generate-hashes: false
+#   universal: false
 
 -e file:.
 annotated-types==0.6.0
@@ -28,7 +30,7 @@ fastapi==0.110.1
     # via edge-proxy
 filelock==3.13.3
     # via virtualenv
-flagsmith-flag-engine==5.1.1
+flagsmith-flag-engine==6.0.0
     # via edge-proxy
 freezegun==1.4.0
     # via pytest-freezegun

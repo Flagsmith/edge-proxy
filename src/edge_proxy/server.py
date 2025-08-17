@@ -21,7 +21,10 @@ settings = get_settings()
 setup_logging(settings.logging)
 environment_service = EnvironmentService(
     LocalMemEnvironmentsCache(),
-    httpx.AsyncClient(timeout=settings.api_poll_timeout_seconds),
+    httpx.AsyncClient(
+        timeout=settings.api_poll_timeout_seconds,
+        follow_redirects=True,
+    ),
     settings,
 )
 

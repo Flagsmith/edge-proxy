@@ -244,7 +244,6 @@ async def test_refresh_environment_caches__deleted_identity_override__cached_exp
             text=orjson.dumps(modified_document), raise_for_status=lambda: None
         ),
     ]
-    settings
 
     environment_service = EnvironmentService(
         settings=AppSettings(

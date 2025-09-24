@@ -15,11 +15,13 @@ from edge_proxy.exceptions import (
 )
 from edge_proxy.models import IdentityWithTraits
 from edge_proxy.settings import (
+    AppSettings,
     EndpointCacheSettings,
     EndpointCachesSettings,
-    AppSettings,
 )
 from tests.fixtures.response_data import environment_1, environment_1_api_key
+
+pytestmark = pytest.mark.asyncio
 
 client_key_2 = "test_env_key_2"
 
@@ -33,7 +35,6 @@ settings = AppSettings(
 now = datetime.now()
 
 
-@pytest.mark.asyncio
 async def test_refresh_makes_correct_http_call(mocker: MockerFixture):
     # Given
     mock_client = mocker.AsyncMock()
@@ -72,7 +73,6 @@ async def test_refresh_makes_correct_http_call(mocker: MockerFixture):
     assert environment_service.last_updated_at == now
 
 
-@pytest.mark.asyncio
 async def test_refresh_does_not_update_last_updated_at_if_any_request_fails(
     mocker: MockerFixture,
 ):
@@ -91,7 +91,6 @@ async def test_refresh_does_not_update_last_updated_at_if_any_request_fails(
     assert environment_service.last_updated_at is None
 
 
-@pytest.mark.asyncio
 async def test_get_environment_works_correctly(mocker: MockerFixture):
     # Given
     mock_client = mocker.AsyncMock()
@@ -139,7 +138,6 @@ def test_get_environment_raises_for_unknown_keys():
         environment_service.get_environment(environment_key="test_env_key_unknown")
 
 
-@pytest.mark.asyncio
 async def test_refresh_environment_caches_clears_endpoint_caches_if_environment_changes(
     mocker: MockerFixture,
 ) -> None:
@@ -196,7 +194,6 @@ async def test_refresh_environment_caches_clears_endpoint_caches_if_environment_
     assert environment_service.get_flags_response_data.cache_info().currsize == 0
 
 
-@pytest.mark.asyncio
 async def test_refresh_environment_caches_sets_last_modified_if_environment_was_cached(
     mocker: MockerFixture,
 ):
@@ -231,7 +228,93 @@ async def test_refresh_environment_caches_sets_last_modified_if_environment_was_
     assert if_modified_since == "Sun, 20 Jul 1969 20:17:40 GMT"
 
 
-@pytest.mark.asyncio
+async def test_refresh_environment_caches__deleted_identity_override__cached_expected(
+    mocker: MockerFixture,
+) -> None:
+    # Given
+    modified_document = copy.deepcopy(environment_1)
+    modified_document["identity_overrides"] = []
+
+    mocked_client = mocker.AsyncMock()
+    mocked_client.get.side_effect = [
+        mocker.MagicMock(
+            text=orjson.dumps(environment_1), raise_for_status=lambda: None
+        ),
+        mocker.MagicMock(
+            text=orjson.dumps(modified_document), raise_for_status=lambda: None
+        ),
+    ]
+    settings
+
+    environment_service = EnvironmentService(
+        settings=AppSettings(
+            api_url="http://127.0.0.1:8000/api/v1",
+            environment_key_pairs=[
+                {
+                    "server_side_key": "ser.key1",
+                    "client_side_key": environment_1_api_key,
+                },
+            ],
+        ),
+        client=mocked_client,
+    )
+
+    # When
+    await environment_service.refresh_environment_caches()
+
+    # Then
+    assert environment_service.get_identity_response_data(
+        IdentityWithTraits(identifier="overridden-id"),
+        environment_1_api_key,
+    ) == {
+        "flags": [
+            {
+                "enabled": True,
+                "feature": {
+                    "id": 1,
+                    "name": "feature_1",
+                    "type": "STANDARD",
+                },
+                "feature_state_value": "identity_override",
+            },
+            {
+                "enabled": True,
+                "feature": {
+                    "id": 2,
+                    "name": "feature_2",
+                    "type": "STANDARD",
+                },
+                "feature_state_value": "2.3",
+            },
+        ],
+        "traits": [],
+    }
+
+    # When
+    # We refresh the environment caches again
+    # and receive a document with the identity override removed
+    await environment_service.refresh_environment_caches()
+
+    # Then
+    assert environment_service.get_identity_response_data(
+        IdentityWithTraits(identifier="overridden-id"), environment_1_api_key
+    ) == {
+        "flags": [
+            {
+                "enabled": False,
+                "feature": {"id": 1, "name": "feature_1", "type": "STANDARD"},
+                "feature_state_value": "feature_1_value",
+            },
+            {
+                "enabled": True,
+                "feature": {"id": 2, "name": "feature_2", "type": "STANDARD"},
+                "feature_state_value": "2.3",
+            },
+        ],
+        "traits": [],
+    }
+
+
 async def test_get_identity_flags_response_skips_cache_for_different_identity(
     mocker: MockerFixture,
 ) -> None:
@@ -270,7 +353,6 @@ async def test_get_identity_flags_response_skips_cache_for_different_identity(
     assert environment_service.get_identity_response_data.cache_info().hits == 0
 
 
-@pytest.mark.asyncio
 async def test_get_flags_response_data_skips_filter_for_server_key(
     mocker: MockerFixture,
 ) -> None:
@@ -301,7 +383,6 @@ async def test_get_flags_response_data_skips_filter_for_server_key(
     assert specific_flag.get("feature").get("name") == "feature_3"
 
 
-@pytest.mark.asyncio
 async def test_get_flags_response_data_filters_server_side_features_for_client_key(
     mocker: MockerFixture,
 ) -> None:
@@ -332,7 +413,6 @@ async def test_get_flags_response_data_filters_server_side_features_for_client_k
     assert len(flags) == 2
 
 
-@pytest.mark.asyncio
 async def test_get_identity_flags_response_skips_filter_for_server_key(
     mocker: MockerFixture,
 ) -> None:

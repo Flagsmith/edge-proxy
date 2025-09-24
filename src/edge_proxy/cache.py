@@ -1,6 +1,6 @@
+from abc import ABC
 from collections import defaultdict
 from typing import Any
-from abc import ABC
 
 
 class BaseEnvironmentsCache(ABC):
@@ -57,11 +57,12 @@ class LocalMemEnvironmentsCache(BaseEnvironmentsCache):
         environment_document: dict[str, Any],
     ) -> None:
         self._environment_cache[environment_api_key] = environment_document
-        for identity_document in environment_document.get("identity_overrides") or []:
-            if identifier := identity_document.get("identifier"):
-                self._identity_override_cache[environment_api_key][identifier] = (
-                    identity_document
-                )
+        new_overrides = environment_document.get("identity_overrides") or []
+        self._identity_override_cache[environment_api_key] = {
+            identifier: identity_document
+            for identity_document in new_overrides
+            if (identifier := identity_document.get("identifier"))
+        }
 
     def get_environment(
         self,

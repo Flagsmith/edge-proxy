@@ -1,5 +1,24 @@
+# Changelog
+
+## [2.21.1](https://github.com/Flagsmith/edge-proxy/compare/v2.21.0...v2.21.1) (2025-09-25)
+
+
+### Bug Fixes
+
+* Deleted identity overrides not synchronised ([#170](https://github.com/Flagsmith/edge-proxy/issues/170)) ([c105be6](https://github.com/Flagsmith/edge-proxy/commit/c105be67e421655501f8af08191ec9f731d01f8b))
+
+
+### CI
+
+* Integrate release-please ([#171](https://github.com/Flagsmith/edge-proxy/issues/171)) ([2f7d449](https://github.com/Flagsmith/edge-proxy/commit/2f7d44986a890c5def08f15314e3f0e102c35de7))
+
+
+### Other
+
+* add root CODEOWNERS ([#166](https://github.com/Flagsmith/edge-proxy/issues/166)) ([615a359](https://github.com/Flagsmith/edge-proxy/commit/615a3594f6b8a53f238ea520fe497b1ce6e2877d))
+
 <a name="v2.21.0"></a>
-# [v2.21.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.21.0) - 19 Aug 2025
+## [v2.21.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.21.0) - 19 Aug 2025
 
 ## What's Changed
 * chore: bumped-version-and-regenerated-lock-files by [@Zaimwa9](https://github.com/Zaimwa9) in https://github.com/Flagsmith/edge-proxy/pull/163
@@ -16,7 +35,7 @@
 
 
 <a name="v2.20.0"></a>
-# [v2.20.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.20.0) - 18 Jul 2025
+## [v2.20.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.20.0) - 18 Jul 2025
 
 ## What's Changed
 * feat: Add environment document endpoint by [@rolodato](https://github.com/rolodato) in https://github.com/Flagsmith/edge-proxy/pull/150
@@ -29,7 +48,7 @@
 
 
 <a name="v2.19.0"></a>
-# [v2.19.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.19.0) - 30 Apr 2025
+## [v2.19.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.19.0) - 30 Apr 2025
 
 ## What's Changed
 
@@ -42,7 +61,7 @@
 
 
 <a name="v2.18.0"></a>
-# [v2.18.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.18.0) - 08 Apr 2025
+## [v2.18.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.18.0) - 08 Apr 2025
 
 ## What's Changed
 
@@ -59,7 +78,7 @@
 
 
 <a name="v2.17.0"></a>
-# [v2.17.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.17.0) - 19 Dec 2024
+## [v2.17.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.17.0) - 19 Dec 2024
 
 ## What's Changed
 * feat: Add GET /api/v1/identities endpoint by [@rolodato](https://github.com/rolodato) in https://github.com/Flagsmith/edge-proxy/pull/135
@@ -73,7 +92,7 @@
 
 
 <a name="v2.16.0"></a>
-# [v2.16.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.16.0) - 20 Nov 2024
+## [v2.16.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.16.0) - 20 Nov 2024
 
 ## What's Changed
 * [pre-commit.ci] pre-commit autoupdate by [@pre-commit-ci](https://github.com/pre-commit-ci) in https://github.com/Flagsmith/edge-proxy/pull/127
@@ -89,7 +108,7 @@
 
 
 <a name="v2.15.1"></a>
-# [v2.15.1](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.15.1) - 04 Oct 2024
+## [v2.15.1](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.15.1) - 04 Oct 2024
 
 ## What's Changed
 * [pre-commit.ci] pre-commit autoupdate by [@pre-commit-ci](https://github.com/pre-commit-ci) in https://github.com/Flagsmith/edge-proxy/pull/124
@@ -102,7 +121,7 @@
 
 
 <a name="v2.15.0"></a>
-# [v2.15.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.15.0) - 04 Sep 2024
+## [v2.15.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.15.0) - 04 Sep 2024
 
 ## What's Changed
 * docs: add example docker-compose.yml by [@matthewelwell](https://github.com/matthewelwell) in https://github.com/Flagsmith/edge-proxy/pull/121
@@ -118,7 +137,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.14.0"></a>
-# [v2.14.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.14.0) - 04 Sep 2024
+## [v2.14.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.14.0) - 04 Sep 2024
 
 ## What's Changed
 * feat: make health check configurable by [@matthewelwell](https://github.com/matthewelwell) in https://github.com/Flagsmith/edge-proxy/pull/122
@@ -130,7 +149,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.13.0"></a>
-# [Version 2.13.0 (v2.13.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.13.0) - 18 Jun 2024
+## [Version 2.13.0 (v2.13.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.13.0) - 18 Jun 2024
 
 ## What's Changed
 * feat: Add identity overrides support by [@khvn26](https://github.com/khvn26) in https://github.com/Flagsmith/edge-proxy/pull/110
@@ -151,7 +170,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.12.0"></a>
-# [Version 2.12.0 (v2.12.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.12.0) - 16 Apr 2024
+## [Version 2.12.0 (v2.12.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.12.0) - 16 Apr 2024
 
 ## What's Changed
 * chore(deps): bump idna from 3.4 to 3.7 by [@dependabot](https://github.com/dependabot) in https://github.com/Flagsmith/edge-proxy/pull/99
@@ -169,7 +188,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.11.0"></a>
-# [Version 2.11.0 (v2.11.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.11.0) - 08 Apr 2024
+## [Version 2.11.0 (v2.11.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.11.0) - 08 Apr 2024
 
 ## What's Changed
 * refac!: Remove sse by [@gagantrivedi](https://github.com/gagantrivedi) in https://github.com/Flagsmith/edge-proxy/pull/83
@@ -190,7 +209,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.10.1"></a>
-# [Version 2.10.1 (v2.10.1)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.10.1) - 29 Feb 2024
+## [Version 2.10.1 (v2.10.1)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.10.1) - 29 Feb 2024
 
 ## What's Changed
 * chore(deps): bump orjson from 3.9.7 to 3.9.15 by [@dependabot](https://github.com/dependabot) in https://github.com/Flagsmith/edge-proxy/pull/88
@@ -203,7 +222,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.10.0"></a>
-# [Version 2.10.0 (v2.10.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.10.0) - 26 Jan 2024
+## [Version 2.10.0 (v2.10.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.10.0) - 26 Jan 2024
 
 ## What's Changed
 * perf: add lru cache by [@matthewelwell](https://github.com/matthewelwell) in https://github.com/Flagsmith/edge-proxy/pull/84
@@ -216,7 +235,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.9.0"></a>
-# [Version 2.9.0 (v2.9.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.9.0) - 26 Jan 2024
+## [Version 2.9.0 (v2.9.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.9.0) - 26 Jan 2024
 
 ## What's Changed
 * chore: upgrade to py312 by [@matthewelwell](https://github.com/matthewelwell) in https://github.com/Flagsmith/edge-proxy/pull/85
@@ -228,7 +247,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.8.0"></a>
-# [v2.8.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.8.0) - 09 Nov 2023
+## [v2.8.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.8.0) - 09 Nov 2023
 
 ## What's Changed
 * Enable gzip-compressing middleware by [@goncalossilva](https://github.com/goncalossilva) in https://github.com/Flagsmith/edge-proxy/pull/80
@@ -240,7 +259,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.7.0"></a>
-# [v2.7.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.7.0) - 01 Nov 2023
+## [v2.7.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.7.0) - 01 Nov 2023
 
 ## What's Changed
 * chore(deps): bump urllib3 from 2.0.4 to 2.0.6 by [@dependabot](https://github.com/dependabot) in https://github.com/Flagsmith/edge-proxy/pull/78
@@ -253,7 +272,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.6.0"></a>
-# [v2.6.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.6.0) - 29 Sep 2023
+## [v2.6.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.6.0) - 29 Sep 2023
 
 ## What's Changed
 * Return JSONResponse(dict) instead of dict by [@goncalossilva](https://github.com/goncalossilva) in https://github.com/Flagsmith/edge-proxy/pull/75
@@ -270,7 +289,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.5.0"></a>
-# [v2.5.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.5.0) - 18 Sep 2023
+## [v2.5.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.5.0) - 18 Sep 2023
 
 ## What's Changed
 * chore(deps): bump redis from 4.4.1 to 4.4.4 by [@dependabot](https://github.com/dependabot) in https://github.com/Flagsmith/edge-proxy/pull/62
@@ -291,7 +310,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.4.0"></a>
-# [Version 2.4.0 (v2.4.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.4.0) - 30 Jun 2023
+## [Version 2.4.0 (v2.4.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.4.0) - 30 Jun 2023
 
 ## What's Changed
 * improve comment by [@gagantrivedi](https://github.com/gagantrivedi) in https://github.com/Flagsmith/edge-proxy/pull/57
@@ -308,7 +327,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.3.2"></a>
-# [v2.3.2](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.3.2) - 01 Mar 2023
+## [v2.3.2](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.3.2) - 01 Mar 2023
 
 ## What's Changed
 * fix prod redis hostname(remove port) by [@gagantrivedi](https://github.com/gagantrivedi) in https://github.com/Flagsmith/edge-proxy/pull/56
@@ -320,7 +339,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.3.1"></a>
-# [v2.3.1](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.3.1) - 01 Mar 2023
+## [v2.3.1](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.3.1) - 01 Mar 2023
 
 ## What's Changed
 * fix(sse/prod): Add redis prod cluster by [@gagantrivedi](https://github.com/gagantrivedi) in https://github.com/Flagsmith/edge-proxy/pull/54
@@ -332,7 +351,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.3.0"></a>
-# [v2.3.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.3.0) - 27 Feb 2023
+## [v2.3.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.3.0) - 27 Feb 2023
 
 ## What's Changed
 * feat(stream/environment): Add last_update_at and remove identity events from stream  by [@gagantrivedi](https://github.com/gagantrivedi) in https://github.com/Flagsmith/edge-proxy/pull/48
@@ -346,7 +365,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.2.3"></a>
-# [v2.2.3](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.2.3) - 19 Oct 2022
+## [v2.2.3](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.2.3) - 19 Oct 2022
 
 ## What's Changed
 * fix(engine): run in autocommit mode by [@gagantrivedi](https://github.com/gagantrivedi) in https://github.com/Flagsmith/edge-proxy/pull/46
@@ -358,7 +377,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.2.2"></a>
-# [v2.2.2](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.2.2) - 18 Oct 2022
+## [v2.2.2](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.2.2) - 18 Oct 2022
 
 ## What's Changed
 * remove --no-access-logs from task definition by [@gagantrivedi](https://github.com/gagantrivedi) in https://github.com/Flagsmith/edge-proxy/pull/45
@@ -370,7 +389,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.2.1"></a>
-# [v2.2.1](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.2.1) - 18 Oct 2022
+## [v2.2.1](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.2.1) - 18 Oct 2022
 
 ## What's Changed
 * enable access logs by [@gagantrivedi](https://github.com/gagantrivedi) in https://github.com/Flagsmith/edge-proxy/pull/43
@@ -382,7 +401,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.2.0"></a>
-# [v2.2.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.2.0) - 11 Oct 2022
+## [v2.2.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.2.0) - 11 Oct 2022
 
 ## What's Changed
 * Improvement: Add identity update event and auth by [@gagantrivedi](https://github.com/gagantrivedi) in https://github.com/Flagsmith/edge-proxy/pull/27
@@ -400,7 +419,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.1.2"></a>
-# [v2.1.2](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.1.2) - 21 Sep 2022
+## [v2.1.2](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.1.2) - 21 Sep 2022
 
 ## What's Changed
 * Fix/warning by [@gagantrivedi](https://github.com/gagantrivedi) in https://github.com/Flagsmith/edge-proxy/pull/25
@@ -416,7 +435,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.1.1"></a>
-# [v2.1.1](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.1.1) - 23 Aug 2022
+## [v2.1.1](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.1.1) - 23 Aug 2022
 
 ## What's Changed
 * chore: bump flagsmith-flag-engine by [@gagantrivedi](https://github.com/gagantrivedi) in https://github.com/Flagsmith/edge-proxy/pull/21
@@ -429,7 +448,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.1.0"></a>
-# [v2.1.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.1.0) - 22 Aug 2022
+## [v2.1.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.1.0) - 22 Aug 2022
 
 ## What's Changed
 * Feat/sse by [@gagantrivedi](https://github.com/gagantrivedi) in https://github.com/Flagsmith/edge-proxy/pull/17
@@ -444,7 +463,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v2.0.0"></a>
-# [v2.0.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.0.0) - 12 Jul 2022
+## [v2.0.0](https://github.com/Flagsmith/edge-proxy/releases/tag/v2.0.0) - 12 Jul 2022
 
 ## What's Changed
 * Chore/remove isort use reorder by [@gagantrivedi](https://github.com/gagantrivedi) in https://github.com/Flagsmith/edge-proxy/pull/8
@@ -458,7 +477,7 @@ Undocumented settings `health_check.count_stale_documents_as_failing` and `healt
 
 
 <a name="v1.0.0"></a>
-# [Version 1.0.0 (v1.0.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v1.0.0) - 06 Jan 2022
+## [Version 1.0.0 (v1.0.0)](https://github.com/Flagsmith/edge-proxy/releases/tag/v1.0.0) - 06 Jan 2022
 
 Initial release
 

@@ -6,8 +6,6 @@
 #   features: []
 #   all-features: false
 #   with-sources: false
-#   generate-hashes: false
-#   universal: false
 
 -e file:.
 annotated-types==0.6.0
@@ -22,7 +20,7 @@ click==8.1.7
     # via uvicorn
 fastapi==0.110.1
     # via edge-proxy
-flagsmith-flag-engine==6.0.0
+flagsmith-flag-engine==6.1.0
     # via edge-proxy
 h11==0.14.0
     # via httpcore

@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.21.2](https://github.com/Flagsmith/edge-proxy/compare/v2.21.1...v2.21.2) (2025-11-19)
+
+
+### Dependency Updates
+
+* update flagsmith-flag-engine to 6.1.0 ([70ddbef](https://github.com/Flagsmith/edge-proxy/commit/70ddbefd3e51d1f2b1f94e51211862bf08a0660d))
+
 ## [2.21.1](https://github.com/Flagsmith/edge-proxy/compare/v2.21.0...v2.21.1) (2025-09-25)
 
 

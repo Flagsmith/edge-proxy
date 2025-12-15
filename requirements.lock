@@ -6,6 +6,8 @@
 #   features: []
 #   all-features: false
 #   with-sources: false
+#   generate-hashes: false
+#   universal: false
 
 -e file:.
 annotated-types==0.6.0
@@ -16,12 +18,18 @@ anyio==4.3.0
 certifi==2024.2.2
     # via httpcore
     # via httpx
+    # via requests
+charset-normalizer==3.4.4
+    # via requests
 click==8.1.7
     # via uvicorn
 fastapi==0.110.1
     # via edge-proxy
-flagsmith-flag-engine==6.1.0
+flagsmith==5.0.3
     # via edge-proxy
+flagsmith-flag-engine==10.0.3
+    # via edge-proxy
+    # via flagsmith
 h11==0.14.0
     # via httpcore
     # via uvicorn
@@ -32,6 +40,11 @@ httpx==0.27.0
 idna==3.6
     # via anyio
     # via httpx
+    # via requests
+iregexp-check==0.1.4
+    # via jsonpath-rfc9535
+jsonpath-rfc9535==0.2.0
+    # via flagsmith-flag-engine
 marshmallow==3.21.1
     # via edge-proxy
 orjson==3.10.0
@@ -41,11 +54,7 @@ packaging==24.0
 pydantic==2.7.1
     # via edge-proxy
     # via fastapi
-    # via flagsmith-flag-engine
-    # via pydantic-collections
     # via pydantic-settings
-pydantic-collections==0.5.4
-    # via flagsmith-flag-engine
 pydantic-core==2.18.2
     # via pydantic
 pydantic-settings==2.2.1
@@ -55,19 +64,31 @@ python-decouple==3.8
 python-dotenv==1.0.1
     # via edge-proxy
     # via pydantic-settings
-semver==3.0.2
+regex==2025.11.3
+    # via jsonpath-rfc9535
+requests==2.32.5
+    # via flagsmith
+    # via requests-futures
+requests-futures==1.0.2
+    # via flagsmith
+semver==3.0.4
     # via flagsmith-flag-engine
 sniffio==1.3.1
     # via anyio
     # via httpx
+sseclient-py==1.8.0
+    # via flagsmith
 starlette==0.37.2
     # via fastapi
 structlog==24.1.0
     # via edge-proxy
-typing-extensions==4.11.0
+typing-extensions==4.15.0
     # via fastapi
+    # via flagsmith
+    # via flagsmith-flag-engine
     # via pydantic
-    # via pydantic-collections
     # via pydantic-core
+urllib3==2.6.2
+    # via requests
 uvicorn==0.29.0
     # via edge-proxy

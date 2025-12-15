@@ -4,7 +4,8 @@ name = "edge-proxy"
 license = { file = "LICENSE" }
 dependencies = [
     "fastapi",
-    "flagsmith-flag-engine>=6,<7",
+    "flagsmith-flag-engine>=10,<11",
+    "flagsmith>=5",
     "httpx",
     "marshmallow",
     "orjson",

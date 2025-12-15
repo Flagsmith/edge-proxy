@@ -6,21 +6,19 @@ from functools import lru_cache
 import httpx
 import starlette.status
 import structlog
-from flag_engine.engine import (
-    get_environment_feature_state,
-    get_environment_feature_states,
-    get_identity_feature_states,
+from flag_engine.engine import get_evaluation_result
+from flagsmith.mappers import (
+    map_environment_document_to_context,
+    map_context_and_identity_data_to_context,
 )
-from flag_engine.environments.models import EnvironmentModel
-from flag_engine.identities.models import IdentityModel
 from orjson import orjson
 
 from edge_proxy.cache import BaseEnvironmentsCache, LocalMemEnvironmentsCache
 from edge_proxy.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
-from edge_proxy.feature_utils import filter_out_server_key_only_feature_states
+from edge_proxy.feature_utils import filter_out_server_key_only_flags
 from edge_proxy.mappers import (
-    map_feature_state_to_response_data,
-    map_feature_states_to_response_data,
+    map_flag_result_to_response_data,
+    map_flag_results_to_response_data,
     map_traits_to_response_data,
 )
 from edge_proxy.models import IdentityWithTraits
@@ -29,6 +27,15 @@ from edge_proxy.settings import AppSettings, EnvironmentKeyPair
 logger = structlog.get_logger(__name__)
 
 SERVER_API_KEY_PREFIX = "ser."
+
+
+def _filter_disabled_flags(
+    flags: list[dict[str, Any]], hide_disabled_flags: bool
+) -> list[dict[str, Any]]:
+    """Filter out disabled flags if hide_disabled_flags is enabled."""
+    if not hide_disabled_flags:
+        return flags
+    return [flag for flag in flags if flag.get("enabled", False)]
 
 
 class EnvironmentService:
@@ -78,28 +85,51 @@ class EnvironmentService:
         self, environment_key: str, feature: str = None
     ) -> dict[str, Any]:
         environment_document = self.get_environment(environment_key=environment_key)
-        environment = EnvironmentModel.model_validate(environment_document)
         is_server_key = environment_key.startswith(SERVER_API_KEY_PREFIX)
+        server_key_only_feature_ids = environment_document.get("project", {}).get(
+            "server_key_only_feature_ids", []
+        )
+        hide_disabled_flags = environment_document.get("project", {}).get(
+            "hide_disabled_flags", False
+        )
+
+        # Build evaluation context from environment document
+        context = map_environment_document_to_context(environment_document)
+
+        # Get evaluation result
+        evaluation_result = get_evaluation_result(context)
 
         if feature:
-            feature_state = get_environment_feature_state(environment, feature)
-
-            if not is_server_key and not filter_out_server_key_only_feature_states(
-                feature_states=[feature_state],
-                environment=environment,
-            ):
+            # Get specific feature
+            if feature not in evaluation_result["flags"]:
                 raise FeatureNotFoundError()
 
-            data = map_feature_state_to_response_data(feature_state)
+            flag_result = evaluation_result["flags"][feature]
+
+            # Filter server-key-only features if not a server key
+            if not is_server_key:
+                filtered = filter_out_server_key_only_flags(
+                    [flag_result], server_key_only_feature_ids
+                )
+                if not filtered:
+                    raise FeatureNotFoundError()
+
+            data = map_flag_result_to_response_data(flag_result)
 
         else:
-            feature_states = get_environment_feature_states(environment)
+            # Get all features
+            flags = list(evaluation_result["flags"].values())
+
+            # Filter server-key-only features if not a server key
             if not is_server_key:
-                feature_states = filter_out_server_key_only_feature_states(
-                    feature_states=feature_states,
-                    environment=environment,
+                flags = filter_out_server_key_only_flags(
+                    flags, server_key_only_feature_ids
                 )
-            data = map_feature_states_to_response_data(feature_states)
+
+            # Filter disabled flags if hide_disabled_flags is enabled
+            flags = _filter_disabled_flags(flags, hide_disabled_flags)
+
+            data = map_flag_results_to_response_data(flags)
 
         return data
 
@@ -107,33 +137,38 @@ class EnvironmentService:
         self, input_data: IdentityWithTraits, environment_key: str
     ) -> dict[str, Any]:
         environment_document = self.get_environment(environment_key=environment_key)
-        environment = EnvironmentModel.model_validate(environment_document)
         is_server_key = environment_key.startswith(SERVER_API_KEY_PREFIX)
-
-        identity = IdentityModel.model_validate(
-            self.cache.get_identity(
-                environment_api_key=environment_key,
-                identifier=input_data.identifier,
-            )
+        server_key_only_feature_ids = environment_document.get("project", {}).get(
+            "server_key_only_feature_ids", []
         )
-        trait_models = input_data.traits
-        flags = get_identity_feature_states(
-            environment,
-            identity,
-            override_traits=trait_models,
+        hide_disabled_flags = environment_document.get("project", {}).get(
+            "hide_disabled_flags", False
         )
 
+        # Build evaluation context from environment document
+        context = map_environment_document_to_context(environment_document)
+
+        # Add identity to context
+        context = map_context_and_identity_data_to_context(
+            context=context,
+            identifier=input_data.identifier,
+            traits=input_data.traits,
+        )
+
+        # Get evaluation result
+        evaluation_result = get_evaluation_result(context)
+
+        # Filter server-key-only features if not a server key
+        flags = list(evaluation_result["flags"].values())
         if not is_server_key:
-            flags = filter_out_server_key_only_feature_states(
-                feature_states=flags,
-                environment=environment,
-            )
+            flags = filter_out_server_key_only_flags(flags, server_key_only_feature_ids)
+
+        # Filter disabled flags if hide_disabled_flags is enabled
+        flags = _filter_disabled_flags(flags, hide_disabled_flags)
+
         data = {
-            "traits": map_traits_to_response_data(trait_models),
-            "flags": map_feature_states_to_response_data(
-                flags,
-                identity_hash_key=identity.composite_key,
-            ),
+            "traits": map_traits_to_response_data(input_data.traits),
+            "flags": map_flag_results_to_response_data(flags),
         }
         return data
 

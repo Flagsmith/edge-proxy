@@ -6,7 +6,10 @@ from pytest_mock import MockerFixture
 
 from edge_proxy.main import serve
 from edge_proxy.settings import EnvironmentKeyPair
-from tests.fixtures.response_data import environment_1
+from tests.fixtures.response_data import (
+    environment_1,
+    environment_with_hide_disabled_flags,
+)
 
 if typing.TYPE_CHECKING:
     from edge_proxy.environments import EnvironmentService
@@ -101,15 +104,10 @@ def test_post_identity_with_traits(
     client: TestClient,
 ):
     environment_key = "test_environment_key"
-    identifier = "do_it_all_in_one_go_identity"
     mocked_environment_cache = mocker.patch(
         "edge_proxy.server.environment_service.cache"
     )
     mocked_environment_cache.get_environment.return_value = environment_1
-    mocked_environment_cache.get_identity.return_value = {
-        "environment_api_key": environment_key,
-        "identifier": identifier,
-    }
     data = {
         "traits": [{"trait_value": "test", "trait_key": "first_name"}],
         "identifier": "do_it_all_in_one_go_identity",
@@ -124,10 +122,8 @@ def test_post_identity_with_traits(
         "traits": data["traits"],
     }
     mocked_environment_cache.get_environment.assert_called_with(environment_key)
-    mocked_environment_cache.get_identity.assert_called_with(
-        environment_api_key=environment_key,
-        identifier=identifier,
-    )
+    # Note: With engine v10+, we no longer need to fetch identity from cache
+    # The identifier and traits are passed directly to the evaluation context
 
 
 def test_post_identity__environment_with_overrides__expected_response(
@@ -186,9 +182,6 @@ def test_post_identity__invalid_trait_data__expected_response(
     assert response.json()["detail"][-1]["loc"] == [
         "body",
         "traits",
-        0,
-        "trait_value",
-        "constrained-str",
     ]
     assert response.json()["detail"][-1]["type"] == "string_too_long"
 
@@ -282,3 +275,113 @@ def test_get_environment_document_wrong_key(
     )
     # Then
     assert response.status_code == 401
+
+
+def test_get_flags__hide_disabled_flags_enabled__only_returns_enabled_flags(
+    mocker: MockerFixture,
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    mocked_environment_cache = mocker.patch(
+        "edge_proxy.server.environment_service.cache"
+    )
+    mocked_environment_cache.get_environment.return_value = (
+        environment_with_hide_disabled_flags
+    )
+
+    # When
+    response = client.get(
+        "/api/v1/flags", headers={"X-Environment-Key": environment_key}
+    )
+
+    # Then
+    assert response.status_code == 200
+    flags = response.json()
+    assert len(flags) == 1
+    assert flags[0]["feature"]["name"] == "feature_2"
+    assert flags[0]["enabled"] is True
+
+
+def test_get_flags__hide_disabled_flags_disabled__returns_all_flags(
+    mocker: MockerFixture,
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    mocked_environment_cache = mocker.patch(
+        "edge_proxy.server.environment_service.cache"
+    )
+    mocked_environment_cache.get_environment.return_value = environment_1
+
+    # When
+    response = client.get(
+        "/api/v1/flags", headers={"X-Environment-Key": environment_key}
+    )
+
+    # Then
+    assert response.status_code == 200
+    flags = response.json()
+    assert len(flags) == 2
+
+
+def test_post_identity__hide_disabled_flags_enabled__only_returns_enabled_flags(
+    mocker: MockerFixture,
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    mocked_environment_cache = mocker.patch(
+        "edge_proxy.server.environment_service.cache"
+    )
+    mocked_environment_cache.get_environment.return_value = (
+        environment_with_hide_disabled_flags
+    )
+    data = {
+        "identifier": "test_identifier",
+        "traits": [],
+    }
+
+    # When
+    response = client.post(
+        "/api/v1/identities/",
+        headers={"X-Environment-Key": environment_key},
+        content=orjson.dumps(data),
+    )
+
+    # Then
+    assert response.status_code == 200
+    response_data = response.json()
+    flags = response_data["flags"]
+    assert len(flags) == 1
+    assert flags[0]["feature"]["name"] == "feature_2"
+    assert flags[0]["enabled"] is True
+
+
+def test_post_identity__hide_disabled_flags_disabled__returns_all_flags(
+    mocker: MockerFixture,
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    mocked_environment_cache = mocker.patch(
+        "edge_proxy.server.environment_service.cache"
+    )
+    mocked_environment_cache.get_environment.return_value = environment_1
+    data = {
+        "identifier": "test_identifier",
+        "traits": [],
+    }
+
+    # When
+    response = client.post(
+        "/api/v1/identities/",
+        headers={"X-Environment-Key": environment_key},
+        content=orjson.dumps(data),
+    )
+
+    # Then
+    assert response.status_code == 200
+    response_data = response.json()
+    flags = response_data["flags"]
+    assert len(flags) == 2

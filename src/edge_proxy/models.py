@@ -1,15 +1,40 @@
-from flag_engine.identities.models import TraitModel
-from pydantic import BaseModel, Field
+from typing import Any
+from flag_engine.engine import ContextValue
+from pydantic import BaseModel, Field, field_validator
+from pydantic_core import PydanticCustomError
 
 
 class IdentityWithTraits(BaseModel):
     identifier: str
-    traits: list[TraitModel] = Field(default_factory=list)
+    traits: dict[str, ContextValue] = Field(default_factory=dict)
+
+    @field_validator("traits", mode="before")
+    @classmethod
+    def convert_traits_list_to_dict(cls, v: Any) -> dict[str, ContextValue]:
+        """Convert traits from list format to dict format for backward compatibility."""
+        if isinstance(v, list):
+            return {trait["trait_key"]: trait["trait_value"] for trait in v}
+        return v
+
+    @field_validator("traits")
+    @classmethod
+    def validate_trait_value_length(
+        cls, v: dict[str, ContextValue]
+    ) -> dict[str, ContextValue]:
+        """Validate that trait values don't exceed 2000 characters."""
+        for key, value in v.items():
+            if isinstance(value, str) and len(value) > 2000:
+                raise PydanticCustomError(
+                    "string_too_long",
+                    "String should have at most 2000 characters",
+                    {"max_length": 2000, "actual_length": len(value)},
+                )
+        return v
 
     def __str__(self):
         return "identifier:%s|traits:%s" % (
             self.identifier,
-            ",".join([f"{t.trait_key}={str(t.trait_value)}" for t in self.traits]),
+            ",".join([f"{k}={str(v)}" for k, v in self.traits.items()]),
         )
 
     def __hash__(self):

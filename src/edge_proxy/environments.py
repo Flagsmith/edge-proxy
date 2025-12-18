@@ -32,7 +32,6 @@ SERVER_API_KEY_PREFIX = "ser."
 def _filter_disabled_flags(
     flags: list[dict[str, Any]], hide_disabled_flags: bool
 ) -> list[dict[str, Any]]:
-    """Filter out disabled flags if hide_disabled_flags is enabled."""
     if not hide_disabled_flags:
         return flags
     return [flag for flag in flags if flag.get("enabled", False)]
@@ -93,20 +92,15 @@ class EnvironmentService:
             "hide_disabled_flags", False
         )
 
-        # Build evaluation context from environment document
         context = map_environment_document_to_context(environment_document)
-
-        # Get evaluation result
         evaluation_result = get_evaluation_result(context)
 
         if feature:
-            # Get specific feature
             if feature not in evaluation_result["flags"]:
                 raise FeatureNotFoundError()
 
             flag_result = evaluation_result["flags"][feature]
 
-            # Filter server-key-only features if not a server key
             if not is_server_key:
                 filtered = filter_out_server_key_only_flags(
                     [flag_result], server_key_only_feature_ids
@@ -117,18 +111,14 @@ class EnvironmentService:
             data = map_flag_result_to_response_data(flag_result)
 
         else:
-            # Get all features
             flags = list(evaluation_result["flags"].values())
 
-            # Filter server-key-only features if not a server key
             if not is_server_key:
                 flags = filter_out_server_key_only_flags(
                     flags, server_key_only_feature_ids
                 )
 
-            # Filter disabled flags if hide_disabled_flags is enabled
             flags = _filter_disabled_flags(flags, hide_disabled_flags)
-
             data = map_flag_results_to_response_data(flags)
 
         return data
@@ -145,25 +135,19 @@ class EnvironmentService:
             "hide_disabled_flags", False
         )
 
-        # Build evaluation context from environment document
         context = map_environment_document_to_context(environment_document)
-
-        # Add identity to context
         context = map_context_and_identity_data_to_context(
             context=context,
             identifier=input_data.identifier,
             traits=input_data.traits,
         )
 
-        # Get evaluation result
         evaluation_result = get_evaluation_result(context)
 
-        # Filter server-key-only features if not a server key
         flags = list(evaluation_result["flags"].values())
         if not is_server_key:
             flags = filter_out_server_key_only_flags(flags, server_key_only_feature_ids)
 
-        # Filter disabled flags if hide_disabled_flags is enabled
         flags = _filter_disabled_flags(flags, hide_disabled_flags)
 
         data = {

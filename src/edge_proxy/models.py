@@ -11,7 +11,7 @@ class IdentityWithTraits(BaseModel):
     @field_validator("traits", mode="before")
     @classmethod
     def convert_traits_list_to_dict(cls, v: Any) -> dict[str, ContextValue]:
-        """Convert traits from list format to dict format for backward compatibility."""
+        """Convert legacy list format to dict."""
         if isinstance(v, list):
             return {trait["trait_key"]: trait["trait_value"] for trait in v}
         return v
@@ -21,7 +21,7 @@ class IdentityWithTraits(BaseModel):
     def validate_trait_value_length(
         cls, v: dict[str, ContextValue]
     ) -> dict[str, ContextValue]:
-        """Validate that trait values don't exceed 2000 characters."""
+        """Enforce 2000 char limit on trait values."""
         for key, value in v.items():
             if isinstance(value, str) and len(value) > 2000:
                 raise PydanticCustomError(

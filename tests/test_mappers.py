@@ -75,6 +75,27 @@ def test_map_flag_result_to_response_data__return_expected(
     }
 
 
+def test_map_flag_result_to_response_data__with_feature_types__return_expected(
+    multivariate_flag_result: dict[str, Any],
+) -> None:
+    # Given
+    feature_types = {4: "MULTIVARIATE"}
+
+    # When
+    result = map_flag_result_to_response_data(multivariate_flag_result, feature_types)
+
+    # Then
+    assert result == {
+        "enabled": False,
+        "feature": {
+            "id": 4,
+            "name": "multivariate_feature",
+            "type": "MULTIVARIATE",
+        },
+        "feature_state_value": None,
+    }
+
+
 def test_map_flag_results_to_response_data__return_expected(
     flag_result: dict[str, Any],
     multivariate_flag_result: dict[str, Any],
@@ -102,6 +123,40 @@ def test_map_flag_results_to_response_data__return_expected(
                 "id": 4,
                 "name": "multivariate_feature",
                 "type": "STANDARD",
+            },
+            "feature_state_value": None,
+        },
+    ]
+
+
+def test_map_flag_results_to_response_data__with_feature_types__return_expected(
+    flag_result: dict[str, Any],
+    multivariate_flag_result: dict[str, Any],
+) -> None:
+    # Given
+    flag_results = [flag_result, multivariate_flag_result]
+    feature_types = {1: "STANDARD", 4: "MULTIVARIATE"}
+
+    # When
+    result = map_flag_results_to_response_data(flag_results, feature_types)
+
+    # Then
+    assert result == [
+        {
+            "enabled": False,
+            "feature": {
+                "id": 1,
+                "name": "feature_1",
+                "type": "STANDARD",
+            },
+            "feature_state_value": "feature_1_value",
+        },
+        {
+            "enabled": False,
+            "feature": {
+                "id": 4,
+                "name": "multivariate_feature",
+                "type": "MULTIVARIATE",
             },
             "feature_state_value": None,
         },

@@ -8,13 +8,15 @@ _api_feature_state_schema = APIFeatureStateSchema()
 
 def map_flag_result_to_response_data(
     flag_result: dict[str, Any],
+    feature_types: dict[int, str] | None = None,
 ) -> dict[str, Any]:
-    """Map a single flag result to API response format."""
+    feature_id = flag_result.get("metadata", {}).get("id")
+    feature_type = (feature_types or {}).get(feature_id, "STANDARD")
     return {
         "feature": {
-            "id": flag_result.get("metadata", {}).get("id"),
+            "id": feature_id,
             "name": flag_result["name"],
-            "type": flag_result.get("type", "STANDARD"),
+            "type": feature_type,
         },
         "enabled": flag_result["enabled"],
         "feature_state_value": flag_result["value"],
@@ -23,10 +25,11 @@ def map_flag_result_to_response_data(
 
 def map_flag_results_to_response_data(
     flag_results: list[dict[str, Any]],
+    feature_types: dict[int, str] | None = None,
 ) -> list[dict[str, Any]]:
-    """Map multiple flag results to API response format."""
     return [
-        map_flag_result_to_response_data(flag_result) for flag_result in flag_results
+        map_flag_result_to_response_data(flag_result, feature_types)
+        for flag_result in flag_results
     ]
 
 

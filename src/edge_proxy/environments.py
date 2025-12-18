@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 from datetime import datetime
 from email.utils import formatdate
 from functools import lru_cache
@@ -83,6 +83,10 @@ class EnvironmentService:
         server_key_only_feature_ids = environment_document.get("project", {}).get(
             "server_key_only_feature_ids", []
         )
+        feature_types = {
+            fs["feature"]["id"]: fs["feature"].get("type", "STANDARD")
+            for fs in environment_document.get("feature_states", [])
+        }
 
         context = map_environment_document_to_context(environment_document)
         evaluation_result = get_evaluation_result(context)
@@ -100,7 +104,7 @@ class EnvironmentService:
                 if not filtered:
                     raise FeatureNotFoundError()
 
-            data = map_flag_result_to_response_data(flag_result)
+            data = map_flag_result_to_response_data(flag_result, feature_types)
 
         else:
             flags = list(evaluation_result["flags"].values())
@@ -114,7 +118,7 @@ class EnvironmentService:
                 "hide_disabled_flags", False
             )
             flags = filter_disabled_flags(flags, hide_disabled_flags)
-            data = map_flag_results_to_response_data(flags)
+            data = map_flag_results_to_response_data(flags, feature_types)
 
         return data
 
@@ -126,6 +130,10 @@ class EnvironmentService:
         server_key_only_feature_ids = environment_document.get("project", {}).get(
             "server_key_only_feature_ids", []
         )
+        feature_types = {
+            fs["feature"]["id"]: fs["feature"].get("type", "STANDARD")
+            for fs in environment_document.get("feature_states", [])
+        }
 
         environment_context = map_environment_document_to_context(environment_document)
         context = map_context_and_identity_data_to_context(
@@ -147,14 +155,14 @@ class EnvironmentService:
 
         data = {
             "traits": map_traits_to_response_data(input_data.traits),
-            "flags": map_flag_results_to_response_data(flags),
+            "flags": map_flag_results_to_response_data(flags, feature_types),
         }
         return data
 
     def get_environment(
         self,
         *,
-        environment_key: Optional[str] = None,
+        environment_key: str | None = None,
     ) -> dict[str, Any]:
         if environment_key and environment_key.startswith(SERVER_API_KEY_PREFIX):
             client_side_key = self._get_client_key_from_server_key(environment_key)

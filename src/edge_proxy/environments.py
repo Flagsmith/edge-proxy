@@ -16,6 +16,7 @@ from orjson import orjson
 from edge_proxy.cache import BaseEnvironmentsCache, LocalMemEnvironmentsCache
 from edge_proxy.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
 from edge_proxy.feature_utils import (
+    build_feature_types_lookup,
     filter_disabled_flags,
     filter_out_server_key_only_flags,
 )
@@ -83,10 +84,7 @@ class EnvironmentService:
         server_key_only_feature_ids = environment_document.get("project", {}).get(
             "server_key_only_feature_ids", []
         )
-        feature_types = {
-            fs["feature"]["id"]: fs["feature"].get("type", "STANDARD")
-            for fs in environment_document.get("feature_states", [])
-        }
+        feature_types = build_feature_types_lookup(environment_document)
 
         context = map_environment_document_to_context(environment_document)
         evaluation_result = get_evaluation_result(context)
@@ -130,10 +128,7 @@ class EnvironmentService:
         server_key_only_feature_ids = environment_document.get("project", {}).get(
             "server_key_only_feature_ids", []
         )
-        feature_types = {
-            fs["feature"]["id"]: fs["feature"].get("type", "STANDARD")
-            for fs in environment_document.get("feature_states", [])
-        }
+        feature_types = build_feature_types_lookup(environment_document)
 
         environment_context = map_environment_document_to_context(environment_document)
         context = map_context_and_identity_data_to_context(

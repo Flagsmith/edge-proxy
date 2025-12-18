@@ -1,6 +1,15 @@
 from typing import Any
 
 
+def build_feature_types_lookup(
+    environment_document: dict[str, Any],
+) -> dict[int, str]:
+    return {
+        fs["feature"]["id"]: fs["feature"].get("type", "STANDARD")
+        for fs in environment_document.get("feature_states", [])
+    }
+
+
 def filter_out_server_key_only_flags(
     flags: list[dict[str, Any]],
     server_key_only_feature_ids: list[int],

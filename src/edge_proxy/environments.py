@@ -15,7 +15,10 @@ from orjson import orjson
 
 from edge_proxy.cache import BaseEnvironmentsCache, LocalMemEnvironmentsCache
 from edge_proxy.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
-from edge_proxy.feature_utils import filter_out_server_key_only_flags
+from edge_proxy.feature_utils import (
+    filter_disabled_flags,
+    filter_out_server_key_only_flags,
+)
 from edge_proxy.mappers import (
     map_flag_result_to_response_data,
     map_flag_results_to_response_data,
@@ -27,14 +30,6 @@ from edge_proxy.settings import AppSettings, EnvironmentKeyPair
 logger = structlog.get_logger(__name__)
 
 SERVER_API_KEY_PREFIX = "ser."
-
-
-def _filter_disabled_flags(
-    flags: list[dict[str, Any]], hide_disabled_flags: bool
-) -> list[dict[str, Any]]:
-    if not hide_disabled_flags:
-        return flags
-    return [flag for flag in flags if flag.get("enabled", False)]
 
 
 class EnvironmentService:
@@ -88,9 +83,6 @@ class EnvironmentService:
         server_key_only_feature_ids = environment_document.get("project", {}).get(
             "server_key_only_feature_ids", []
         )
-        hide_disabled_flags = environment_document.get("project", {}).get(
-            "hide_disabled_flags", False
-        )
 
         context = map_environment_document_to_context(environment_document)
         evaluation_result = get_evaluation_result(context)
@@ -118,7 +110,10 @@ class EnvironmentService:
                     flags, server_key_only_feature_ids
                 )
 
-            flags = _filter_disabled_flags(flags, hide_disabled_flags)
+            hide_disabled_flags = environment_document.get("project", {}).get(
+                "hide_disabled_flags", False
+            )
+            flags = filter_disabled_flags(flags, hide_disabled_flags)
             data = map_flag_results_to_response_data(flags)
 
         return data
@@ -131,13 +126,10 @@ class EnvironmentService:
         server_key_only_feature_ids = environment_document.get("project", {}).get(
             "server_key_only_feature_ids", []
         )
-        hide_disabled_flags = environment_document.get("project", {}).get(
-            "hide_disabled_flags", False
-        )
 
-        context = map_environment_document_to_context(environment_document)
+        environment_context = map_environment_document_to_context(environment_document)
         context = map_context_and_identity_data_to_context(
-            context=context,
+            context=environment_context,
             identifier=input_data.identifier,
             traits=input_data.traits,
         )
@@ -148,7 +140,10 @@ class EnvironmentService:
         if not is_server_key:
             flags = filter_out_server_key_only_flags(flags, server_key_only_feature_ids)
 
-        flags = _filter_disabled_flags(flags, hide_disabled_flags)
+        hide_disabled_flags = environment_document.get("project", {}).get(
+            "hide_disabled_flags", False
+        )
+        flags = filter_disabled_flags(flags, hide_disabled_flags)
 
         data = {
             "traits": map_traits_to_response_data(input_data.traits),

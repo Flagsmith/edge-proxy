@@ -84,7 +84,11 @@ class EnvironmentService:
         server_key_only_feature_ids = environment_document.get("project", {}).get(
             "server_key_only_feature_ids", []
         )
-        feature_types = build_feature_types_lookup(environment_document)
+        feature_types = None
+        if hasattr(self.cache, "get_feature_types"):
+            feature_types = self.cache.get_feature_types(environment_key)
+        if feature_types is None:
+            feature_types = build_feature_types_lookup(environment_document)
 
         context = map_environment_document_to_context(environment_document)
         evaluation_result = get_evaluation_result(context)
@@ -134,7 +138,12 @@ class EnvironmentService:
         server_key_only_feature_ids = environment_document.get("project", {}).get(
             "server_key_only_feature_ids", []
         )
-        feature_types = build_feature_types_lookup(environment_document)
+
+        feature_types = None
+        if hasattr(self.cache, "get_feature_types"):
+            feature_types = self.cache.get_feature_types(environment_key)
+        if feature_types is None:
+            feature_types = build_feature_types_lookup(environment_document)
 
         environment_context = map_environment_document_to_context(environment_document)
         context = map_context_and_identity_data_to_context(

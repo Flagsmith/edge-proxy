@@ -9,6 +9,7 @@ from edge_proxy.settings import EnvironmentKeyPair
 from tests.fixtures.response_data import (
     environment_1,
     environment_with_hide_disabled_flags,
+    environment_with_multivariate_feature,
 )
 
 if typing.TYPE_CHECKING:
@@ -449,3 +450,36 @@ def test_post_identity__client_key__hide_disabled_flags_disabled__returns_all_fl
     response_data = response.json()
     flags = response_data["flags"]
     assert len(flags) == 2
+
+
+def test_get_flags__multivariate_feature__returns_correct_type(
+    mocker: MockerFixture,
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    mocked_environment_cache = mocker.patch(
+        "edge_proxy.server.environment_service.cache"
+    )
+    mocked_environment_cache.get_environment.return_value = (
+        environment_with_multivariate_feature
+    )
+    mocked_environment_cache.get_feature_types.return_value = None
+
+    # When
+    response = client.get(
+        "/api/v1/flags", headers={"X-Environment-Key": environment_key}
+    )
+
+    # Then
+    assert response.status_code == 200
+    flags = response.json()
+    assert len(flags) == 2
+
+    mv_flag = next(f for f in flags if f["feature"]["name"] == "mv_feature")
+    assert mv_flag["feature"]["type"] == "MULTIVARIATE"
+    assert mv_flag["feature"]["id"] == 4
+    assert mv_flag["enabled"] is True
+
+    standard_flag = next(f for f in flags if f["feature"]["name"] == "feature_1")
+    assert standard_flag["feature"]["type"] == "STANDARD"

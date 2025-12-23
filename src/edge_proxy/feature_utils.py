@@ -1,4 +1,5 @@
 from typing import Any
+from flag_engine.result.types import FlagResult
 
 
 def build_feature_types_lookup(
@@ -11,9 +12,9 @@ def build_feature_types_lookup(
 
 
 def filter_out_server_key_only_flags(
-    flags: list[dict[str, Any]],
+    flags: list[FlagResult[Any]],
     server_key_only_feature_ids: list[int],
-) -> list[dict[str, Any]]:
+) -> list[FlagResult[Any]]:
     return [
         flag
         for flag in flags
@@ -22,8 +23,8 @@ def filter_out_server_key_only_flags(
 
 
 def filter_disabled_flags(
-    flags: list[dict[str, Any]], hide_disabled: bool
-) -> list[dict[str, Any]]:
+    flags: list[FlagResult[Any]], hide_disabled: bool
+) -> list[FlagResult[Any]]:
     if not hide_disabled:
         return flags
     return [flag for flag in flags if flag.get("enabled", False)]

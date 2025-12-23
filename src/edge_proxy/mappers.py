@@ -1,5 +1,6 @@
 from typing import Any
 from flag_engine.engine import ContextValue
+from flag_engine.result.types import FlagResult
 
 from edge_proxy.schemas import APIFeatureStateSchema
 
@@ -7,7 +8,7 @@ _api_feature_state_schema = APIFeatureStateSchema()
 
 
 def map_flag_result_to_response_data(
-    flag_result: dict[str, Any],
+    flag_result: FlagResult[Any],
     feature_types: dict[int, str] | None = None,
 ) -> dict[str, Any]:
     feature_id = flag_result.get("metadata", {}).get("id")
@@ -24,7 +25,7 @@ def map_flag_result_to_response_data(
 
 
 def map_flag_results_to_response_data(
-    flag_results: list[dict[str, Any]],
+    flag_results: list[FlagResult[Any]],
     feature_types: dict[int, str] | None = None,
 ) -> list[dict[str, Any]]:
     return [

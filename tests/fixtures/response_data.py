@@ -50,6 +50,30 @@ _environment_feature_state_3 = {
 }
 
 
+_multivariate_feature_state = {
+    "multivariate_feature_state_values": [
+        {
+            "id": 1,
+            "multivariate_feature_option": {"id": 1, "value": "variant_a"},
+            "percentage_allocation": 50,
+        },
+        {
+            "id": 2,
+            "multivariate_feature_option": {"id": 2, "value": "variant_b"},
+            "percentage_allocation": 50,
+        },
+    ],
+    "feature_state_value": "control",
+    "featurestate_uuid": "e4g9c5d3-8b52-6g79-1hfd-cg8g54f51i0g",
+    "feature": {
+        "name": "mv_feature",
+        "type": "MULTIVARIATE",
+        "id": 4,
+    },
+    "enabled": True,
+}
+
+
 _segment_1 = {
     "name": "segment_1",
     "rules": [
@@ -156,4 +180,34 @@ environment_with_hide_disabled_flags = {
     "api_key": "env_with_hide_disabled_key",
     "project": _project_with_hide_disabled_flags,
     "id": 2,
+}
+
+
+_project_with_multivariate = {
+    "name": "project-with-multivariate",
+    "organisation": {
+        "feature_analytics": False,
+        "name": "org-1",
+        "id": 1,
+        "persist_trait_data": True,
+        "stop_serving_flags": False,
+    },
+    "id": 3,
+    "hide_disabled_flags": False,
+    "segments": [],
+    "server_key_only_feature_ids": [],
+}
+
+
+environment_with_multivariate_feature = {
+    "updated_at": "1969-07-20T20:17:40Z",
+    "name": "environment_with_multivariate",
+    "feature_states": [
+        _environment_feature_state_1,
+        _multivariate_feature_state,
+    ],
+    "identity_overrides": [],
+    "api_key": "env_with_multivariate_key",
+    "project": _project_with_multivariate,
+    "id": 3,
 }

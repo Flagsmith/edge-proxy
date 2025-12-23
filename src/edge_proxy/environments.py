@@ -77,8 +77,8 @@ class EnvironmentService:
             self.last_updated_at = datetime.now()
 
     def get_flags_response_data(
-        self, environment_key: str, feature: str = None
-    ) -> dict[str, Any]:
+        self, environment_key: str, feature: str = ""
+    ) -> dict[str, Any] | list[dict[str, Any]]:
         environment_document = self.get_environment(environment_key=environment_key)
         is_server_key = environment_key.startswith(SERVER_API_KEY_PREFIX)
         server_key_only_feature_ids = environment_document.get("project", {}).get(
@@ -92,6 +92,7 @@ class EnvironmentService:
 
         context = map_environment_document_to_context(environment_document)
         evaluation_result = get_evaluation_result(context)
+        data: dict[str, Any] | list[dict[str, Any]]
 
         if feature:
             if feature not in evaluation_result["flags"]:

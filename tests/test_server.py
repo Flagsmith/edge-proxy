@@ -277,7 +277,7 @@ def test_get_environment_document_wrong_key(
     assert response.status_code == 401
 
 
-def test_get_flags__hide_disabled_flags_enabled__only_returns_enabled_flags(
+def test_get_flags__client_key__hide_disabled_flags_enabled__only_returns_enabled_flags(
     mocker: MockerFixture,
     client: TestClient,
 ) -> None:
@@ -303,7 +303,7 @@ def test_get_flags__hide_disabled_flags_enabled__only_returns_enabled_flags(
     assert flags[0]["enabled"] is True
 
 
-def test_get_flags__hide_disabled_flags_disabled__returns_all_flags(
+def test_get_flags__client_key__hide_disabled_flags_disabled__returns_all_flags(
     mocker: MockerFixture,
     client: TestClient,
 ) -> None:
@@ -325,7 +325,58 @@ def test_get_flags__hide_disabled_flags_disabled__returns_all_flags(
     assert len(flags) == 2
 
 
-def test_post_identity__hide_disabled_flags_enabled__only_returns_enabled_flags(
+def test_get_flags__server_key__hide_disabled_flags_enabled__returns_all_flags(
+    mocker: MockerFixture,
+    client: TestClient,
+) -> None:
+    # Given
+    server_key = "ser.test_server_key"
+    client_key = "test_client_key"
+    mocked_environment_cache = mocker.patch(
+        "edge_proxy.server.environment_service.cache"
+    )
+    mocked_environment_cache.get_environment.return_value = (
+        environment_with_hide_disabled_flags
+    )
+    mocker.patch(
+        "edge_proxy.server.environment_service._get_client_key_from_server_key",
+        return_value=client_key,
+    )
+
+    # When
+    response = client.get("/api/v1/flags", headers={"X-Environment-Key": server_key})
+
+    # Then
+    assert response.status_code == 200
+    flags = response.json()
+    assert len(flags) == 3
+
+
+def test_get_flags__client_key__hide_disabled_flags_enabled__single_disabled_feature__returns_404(
+    mocker: MockerFixture,
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    mocked_environment_cache = mocker.patch(
+        "edge_proxy.server.environment_service.cache"
+    )
+    mocked_environment_cache.get_environment.return_value = (
+        environment_with_hide_disabled_flags
+    )
+
+    # When
+    response = client.get(
+        "/api/v1/flags",
+        headers={"X-Environment-Key": environment_key},
+        params={"feature": "feature_1"},
+    )
+
+    # Then
+    assert response.status_code == 404
+
+
+def test_post_identity__client_key__hide_disabled_flags_enabled__only_returns_enabled_flags(
     mocker: MockerFixture,
     client: TestClient,
 ) -> None:
@@ -358,7 +409,7 @@ def test_post_identity__hide_disabled_flags_enabled__only_returns_enabled_flags(
     assert flags[0]["enabled"] is True
 
 
-def test_post_identity__hide_disabled_flags_disabled__returns_all_flags(
+def test_post_identity__client_key__hide_disabled_flags_disabled__returns_all_flags(
     mocker: MockerFixture,
     client: TestClient,
 ) -> None:

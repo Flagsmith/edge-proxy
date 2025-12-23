@@ -102,6 +102,12 @@ class EnvironmentService:
                 if not filtered:
                     raise FeatureNotFoundError()
 
+                hide_disabled_flags = environment_document.get("project", {}).get(
+                    "hide_disabled_flags", False
+                )
+                if hide_disabled_flags and not flag_result.get("enabled", False):
+                    raise FeatureNotFoundError()
+
             data = map_flag_result_to_response_data(flag_result, feature_types)
 
         else:
@@ -111,11 +117,11 @@ class EnvironmentService:
                 flags = filter_out_server_key_only_flags(
                     flags, server_key_only_feature_ids
                 )
+                hide_disabled_flags = environment_document.get("project", {}).get(
+                    "hide_disabled_flags", False
+                )
+                flags = filter_disabled_flags(flags, hide_disabled_flags)
 
-            hide_disabled_flags = environment_document.get("project", {}).get(
-                "hide_disabled_flags", False
-            )
-            flags = filter_disabled_flags(flags, hide_disabled_flags)
             data = map_flag_results_to_response_data(flags, feature_types)
 
         return data
@@ -142,11 +148,10 @@ class EnvironmentService:
         flags = list(evaluation_result["flags"].values())
         if not is_server_key:
             flags = filter_out_server_key_only_flags(flags, server_key_only_feature_ids)
-
-        hide_disabled_flags = environment_document.get("project", {}).get(
-            "hide_disabled_flags", False
-        )
-        flags = filter_disabled_flags(flags, hide_disabled_flags)
+            hide_disabled_flags = environment_document.get("project", {}).get(
+                "hide_disabled_flags", False
+            )
+            flags = filter_disabled_flags(flags, hide_disabled_flags)
 
         data = {
             "traits": map_traits_to_response_data(input_data.traits),

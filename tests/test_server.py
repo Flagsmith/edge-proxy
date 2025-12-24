@@ -316,6 +316,11 @@ def test_get_flags__server_key__hide_disabled_flags_enabled__returns_all_flags(
     assert response.status_code == 200
     flags = response.json()
     assert len(flags) == 3
+    # Verify disabled flags are included (bypasses hide_disabled_flags for server keys)
+    flag_names = {f["feature"]["name"] for f in flags}
+    assert "feature_1" in flag_names  # disabled flag
+    assert "feature_2" in flag_names  # enabled flag
+    assert "feature_3" in flag_names  # disabled flag
 
 
 def test_get_flags__client_key__hide_disabled_flags_enabled__single_disabled_feature__returns_404(

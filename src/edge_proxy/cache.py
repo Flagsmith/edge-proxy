@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import Any
 
 from edge_proxy.feature_utils import build_feature_types_lookup
@@ -25,18 +25,18 @@ class BaseEnvironmentsCache(ABC):
             return True
         return False
 
+    @abstractmethod
     def _put_environment(
         self,
         environment_api_key: str,
         environment_document: dict[str, Any],
-    ) -> None:
-        raise NotImplementedError()
+    ) -> None: ...
 
-    def get_environment(self, environment_api_key: str) -> dict[str, Any] | None:
-        raise NotImplementedError()
+    @abstractmethod
+    def get_environment(self, environment_api_key: str) -> dict[str, Any] | None: ...
 
-    def get_feature_types(self, environment_api_key: str) -> dict[int, str] | None:
-        return None
+    @abstractmethod
+    def get_feature_types(self, environment_api_key: str) -> dict[int, str] | None: ...
 
 
 _LocalCacheDict = dict[str, dict[str, Any]]

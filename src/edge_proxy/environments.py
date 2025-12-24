@@ -33,6 +33,10 @@ logger = structlog.get_logger(__name__)
 SERVER_API_KEY_PREFIX = "ser."
 
 
+def _get_hide_disabled_flags(environment_document: dict[str, Any]) -> bool:
+    return environment_document.get("project", {}).get("hide_disabled_flags", False)
+
+
 class EnvironmentService:
     def __init__(
         self,
@@ -77,25 +81,24 @@ class EnvironmentService:
             self.last_updated_at = datetime.now()
 
     def get_flags_response_data(
-        self, environment_key: str, feature: str = ""
+        self, environment_key: str, feature: str | None = None
     ) -> dict[str, Any] | list[dict[str, Any]]:
-        environment_document = self.get_environment(environment_key=environment_key)
-
         is_server_key = environment_key.startswith(SERVER_API_KEY_PREFIX)
+        if is_server_key:
+            environment_key = self._get_client_key_from_server_key(environment_key)
+
+        environment_document = self.get_environment(environment_key=environment_key)
         server_key_only_feature_ids = environment_document.get("project", {}).get(
             "server_key_only_feature_ids", []
         )
+        hide_disabled_flags = _get_hide_disabled_flags(environment_document)
 
         context = map_environment_document_to_context(environment_document)
         evaluation_result = get_evaluation_result(context)
 
-        feature_types = None
-        if hasattr(self.cache, "get_feature_types"):
-            feature_types = self.cache.get_feature_types(environment_key)
+        feature_types = self.cache.get_feature_types(environment_key)
         if feature_types is None:
             feature_types = build_feature_types_lookup(environment_document)
-
-        data: dict[str, Any] | list[dict[str, Any]]
 
         if feature:
             if feature not in evaluation_result["flags"]:
@@ -110,38 +113,31 @@ class EnvironmentService:
                 if not filtered:
                     raise FeatureNotFoundError()
 
-                hide_disabled_flags = environment_document.get("project", {}).get(
-                    "hide_disabled_flags", False
-                )
                 if hide_disabled_flags and not flag_result.get("enabled", False):
                     raise FeatureNotFoundError()
 
-            data = map_flag_result_to_response_data(flag_result, feature_types)
+            return map_flag_result_to_response_data(flag_result, feature_types)
 
-        else:
-            flags = list(evaluation_result["flags"].values())
+        flags = list(evaluation_result["flags"].values())
 
-            if not is_server_key:
-                flags = filter_out_server_key_only_flags(
-                    flags, server_key_only_feature_ids
-                )
-                hide_disabled_flags = environment_document.get("project", {}).get(
-                    "hide_disabled_flags", False
-                )
-                flags = filter_disabled_flags(flags, hide_disabled_flags)
+        if not is_server_key:
+            flags = filter_out_server_key_only_flags(flags, server_key_only_feature_ids)
+            flags = filter_disabled_flags(flags, hide_disabled_flags)
 
-            data = map_flag_results_to_response_data(flags, feature_types)
-
-        return data
+        return map_flag_results_to_response_data(flags, feature_types)
 
     def get_identity_response_data(
         self, input_data: IdentityWithTraits, environment_key: str
     ) -> dict[str, Any]:
-        environment_document = self.get_environment(environment_key=environment_key)
         is_server_key = environment_key.startswith(SERVER_API_KEY_PREFIX)
+        if is_server_key:
+            environment_key = self._get_client_key_from_server_key(environment_key)
+
+        environment_document = self.get_environment(environment_key=environment_key)
         server_key_only_feature_ids = environment_document.get("project", {}).get(
             "server_key_only_feature_ids", []
         )
+        hide_disabled_flags = _get_hide_disabled_flags(environment_document)
 
         environment_context = map_environment_document_to_context(environment_document)
         context = map_context_and_identity_data_to_context(
@@ -151,25 +147,19 @@ class EnvironmentService:
         )
         evaluation_result = get_evaluation_result(context)
 
-        feature_types = None
-        if hasattr(self.cache, "get_feature_types"):
-            feature_types = self.cache.get_feature_types(environment_key)
+        feature_types = self.cache.get_feature_types(environment_key)
         if feature_types is None:
             feature_types = build_feature_types_lookup(environment_document)
 
         flags = list(evaluation_result["flags"].values())
         if not is_server_key:
             flags = filter_out_server_key_only_flags(flags, server_key_only_feature_ids)
-            hide_disabled_flags = environment_document.get("project", {}).get(
-                "hide_disabled_flags", False
-            )
             flags = filter_disabled_flags(flags, hide_disabled_flags)
 
-        data = {
+        return {
             "traits": map_traits_to_response_data(input_data.traits),
             "flags": map_flag_results_to_response_data(flags, feature_types),
         }
-        return data
 
     def get_environment(
         self,

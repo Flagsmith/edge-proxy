@@ -1,10 +1,7 @@
 from typing import Any
+
 from flag_engine.engine import ContextValue
 from flag_engine.result.types import FlagResult
-
-from edge_proxy.schemas import APIFeatureStateSchema
-
-_api_feature_state_schema = APIFeatureStateSchema()
 
 
 def map_flag_result_to_response_data(
@@ -37,5 +34,4 @@ def map_flag_results_to_response_data(
 def map_traits_to_response_data(
     traits: dict[str, ContextValue],
 ) -> list[dict[str, Any]]:
-    """Convert traits dict to API response format (list of trait objects)."""
     return [{"trait_key": k, "trait_value": v} for k, v in traits.items()]

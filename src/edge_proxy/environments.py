@@ -80,18 +80,21 @@ class EnvironmentService:
         self, environment_key: str, feature: str = ""
     ) -> dict[str, Any] | list[dict[str, Any]]:
         environment_document = self.get_environment(environment_key=environment_key)
+
         is_server_key = environment_key.startswith(SERVER_API_KEY_PREFIX)
         server_key_only_feature_ids = environment_document.get("project", {}).get(
             "server_key_only_feature_ids", []
         )
+
+        context = map_environment_document_to_context(environment_document)
+        evaluation_result = get_evaluation_result(context)
+
         feature_types = None
         if hasattr(self.cache, "get_feature_types"):
             feature_types = self.cache.get_feature_types(environment_key)
         if feature_types is None:
             feature_types = build_feature_types_lookup(environment_document)
 
-        context = map_environment_document_to_context(environment_document)
-        evaluation_result = get_evaluation_result(context)
         data: dict[str, Any] | list[dict[str, Any]]
 
         if feature:
@@ -140,20 +143,19 @@ class EnvironmentService:
             "server_key_only_feature_ids", []
         )
 
-        feature_types = None
-        if hasattr(self.cache, "get_feature_types"):
-            feature_types = self.cache.get_feature_types(environment_key)
-        if feature_types is None:
-            feature_types = build_feature_types_lookup(environment_document)
-
         environment_context = map_environment_document_to_context(environment_document)
         context = map_context_and_identity_data_to_context(
             context=environment_context,
             identifier=input_data.identifier,
             traits=input_data.traits,
         )
-
         evaluation_result = get_evaluation_result(context)
+
+        feature_types = None
+        if hasattr(self.cache, "get_feature_types"):
+            feature_types = self.cache.get_feature_types(environment_key)
+        if feature_types is None:
+            feature_types = build_feature_types_lookup(environment_document)
 
         flags = list(evaluation_result["flags"].values())
         if not is_server_key:

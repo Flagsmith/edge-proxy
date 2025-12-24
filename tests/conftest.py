@@ -70,6 +70,14 @@ def environment_service() -> "EnvironmentService":
 
 
 @pytest.fixture
+def mocked_environment_cache(mocker: MockerFixture):
+    mock = mocker.patch("edge_proxy.server.environment_service.cache")
+    mock.get_environment.return_value = None
+    mock.get_feature_types.return_value = None
+    return mock
+
+
+@pytest.fixture
 def client():
     from edge_proxy.server import app
 

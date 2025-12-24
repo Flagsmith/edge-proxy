@@ -17,16 +17,12 @@ if typing.TYPE_CHECKING:
 
 
 def test_get_flags(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     environment_1_feature_states_response_list: list[dict],
     client: TestClient,
 ) -> None:
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
-    mocked_environment_cache.get_feature_types.return_value = None
     response = client.get(
         "/api/v1/flags", headers={"X-Environment-Key": environment_key}
     )
@@ -35,16 +31,12 @@ def test_get_flags(
 
 
 def test_get_flags_single_feature(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     environment_1_feature_states_response_list: list[dict],
     client: TestClient,
 ) -> None:
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
-    mocked_environment_cache.get_feature_types.return_value = None
     response = client.get(
         "/api/v1/flags",
         headers={"X-Environment-Key": environment_key},
@@ -55,16 +47,12 @@ def test_get_flags_single_feature(
 
 
 def test_get_flags_single_feature__server_key_only_feature__return_expected(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ) -> None:
     # Given
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
-    mocked_environment_cache.get_feature_types.return_value = None
 
     # When
     response = client.get(
@@ -82,15 +70,11 @@ def test_get_flags_single_feature__server_key_only_feature__return_expected(
 
 
 def test_get_flags_unknown_key(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ):
     environment_key = "unknown_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = None
-    mocked_environment_cache.get_feature_types.return_value = None
     response = client.get(
         "/api/v1/flags",
         headers={"X-Environment-Key": environment_key},
@@ -104,16 +88,12 @@ def test_get_flags_unknown_key(
 
 
 def test_post_identity_with_traits(
-    mocker,
+    mocked_environment_cache,
     environment_1_feature_states_response_list_response_with_segment_override,
     client: TestClient,
 ):
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
-    mocked_environment_cache.get_feature_types.return_value = None
     data = {
         "traits": [{"trait_value": "test", "trait_key": "first_name"}],
         "identifier": "do_it_all_in_one_go_identity",
@@ -128,8 +108,6 @@ def test_post_identity_with_traits(
         "traits": data["traits"],
     }
     mocked_environment_cache.get_environment.assert_called_with(environment_key)
-    # Note: With engine v10+, we no longer need to fetch identity from cache
-    # The identifier and traits are passed directly to the evaluation context
 
 
 def test_post_identity__environment_with_overrides__expected_response(
@@ -162,16 +140,12 @@ def test_post_identity__environment_with_overrides__expected_response(
 
 
 def test_post_identity__invalid_trait_data__expected_response(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ) -> None:
     # Given
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
-    mocked_environment_cache.get_feature_types.return_value = None
     data = {
         "traits": [{"trait_value": "a" * 2001, "trait_key": "first_name"}],
         "identifier": "do_it_all_in_one_go_identity",
@@ -194,21 +168,13 @@ def test_post_identity__invalid_trait_data__expected_response(
 
 
 def test_get_identities(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ) -> None:
     x_environment_key = "test_environment_key"
     identifier = "test_identifier"
 
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
-    mocked_environment_cache.get_feature_types.return_value = None
-    mocked_environment_cache.get_identity.return_value = {
-        "environment_api_key": x_environment_key,
-        "identifier": identifier,
-    }
 
     response = client.get(
         "/api/v1/identities/",
@@ -286,18 +252,14 @@ def test_get_environment_document_wrong_key(
 
 
 def test_get_flags__client_key__hide_disabled_flags_enabled__only_returns_enabled_flags(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ) -> None:
     # Given
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = (
         environment_with_hide_disabled_flags
     )
-    mocked_environment_cache.get_feature_types.return_value = None
 
     # When
     response = client.get(
@@ -313,16 +275,12 @@ def test_get_flags__client_key__hide_disabled_flags_enabled__only_returns_enable
 
 
 def test_get_flags__client_key__hide_disabled_flags_disabled__returns_all_flags(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ) -> None:
     # Given
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
-    mocked_environment_cache.get_feature_types.return_value = None
 
     # When
     response = client.get(
@@ -337,18 +295,15 @@ def test_get_flags__client_key__hide_disabled_flags_disabled__returns_all_flags(
 
 def test_get_flags__server_key__hide_disabled_flags_enabled__returns_all_flags(
     mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ) -> None:
     # Given
     server_key = "ser.test_server_key"
     client_key = "test_client_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = (
         environment_with_hide_disabled_flags
     )
-    mocked_environment_cache.get_feature_types.return_value = None
     mocker.patch(
         "edge_proxy.server.environment_service._get_client_key_from_server_key",
         return_value=client_key,
@@ -364,18 +319,14 @@ def test_get_flags__server_key__hide_disabled_flags_enabled__returns_all_flags(
 
 
 def test_get_flags__client_key__hide_disabled_flags_enabled__single_disabled_feature__returns_404(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ) -> None:
     # Given
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = (
         environment_with_hide_disabled_flags
     )
-    mocked_environment_cache.get_feature_types.return_value = None
 
     # When
     response = client.get(
@@ -389,18 +340,14 @@ def test_get_flags__client_key__hide_disabled_flags_enabled__single_disabled_fea
 
 
 def test_post_identity__client_key__hide_disabled_flags_enabled__only_returns_enabled_flags(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ) -> None:
     # Given
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = (
         environment_with_hide_disabled_flags
     )
-    mocked_environment_cache.get_feature_types.return_value = None
     data = {
         "identifier": "test_identifier",
         "traits": [],
@@ -423,16 +370,12 @@ def test_post_identity__client_key__hide_disabled_flags_enabled__only_returns_en
 
 
 def test_post_identity__client_key__hide_disabled_flags_disabled__returns_all_flags(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ) -> None:
     # Given
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
-    mocked_environment_cache.get_feature_types.return_value = None
     data = {
         "identifier": "test_identifier",
         "traits": [],
@@ -453,18 +396,14 @@ def test_post_identity__client_key__hide_disabled_flags_disabled__returns_all_fl
 
 
 def test_get_flags__multivariate_feature__returns_correct_type(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ) -> None:
     # Given
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = (
         environment_with_multivariate_feature
     )
-    mocked_environment_cache.get_feature_types.return_value = None
 
     # When
     response = client.get(

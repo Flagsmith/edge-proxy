@@ -157,6 +157,7 @@ class EnvironmentService:
             flags = filter_disabled_flags(flags, hide_disabled_flags)
 
         return {
+            "identifier": input_data.identifier,
             "traits": map_traits_to_response_data(input_data.traits),
             "flags": map_flag_results_to_response_data(flags, feature_types),
         }

@@ -266,6 +266,7 @@ async def test_refresh_environment_caches__deleted_identity_override__cached_exp
         IdentityWithTraits(identifier="overridden-id"),
         environment_1_api_key,
     ) == {
+        "identifier": "overridden-id",
         "flags": [
             {
                 "enabled": True,
@@ -298,6 +299,7 @@ async def test_refresh_environment_caches__deleted_identity_override__cached_exp
     assert environment_service.get_identity_response_data(
         IdentityWithTraits(identifier="overridden-id"), environment_1_api_key
     ) == {
+        "identifier": "overridden-id",
         "flags": [
             {
                 "enabled": False,

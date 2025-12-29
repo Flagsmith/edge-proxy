@@ -104,6 +104,7 @@ def test_post_identity_with_traits(
         content=orjson.dumps(data),
     )
     assert response.json() == {
+        "identifier": "do_it_all_in_one_go_identity",
         "flags": environment_1_feature_states_response_list_response_with_segment_override,
         "traits": data["traits"],
     }
@@ -134,6 +135,7 @@ def test_post_identity__environment_with_overrides__expected_response(
 
     # Then
     assert response.json() == {
+        "identifier": identifier,
         "flags": environment_1_feature_states_response_list_response_with_identity_override,
         "traits": [],
     }

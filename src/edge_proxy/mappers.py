@@ -4,6 +4,22 @@ from flag_engine.engine import ContextValue
 from flag_engine.result.types import FlagResult
 
 
+def convert_feature_value_to_type(value: Any) -> Any:
+    if value is None or not isinstance(value, str):
+        return value
+    try:
+        int_val = int(value)
+        if str(int_val) == value:
+            return int_val
+    except ValueError:
+        pass
+    if value.lower() == "true":
+        return True
+    if value.lower() == "false":
+        return False
+    return value
+
+
 def map_flag_result_to_response_data(
     flag_result: FlagResult[Any],
     feature_types: dict[int, str] | None = None,
@@ -17,7 +33,7 @@ def map_flag_result_to_response_data(
             "type": feature_type,
         },
         "enabled": flag_result["enabled"],
-        "feature_state_value": flag_result["value"],
+        "feature_state_value": convert_feature_value_to_type(flag_result["value"]),
     }
 
 

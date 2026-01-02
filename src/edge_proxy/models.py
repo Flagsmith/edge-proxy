@@ -1,40 +1,36 @@
-from typing import Any
-from flag_engine.engine import ContextValue
+from typing import Union
+
 from pydantic import BaseModel, Field, field_validator
 from pydantic_core import PydanticCustomError
 
 
+TraitValue = Union[str, int, float, bool, None]
+
+
+class TraitModel(BaseModel):
+    trait_key: str
+    trait_value: TraitValue = None
+
+    @field_validator("trait_value")
+    @classmethod
+    def validate_trait_value_length(cls, v: TraitValue) -> TraitValue:
+        if isinstance(v, str) and len(v) > 2000:
+            raise PydanticCustomError(
+                "string_too_long",
+                "String should have at most 2000 characters",
+                {"max_length": 2000, "actual_length": len(v)},
+            )
+        return v
+
+
 class IdentityWithTraits(BaseModel):
     identifier: str
-    traits: dict[str, ContextValue] = Field(default_factory=dict)
-
-    @field_validator("traits", mode="before")
-    @classmethod
-    def convert_traits_list_to_dict(cls, v: Any) -> dict[str, ContextValue]:
-        """Convert legacy list format to dict."""
-        if isinstance(v, list):
-            return {trait["trait_key"]: trait["trait_value"] for trait in v}
-        return v
-
-    @field_validator("traits")
-    @classmethod
-    def validate_trait_value_length(
-        cls, v: dict[str, ContextValue]
-    ) -> dict[str, ContextValue]:
-        """Enforce 2000 char limit on trait values."""
-        for key, value in v.items():
-            if isinstance(value, str) and len(value) > 2000:
-                raise PydanticCustomError(
-                    "string_too_long",
-                    "String should have at most 2000 characters",
-                    {"max_length": 2000, "actual_length": len(value)},
-                )
-        return v
+    traits: list[TraitModel] = Field(default_factory=list)
 
     def __str__(self):
         return "identifier:%s|traits:%s" % (
             self.identifier,
-            ",".join([f"{k}={str(v)}" for k, v in self.traits.items()]),
+            ",".join([f"{t.trait_key}={str(t.trait_value)}" for t in self.traits]),
         )
 
     def __hash__(self):

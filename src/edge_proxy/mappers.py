@@ -1,23 +1,10 @@
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from flag_engine.engine import ContextValue
 from flag_engine.result.types import FlagResult
 
-
-def convert_feature_value_to_type(value: Any) -> Any:
-    if value is None or not isinstance(value, str):
-        return value
-    try:
-        int_val = int(value)
-        if str(int_val) == value:
-            return int_val
-    except ValueError:
-        pass
-    if value.lower() == "true":
-        return True
-    if value.lower() == "false":
-        return False
-    return value
+if TYPE_CHECKING:
+    from edge_proxy.models import TraitModel
 
 
 def map_flag_result_to_response_data(
@@ -33,7 +20,7 @@ def map_flag_result_to_response_data(
             "type": feature_type,
         },
         "enabled": flag_result["enabled"],
-        "feature_state_value": convert_feature_value_to_type(flag_result["value"]),
+        "feature_state_value": flag_result["value"],
     }
 
 
@@ -47,7 +34,11 @@ def map_flag_results_to_response_data(
     ]
 
 
+def convert_traits_to_dict(traits: list["TraitModel"]) -> dict[str, ContextValue]:
+    return {trait.trait_key: trait.trait_value for trait in traits}
+
+
 def map_traits_to_response_data(
-    traits: dict[str, ContextValue],
+    traits: list["TraitModel"],
 ) -> list[dict[str, Any]]:
-    return [{"trait_key": k, "trait_value": v} for k, v in traits.items()]
+    return [{"trait_key": t.trait_key, "trait_value": t.trait_value} for t in traits]

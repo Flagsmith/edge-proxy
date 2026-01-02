@@ -7,6 +7,7 @@ from edge_proxy.mappers import (
     map_flag_results_to_response_data,
     map_traits_to_response_data,
 )
+from edge_proxy.models import TraitModel
 
 
 @pytest.fixture()
@@ -48,13 +49,12 @@ def traits_data(
 
 
 @pytest.fixture()
-def traits_dict() -> dict[str, Any]:
-    """Traits as dict (new format)."""
-    return {
-        "phIndex": 7.4,
-        "email": "notarealemail@fictitiousdomain.xyz",
-        "userCategoryId": 12,
-    }
+def trait_models() -> list[TraitModel]:
+    return [
+        TraitModel(trait_key="phIndex", trait_value=7.4),
+        TraitModel(trait_key="email", trait_value="notarealemail@fictitiousdomain.xyz"),
+        TraitModel(trait_key="userCategoryId", trait_value=12),
+    ]
 
 
 def test_map_flag_result_to_response_data__return_expected(
@@ -164,11 +164,11 @@ def test_map_flag_results_to_response_data__with_feature_types__return_expected(
 
 
 def test_map_traits_to_response_data__return_expected(
-    traits_dict: dict[str, Any],
+    trait_models: list[TraitModel],
     traits_data: list[dict[str, Any]],
 ) -> None:
     # When
-    result = map_traits_to_response_data(traits_dict)
+    result = map_traits_to_response_data(trait_models)
 
     # Then
     assert result == traits_data

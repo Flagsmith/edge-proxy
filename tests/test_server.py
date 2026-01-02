@@ -165,6 +165,8 @@ def test_post_identity__invalid_trait_data__expected_response(
     assert response.json()["detail"][-1]["loc"] == [
         "body",
         "traits",
+        0,
+        "trait_value",
     ]
     assert response.json()["detail"][-1]["type"] == "string_too_long"
 

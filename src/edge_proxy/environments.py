@@ -21,6 +21,7 @@ from edge_proxy.feature_utils import (
     filter_out_server_key_only_flags,
 )
 from edge_proxy.mappers import (
+    convert_traits_to_dict,
     map_flag_result_to_response_data,
     map_flag_results_to_response_data,
     map_traits_to_response_data,
@@ -143,7 +144,7 @@ class EnvironmentService:
         context = map_context_and_identity_data_to_context(
             context=environment_context,
             identifier=input_data.identifier,
-            traits=input_data.traits,
+            traits=convert_traits_to_dict(input_data.traits),
         )
         evaluation_result = get_evaluation_result(context)
 

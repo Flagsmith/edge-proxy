@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.22.0](https://github.com/Flagsmith/edge-proxy/compare/v2.21.2...v2.22.0) (2026-01-05)
+
+
+### Features
+
+* use-context-evaluation-with-newest-engine-version ([#182](https://github.com/Flagsmith/edge-proxy/issues/182)) ([da33db3](https://github.com/Flagsmith/edge-proxy/commit/da33db33f6b8df6c9361b45733ee278ca1ad469b))
+
 ## [2.21.2](https://github.com/Flagsmith/edge-proxy/compare/v2.21.1...v2.21.2) (2025-11-19)
 
 

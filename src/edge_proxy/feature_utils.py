@@ -1,14 +1,30 @@
-from flag_engine.environments.models import EnvironmentModel
-from flag_engine.features.models import FeatureStateModel
+from typing import Any
+from flag_engine.result.types import FlagResult
 
 
-def filter_out_server_key_only_feature_states(
-    feature_states: list[FeatureStateModel],
-    environment: EnvironmentModel,
-) -> list[FeatureStateModel]:
+def build_feature_types_lookup(
+    environment_document: dict[str, Any],
+) -> dict[int, str]:
+    return {
+        fs["feature"]["id"]: fs["feature"].get("type", "STANDARD")
+        for fs in environment_document.get("feature_states", [])
+    }
+
+
+def filter_out_server_key_only_flags(
+    flags: list[FlagResult[Any]],
+    server_key_only_feature_ids: list[int],
+) -> list[FlagResult[Any]]:
     return [
-        feature_state
-        for feature_state in feature_states
-        if feature_state.feature.id
-        not in environment.project.server_key_only_feature_ids
+        flag
+        for flag in flags
+        if flag.get("metadata", {}).get("id") not in server_key_only_feature_ids
     ]
+
+
+def filter_disabled_flags(
+    flags: list[FlagResult[Any]], hide_disabled: bool
+) -> list[FlagResult[Any]]:
+    if not hide_disabled:
+        return flags
+    return [flag for flag in flags if flag.get("enabled", False)]

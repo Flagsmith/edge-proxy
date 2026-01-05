@@ -6,21 +6,22 @@ from pytest_mock import MockerFixture
 
 from edge_proxy.main import serve
 from edge_proxy.settings import EnvironmentKeyPair
-from tests.fixtures.response_data import environment_1
+from tests.fixtures.response_data import (
+    environment_1,
+    environment_with_hide_disabled_flags,
+    environment_with_multivariate_feature,
+)
 
 if typing.TYPE_CHECKING:
     from edge_proxy.environments import EnvironmentService
 
 
 def test_get_flags(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     environment_1_feature_states_response_list: list[dict],
     client: TestClient,
 ) -> None:
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
     response = client.get(
         "/api/v1/flags", headers={"X-Environment-Key": environment_key}
@@ -30,14 +31,11 @@ def test_get_flags(
 
 
 def test_get_flags_single_feature(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     environment_1_feature_states_response_list: list[dict],
     client: TestClient,
 ) -> None:
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
     response = client.get(
         "/api/v1/flags",
@@ -49,14 +47,11 @@ def test_get_flags_single_feature(
 
 
 def test_get_flags_single_feature__server_key_only_feature__return_expected(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ) -> None:
     # Given
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
 
     # When
@@ -75,13 +70,10 @@ def test_get_flags_single_feature__server_key_only_feature__return_expected(
 
 
 def test_get_flags_unknown_key(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ):
     environment_key = "unknown_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = None
     response = client.get(
         "/api/v1/flags",
@@ -96,20 +88,12 @@ def test_get_flags_unknown_key(
 
 
 def test_post_identity_with_traits(
-    mocker,
+    mocked_environment_cache,
     environment_1_feature_states_response_list_response_with_segment_override,
     client: TestClient,
 ):
     environment_key = "test_environment_key"
-    identifier = "do_it_all_in_one_go_identity"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
-    mocked_environment_cache.get_identity.return_value = {
-        "environment_api_key": environment_key,
-        "identifier": identifier,
-    }
     data = {
         "traits": [{"trait_value": "test", "trait_key": "first_name"}],
         "identifier": "do_it_all_in_one_go_identity",
@@ -120,14 +104,11 @@ def test_post_identity_with_traits(
         content=orjson.dumps(data),
     )
     assert response.json() == {
+        "identifier": "do_it_all_in_one_go_identity",
         "flags": environment_1_feature_states_response_list_response_with_segment_override,
         "traits": data["traits"],
     }
     mocked_environment_cache.get_environment.assert_called_with(environment_key)
-    mocked_environment_cache.get_identity.assert_called_with(
-        environment_api_key=environment_key,
-        identifier=identifier,
-    )
 
 
 def test_post_identity__environment_with_overrides__expected_response(
@@ -154,20 +135,18 @@ def test_post_identity__environment_with_overrides__expected_response(
 
     # Then
     assert response.json() == {
+        "identifier": identifier,
         "flags": environment_1_feature_states_response_list_response_with_identity_override,
         "traits": [],
     }
 
 
 def test_post_identity__invalid_trait_data__expected_response(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ) -> None:
     # Given
     environment_key = "test_environment_key"
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
     data = {
         "traits": [{"trait_value": "a" * 2001, "trait_key": "first_name"}],
@@ -188,26 +167,18 @@ def test_post_identity__invalid_trait_data__expected_response(
         "traits",
         0,
         "trait_value",
-        "constrained-str",
     ]
     assert response.json()["detail"][-1]["type"] == "string_too_long"
 
 
 def test_get_identities(
-    mocker: MockerFixture,
+    mocked_environment_cache,
     client: TestClient,
 ) -> None:
     x_environment_key = "test_environment_key"
     identifier = "test_identifier"
 
-    mocked_environment_cache = mocker.patch(
-        "edge_proxy.server.environment_service.cache"
-    )
     mocked_environment_cache.get_environment.return_value = environment_1
-    mocked_environment_cache.get_identity.return_value = {
-        "environment_api_key": x_environment_key,
-        "identifier": identifier,
-    }
 
     response = client.get(
         "/api/v1/identities/",
@@ -282,3 +253,181 @@ def test_get_environment_document_wrong_key(
     )
     # Then
     assert response.status_code == 401
+
+
+def test_get_flags__client_key__hide_disabled_flags_enabled__only_returns_enabled_flags(
+    mocked_environment_cache,
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    mocked_environment_cache.get_environment.return_value = (
+        environment_with_hide_disabled_flags
+    )
+
+    # When
+    response = client.get(
+        "/api/v1/flags", headers={"X-Environment-Key": environment_key}
+    )
+
+    # Then
+    assert response.status_code == 200
+    flags = response.json()
+    assert len(flags) == 1
+    assert flags[0]["feature"]["name"] == "feature_2"
+    assert flags[0]["enabled"] is True
+
+
+def test_get_flags__client_key__hide_disabled_flags_disabled__returns_all_flags(
+    mocked_environment_cache,
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    mocked_environment_cache.get_environment.return_value = environment_1
+
+    # When
+    response = client.get(
+        "/api/v1/flags", headers={"X-Environment-Key": environment_key}
+    )
+
+    # Then
+    assert response.status_code == 200
+    flags = response.json()
+    assert len(flags) == 2
+
+
+def test_get_flags__server_key__hide_disabled_flags_enabled__returns_all_flags(
+    mocker: MockerFixture,
+    mocked_environment_cache,
+    client: TestClient,
+) -> None:
+    # Given
+    server_key = "ser.test_server_key"
+    client_key = "test_client_key"
+    mocked_environment_cache.get_environment.return_value = (
+        environment_with_hide_disabled_flags
+    )
+    mocker.patch(
+        "edge_proxy.server.environment_service._get_client_key_from_server_key",
+        return_value=client_key,
+    )
+
+    # When
+    response = client.get("/api/v1/flags", headers={"X-Environment-Key": server_key})
+
+    # Then
+    assert response.status_code == 200
+    flags = response.json()
+    assert len(flags) == 3
+    # Verify disabled flags are included (bypasses hide_disabled_flags for server keys)
+    flag_names = {f["feature"]["name"] for f in flags}
+    assert "feature_1" in flag_names  # disabled flag
+    assert "feature_2" in flag_names  # enabled flag
+    assert "feature_3" in flag_names  # disabled flag
+
+
+def test_get_flags__client_key__hide_disabled_flags_enabled__single_disabled_feature__returns_404(
+    mocked_environment_cache,
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    mocked_environment_cache.get_environment.return_value = (
+        environment_with_hide_disabled_flags
+    )
+
+    # When
+    response = client.get(
+        "/api/v1/flags",
+        headers={"X-Environment-Key": environment_key},
+        params={"feature": "feature_1"},
+    )
+
+    # Then
+    assert response.status_code == 404
+
+
+def test_post_identity__client_key__hide_disabled_flags_enabled__only_returns_enabled_flags(
+    mocked_environment_cache,
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    mocked_environment_cache.get_environment.return_value = (
+        environment_with_hide_disabled_flags
+    )
+    data = {
+        "identifier": "test_identifier",
+        "traits": [],
+    }
+
+    # When
+    response = client.post(
+        "/api/v1/identities/",
+        headers={"X-Environment-Key": environment_key},
+        content=orjson.dumps(data),
+    )
+
+    # Then
+    assert response.status_code == 200
+    response_data = response.json()
+    flags = response_data["flags"]
+    assert len(flags) == 1
+    assert flags[0]["feature"]["name"] == "feature_2"
+    assert flags[0]["enabled"] is True
+
+
+def test_post_identity__client_key__hide_disabled_flags_disabled__returns_all_flags(
+    mocked_environment_cache,
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    mocked_environment_cache.get_environment.return_value = environment_1
+    data = {
+        "identifier": "test_identifier",
+        "traits": [],
+    }
+
+    # When
+    response = client.post(
+        "/api/v1/identities/",
+        headers={"X-Environment-Key": environment_key},
+        content=orjson.dumps(data),
+    )
+
+    # Then
+    assert response.status_code == 200
+    response_data = response.json()
+    flags = response_data["flags"]
+    assert len(flags) == 2
+
+
+def test_get_flags__multivariate_feature__returns_correct_type(
+    mocked_environment_cache,
+    client: TestClient,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    mocked_environment_cache.get_environment.return_value = (
+        environment_with_multivariate_feature
+    )
+
+    # When
+    response = client.get(
+        "/api/v1/flags", headers={"X-Environment-Key": environment_key}
+    )
+
+    # Then
+    assert response.status_code == 200
+    flags = response.json()
+    assert len(flags) == 2
+
+    mv_flag = next(f for f in flags if f["feature"]["name"] == "mv_feature")
+    assert mv_flag["feature"]["type"] == "MULTIVARIATE"
+    assert mv_flag["feature"]["id"] == 4
+    assert mv_flag["enabled"] is True
+
+    standard_flag = next(f for f in flags if f["feature"]["name"] == "feature_1")
+    assert standard_flag["feature"]["type"] == "STANDARD"

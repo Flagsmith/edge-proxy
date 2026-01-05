@@ -1,33 +1,44 @@
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any
 
-from flag_engine.features.models import FeatureStateModel
-from flag_engine.identities.traits.models import TraitModel
+from flag_engine.engine import ContextValue
+from flag_engine.result.types import FlagResult
 
-from edge_proxy.schemas import APIFeatureStateSchema
+if TYPE_CHECKING:
+    from edge_proxy.models import TraitModel
 
-_api_feature_state_schema = APIFeatureStateSchema()
 
-
-def map_feature_state_to_response_data(
-    feature_state: FeatureStateModel,
-    identity_hash_key: Optional[str] = None,
+def map_flag_result_to_response_data(
+    flag_result: FlagResult[Any],
+    feature_types: dict[int, str] | None = None,
 ) -> dict[str, Any]:
-    data = _api_feature_state_schema.dump(feature_state)
-    data["feature_state_value"] = feature_state.get_value(identity_id=identity_hash_key)
-    return data
+    feature_id = flag_result.get("metadata", {}).get("id")
+    feature_type = (feature_types or {}).get(feature_id, "STANDARD")
+    return {
+        "feature": {
+            "id": feature_id,
+            "name": flag_result["name"],
+            "type": feature_type,
+        },
+        "enabled": flag_result["enabled"],
+        "feature_state_value": flag_result["value"],
+    }
 
 
-def map_feature_states_to_response_data(
-    feature_states: list[FeatureStateModel],
-    identity_hash_key: Optional[str] = None,
+def map_flag_results_to_response_data(
+    flag_results: list[FlagResult[Any]],
+    feature_types: dict[int, str] | None = None,
 ) -> list[dict[str, Any]]:
     return [
-        map_feature_state_to_response_data(feature_state, identity_hash_key)
-        for feature_state in feature_states
+        map_flag_result_to_response_data(flag_result, feature_types)
+        for flag_result in flag_results
     ]
 
 
+def convert_traits_to_dict(traits: list["TraitModel"]) -> dict[str, ContextValue]:
+    return {trait.trait_key: trait.trait_value for trait in traits}
+
+
 def map_traits_to_response_data(
-    traits: list[TraitModel],
+    traits: list["TraitModel"],
 ) -> list[dict[str, Any]]:
-    return [trait.model_dump() for trait in traits]
+    return [{"trait_key": t.trait_key, "trait_value": t.trait_value} for t in traits]

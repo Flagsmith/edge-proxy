@@ -1,6 +1,7 @@
 _segment_override_feature_state = {
     "multivariate_feature_state_values": [],
     "feature_state_value": "segment_override",
+    "featurestate_uuid": "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6",
     "feature": {
         "name": "feature_2",
         "type": "STANDARD",
@@ -13,6 +14,7 @@ _segment_override_feature_state = {
 _environment_feature_state_1 = {
     "multivariate_feature_state_values": [],
     "feature_state_value": "feature_1_value",
+    "featurestate_uuid": "8c0a77ba-d07c-4e48-9adb-de5e21c29f7d",
     "feature": {
         "name": "feature_1",
         "type": "STANDARD",
@@ -25,6 +27,7 @@ _environment_feature_state_1 = {
 _environment_feature_state_2 = {
     "multivariate_feature_state_values": [],
     "feature_state_value": "2.3",
+    "featurestate_uuid": "f2d7a3b9-8c41-4e57-9fdb-ae6e32d39g8e",
     "feature": {
         "name": "feature_2",
         "type": "STANDARD",
@@ -37,12 +40,37 @@ _environment_feature_state_2 = {
 _environment_feature_state_3 = {
     "multivariate_feature_state_values": [],
     "feature_state_value": None,
+    "featurestate_uuid": "d3f8b4c2-7a41-5f68-0gec-bf7f43e40h9f",
     "feature": {
         "name": "feature_3",
         "type": "STANDARD",
         "id": 3,
     },
     "enabled": False,
+}
+
+
+_multivariate_feature_state = {
+    "multivariate_feature_state_values": [
+        {
+            "id": 1,
+            "multivariate_feature_option": {"id": 1, "value": "variant_a"},
+            "percentage_allocation": 50,
+        },
+        {
+            "id": 2,
+            "multivariate_feature_option": {"id": 2, "value": "variant_b"},
+            "percentage_allocation": 50,
+        },
+    ],
+    "feature_state_value": "control",
+    "featurestate_uuid": "e4g9c5d3-8b52-6g79-1hfd-cg8g54f51i0g",
+    "feature": {
+        "name": "mv_feature",
+        "type": "MULTIVARIATE",
+        "id": 4,
+    },
+    "enabled": True,
 }
 
 
@@ -92,6 +120,7 @@ environment_1_api_key = "environment_1_api_key"
 
 environment_1 = {
     "updated_at": "1969-07-20T20:17:40Z",
+    "name": "environment_1",
     "feature_states": [
         _environment_feature_state_1,
         _environment_feature_state_2,
@@ -119,4 +148,66 @@ environment_1 = {
     "api_key": environment_1_api_key,
     "project": _project_1,
     "id": 1,
+}
+
+
+# Project with hide_disabled_flags enabled
+_project_with_hide_disabled_flags = {
+    "name": "project-with-hide-disabled-flags",
+    "organisation": {
+        "feature_analytics": False,
+        "name": "org-1",
+        "id": 1,
+        "persist_trait_data": True,
+        "stop_serving_flags": False,
+    },
+    "id": 2,
+    "hide_disabled_flags": True,
+    "segments": [_segment_1],
+    "server_key_only_feature_ids": [],
+}
+
+
+environment_with_hide_disabled_flags = {
+    "updated_at": "1969-07-20T20:17:40Z",
+    "name": "environment_with_hide_disabled_flags",
+    "feature_states": [
+        _environment_feature_state_1,
+        _environment_feature_state_2,
+        _environment_feature_state_3,
+    ],
+    "identity_overrides": [],
+    "api_key": "env_with_hide_disabled_key",
+    "project": _project_with_hide_disabled_flags,
+    "id": 2,
+}
+
+
+_project_with_multivariate = {
+    "name": "project-with-multivariate",
+    "organisation": {
+        "feature_analytics": False,
+        "name": "org-1",
+        "id": 1,
+        "persist_trait_data": True,
+        "stop_serving_flags": False,
+    },
+    "id": 3,
+    "hide_disabled_flags": False,
+    "segments": [],
+    "server_key_only_feature_ids": [],
+}
+
+
+environment_with_multivariate_feature = {
+    "updated_at": "1969-07-20T20:17:40Z",
+    "name": "environment_with_multivariate",
+    "feature_states": [
+        _environment_feature_state_1,
+        _multivariate_feature_state,
+    ],
+    "identity_overrides": [],
+    "api_key": "env_with_multivariate_key",
+    "project": _project_with_multivariate,
+    "id": 3,
 }

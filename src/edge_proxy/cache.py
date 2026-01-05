@@ -1,6 +1,7 @@
-from abc import ABC
-from collections import defaultdict
+from abc import ABC, abstractmethod
 from typing import Any
+
+from edge_proxy.feature_utils import build_feature_types_lookup
 
 
 class BaseEnvironmentsCache(ABC):
@@ -24,22 +25,18 @@ class BaseEnvironmentsCache(ABC):
             return True
         return False
 
+    @abstractmethod
     def _put_environment(
         self,
         environment_api_key: str,
         environment_document: dict[str, Any],
-    ) -> None:
-        raise NotImplementedError()
+    ) -> None: ...
 
-    def get_environment(self, environment_api_key: str) -> dict[str, Any] | None:
-        raise NotImplementedError()
+    @abstractmethod
+    def get_environment(self, environment_api_key: str) -> dict[str, Any] | None: ...
 
-    def get_identity(
-        self,
-        environment_api_key: str,
-        identifier: str,
-    ) -> dict[str, Any]:
-        raise NotImplementedError()
+    @abstractmethod
+    def get_feature_types(self, environment_api_key: str) -> dict[int, str] | None: ...
 
 
 _LocalCacheDict = dict[str, dict[str, Any]]
@@ -49,7 +46,7 @@ class LocalMemEnvironmentsCache(BaseEnvironmentsCache):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._environment_cache: _LocalCacheDict = {}
-        self._identity_override_cache = defaultdict[str, _LocalCacheDict](dict)
+        self._feature_types_cache: dict[str, dict[int, str]] = {}
 
     def _put_environment(
         self,
@@ -57,12 +54,10 @@ class LocalMemEnvironmentsCache(BaseEnvironmentsCache):
         environment_document: dict[str, Any],
     ) -> None:
         self._environment_cache[environment_api_key] = environment_document
-        new_overrides = environment_document.get("identity_overrides") or []
-        self._identity_override_cache[environment_api_key] = {
-            identifier: identity_document
-            for identity_document in new_overrides
-            if (identifier := identity_document.get("identifier"))
-        }
+
+        self._feature_types_cache[environment_api_key] = build_feature_types_lookup(
+            environment_document
+        )
 
     def get_environment(
         self,
@@ -70,12 +65,5 @@ class LocalMemEnvironmentsCache(BaseEnvironmentsCache):
     ) -> dict[str, Any] | None:
         return self._environment_cache.get(environment_api_key)
 
-    def get_identity(
-        self,
-        environment_api_key: str,
-        identifier: str,
-    ) -> dict[str, Any]:
-        return self._identity_override_cache[environment_api_key].get(identifier) or {
-            "environment_api_key": environment_api_key,
-            "identifier": identifier,
-        }
+    def get_feature_types(self, environment_api_key: str) -> dict[int, str] | None:
+        return self._feature_types_cache.get(environment_api_key)

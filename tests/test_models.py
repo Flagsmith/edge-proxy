@@ -13,7 +13,7 @@ def test_identity_with_traits_str():
     expected = "identifier:foo|traits:foo=bar,age=21,is_cool=True"
 
     # When
-    identity_with_traits = IdentityWithTraits.parse_obj(
+    identity_with_traits = IdentityWithTraits.model_validate(
         {"identifier": identifier, "traits": traits}
     )
 
@@ -33,7 +33,7 @@ def test_identity_with_traits_hash():
     expected = hash("identifier:foo|traits:foo=bar,age=21,is_cool=True")
 
     # When
-    identity_with_traits = IdentityWithTraits.parse_obj(
+    identity_with_traits = IdentityWithTraits.model_validate(
         {"identifier": identifier, "traits": traits}
     )
 

@@ -18,12 +18,8 @@ jobs:
               id: meta
               uses: docker/metadata-action@v5
               with:
-                  images: |
-                      flagsmith/edge-proxy
-                  flavor: |
-                      latest=${{ startsWith(github.ref, 'refs/heads/main') }}
+                  images: flagsmith/edge-proxy
                   tags: |
-                      type=ref,event=branch
                       type=semver,pattern={{version}}
                       type=semver,pattern={{major}}.{{minor}}
 

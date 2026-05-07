@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.22.0](https://github.com/Flagsmith/edge-proxy/compare/v2.21.2...v2.22.0) (2026-05-07)
+
+
+### Features
+
+* use-context-evaluation-with-newest-engine-version ([#182](https://github.com/Flagsmith/edge-proxy/issues/182)) ([da33db3](https://github.com/Flagsmith/edge-proxy/commit/da33db33f6b8df6c9361b45733ee278ca1ad469b))
+
+
+### CI
+
+* remove incorrect filtering preventing latest tag being published ([#180](https://github.com/Flagsmith/edge-proxy/issues/180)) ([57121df](https://github.com/Flagsmith/edge-proxy/commit/57121df08a8b8ec9c9ab984827677c034feb8e06))
+
+
+### Dependency Updates
+
+* regenerated requirements locks ([#189](https://github.com/Flagsmith/edge-proxy/issues/189)) ([4209a10](https://github.com/Flagsmith/edge-proxy/commit/4209a10756f7a6031cf1e05804cea623512e08fa))
+
 ## [2.21.2](https://github.com/Flagsmith/edge-proxy/compare/v2.21.1...v2.21.2) (2025-11-19)
 
 

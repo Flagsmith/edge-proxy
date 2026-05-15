@@ -12,6 +12,7 @@ def serve():
         proxy_headers=settings.server.proxy_headers,
         reload=settings.server.reload,
         use_colors=settings.logging.colours,
+        timeout_keep_alive=settings.server.timeout_keep_alive,
     )
 
 

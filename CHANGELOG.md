@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.23.0](https://github.com/Flagsmith/edge-proxy/compare/v2.22.0...v2.23.0) (2026-05-15)
+
+
+### Features
+
+* configurable timeout_keep_alive for keep-alive idle connections ([#188](https://github.com/Flagsmith/edge-proxy/issues/188)) ([86bfdfc](https://github.com/Flagsmith/edge-proxy/commit/86bfdfc06ab7f6313412179c5fead58d9307a711))
+
+
+### Dependency Updates
+
+* pre-commit autoupdate ([#184](https://github.com/Flagsmith/edge-proxy/issues/184)) ([2589158](https://github.com/Flagsmith/edge-proxy/commit/2589158edd314f799a9716f2987554bc890b99e9))
+
 ## [2.22.0](https://github.com/Flagsmith/edge-proxy/compare/v2.21.2...v2.22.0) (2026-05-07)
 
 

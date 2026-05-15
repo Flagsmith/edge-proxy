@@ -106,7 +106,7 @@ class ServerSettings(BaseModel):
     # Matches uvicorn's default. Override (e.g. to 120s) when clients poll on
     # an interval longer than this — otherwise pooled connections get closed
     # server-side before the next poll, causing ConnectionResetError clients.
-    timeout_keep_alive: int = 5
+    timeout_keep_alive: int = Field(default=5, gt=0)
 
 
 class HealthCheckSettings(BaseModel):

@@ -262,8 +262,7 @@ def test_setup_telemetry_uses_grpc_exporter(
     monkeypatch.setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
     monkeypatch.setenv("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc")
     mock_grpc_exporter = mocker.patch(
-        "opentelemetry.exporter.otlp.proto.grpc.trace_exporter."
-        "OTLPSpanExporter",
+        "opentelemetry.exporter.otlp.proto.grpc.trace_exporter.OTLPSpanExporter",
     )
     mocker.patch(
         "opentelemetry.sdk.trace.export.BatchSpanProcessor",
@@ -281,8 +280,7 @@ def test_setup_telemetry_uses_http_exporter_by_default(
 ):
     monkeypatch.setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318")
     mock_http_exporter = mocker.patch(
-        "opentelemetry.exporter.otlp.proto.http.trace_exporter."
-        "OTLPSpanExporter",
+        "opentelemetry.exporter.otlp.proto.http.trace_exporter.OTLPSpanExporter",
     )
     mocker.patch(
         "opentelemetry.sdk.trace.export.BatchSpanProcessor",

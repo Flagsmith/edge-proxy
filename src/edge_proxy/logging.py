@@ -5,6 +5,7 @@ import logging.handlers
 import structlog
 
 from edge_proxy.settings import LogFormat, LoggingSettings
+from edge_proxy.telemetry import add_otel_trace_context
 
 
 def _extract_gunicorn_access_log_event(
@@ -49,13 +50,17 @@ COMMON_PROCESSORS: list[structlog.types.Processor] = [
 ]
 
 
-def setup_logging(settings: LoggingSettings) -> None:
-    processors = [
-        *COMMON_PROCESSORS,
-        structlog.processors.EventRenamer(settings.log_event_field_name),
-        structlog.dev.set_exc_info,
-        structlog.processors.format_exc_info,
-    ]
+def setup_logging(settings: LoggingSettings, *, otel_enabled: bool = False) -> None:
+    processors: list[structlog.types.Processor] = [*COMMON_PROCESSORS]
+    if otel_enabled:
+        processors.append(add_otel_trace_context)
+    processors.extend(
+        [
+            structlog.processors.EventRenamer(settings.log_event_field_name),
+            structlog.dev.set_exc_info,
+            structlog.processors.format_exc_info,
+        ],
+    )
 
     structlog.configure(
         processors=processors

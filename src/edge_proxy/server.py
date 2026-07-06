@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import asyncio
+import os
 
 import httpx
 from contextlib import asynccontextmanager
@@ -16,15 +17,24 @@ from edge_proxy.exceptions import FeatureNotFoundError, FlagsmithUnknownKeyError
 from edge_proxy.logging import setup_logging
 from edge_proxy.models import IdentityWithTraits
 from edge_proxy.settings import get_settings
+from edge_proxy.telemetry import (
+    instrument_fastapi,
+    instrument_httpx,
+    setup_telemetry,
+)
 
 settings = get_settings()
-setup_logging(settings.logging)
+telemetry = setup_telemetry()
+setup_logging(settings.logging, otel_enabled=telemetry.enabled)
+http_client = httpx.AsyncClient(
+    timeout=settings.api_poll_timeout_seconds,
+    follow_redirects=True,
+)
+if telemetry.enabled:
+    instrument_httpx()
 environment_service = EnvironmentService(
     LocalMemEnvironmentsCache(),
-    httpx.AsyncClient(
-        timeout=settings.api_poll_timeout_seconds,
-        follow_redirects=True,
-    ),
+    http_client,
     settings,
 )
 
@@ -147,3 +157,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+if telemetry.enabled:
+    instrument_fastapi(
+        app,
+        excluded_urls=os.environ.get("OTEL_TRACING_EXCLUDED_URL_PATHS"),
+    )

@@ -87,7 +87,41 @@ docker run \
     -e CONFIG_PATH=/var/foo.json \
     -v /<path-to-config>/config.json:/var/foo.json \
     flagsmith/edge-proxy:latest
-``` 
+```
+
+## OpenTelemetry
+
+Edge Proxy supports opt-in distributed trace export over OTLP, aligned
+with the [Flagsmith OpenTelemetry
+docs](https://docs.flagsmith.com/deployment-self-hosting/observability/opentelemetry).
+
+Set `OTEL_EXPORTER_OTLP_ENDPOINT` to enable export. When unset, no
+OpenTelemetry code is loaded and there is no runtime overhead.
+
+```bash
+OTEL_EXPORTER_OTLP_ENDPOINT=http://collector:4318   # enables OTel
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf          # or grpc
+OTEL_SERVICE_NAME=flagsmith-edge-proxy             # default
+OTEL_RESOURCE_ATTRIBUTES=deployment.environment=prod
+OTEL_TRACES_EXPORTER=otlp                          # or none to disable
+OTEL_SDK_DISABLED=true                             # hard disable
+OTEL_TRACING_EXCLUDED_URL_PATHS=proxy/health/liveness,proxy/health/readiness
+```
+
+Example Docker run:
+
+```sh
+docker run \
+  -e OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318 \
+  -e OTEL_EXPORTER_OTLP_PROTOCOL=grpc \
+  -v ./config.json:/app/config.json \
+  flagsmith/edge-proxy:latest
+```
+
+When enabled, traces cover incoming HTTP requests (FastAPI
+auto-instrumentation), upstream environment-document polling, and
+outbound httpx calls. Structured logs include `trace_id` and `span_id`
+when an active span exists.
 
 ## Load Testing
 

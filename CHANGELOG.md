@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.23.1](https://github.com/Flagsmith/edge-proxy/compare/v2.23.0...v2.23.1) (2026-08-31)
+
+
+### Dependency Updates
+
+* Bump flagsmith-flag-engine to 11.0.0 ([#198](https://github.com/Flagsmith/edge-proxy/issues/198)) ([2612bfd](https://github.com/Flagsmith/edge-proxy/commit/2612bfdb1a8a3689ca7581900e56aaf37d6e3c6d))
+
+
+### Other
+
+* **CI:** pre-commit autoupdate ([#191](https://github.com/Flagsmith/edge-proxy/issues/191)) ([137f311](https://github.com/Flagsmith/edge-proxy/commit/137f311a51401584328c645c941f0265a23b1023))
+
 ## [2.23.0](https://github.com/Flagsmith/edge-proxy/compare/v2.22.0...v2.23.0) (2026-05-15)
 
 

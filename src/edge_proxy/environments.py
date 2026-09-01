@@ -28,6 +28,7 @@ from edge_proxy.mappers import (
 )
 from edge_proxy.models import IdentityWithTraits
 from edge_proxy.settings import AppSettings, EnvironmentKeyPair
+from edge_proxy.telemetry import get_tracer
 
 logger = structlog.get_logger(__name__)
 
@@ -64,22 +65,30 @@ class EnvironmentService:
                 )(self.get_identity_response_data)
 
     async def refresh_environment_caches(self):
-        received_error = False
-        for key_pair in self.settings.environment_key_pairs:
-            try:
-                environment_document = await self._fetch_document(key_pair)
-                if self.cache.put_environment(
-                    environment_api_key=key_pair.client_side_key,
-                    environment_document=environment_document,
-                ):
-                    await self._clear_endpoint_caches()
-            except (httpx.HTTPError, orjson.JSONDecodeError):
-                logger.exception(
-                    "error_fetching_document", client_side_key=key_pair.client_side_key
-                )
-                received_error = True
-        if not received_error:
-            self.last_updated_at = datetime.now()
+        with get_tracer().start_as_current_span(
+            "poll.refresh_environment_caches",
+        ) as span:
+            span.set_attribute(
+                "environments.count",
+                len(self.settings.environment_key_pairs),
+            )
+            received_error = False
+            for key_pair in self.settings.environment_key_pairs:
+                try:
+                    environment_document = await self._fetch_document(key_pair)
+                    if self.cache.put_environment(
+                        environment_api_key=key_pair.client_side_key,
+                        environment_document=environment_document,
+                    ):
+                        await self._clear_endpoint_caches()
+                except (httpx.HTTPError, orjson.JSONDecodeError):
+                    logger.exception(
+                        "error_fetching_document",
+                        client_side_key=key_pair.client_side_key,
+                    )
+                    received_error = True
+            if not received_error:
+                self.last_updated_at = datetime.now()
 
     def get_flags_response_data(
         self, environment_key: str, feature: str | None = None
@@ -95,7 +104,13 @@ class EnvironmentService:
         hide_disabled_flags = _get_hide_disabled_flags(environment_document)
 
         context = map_environment_document_to_context(environment_document)
-        evaluation_result = get_evaluation_result(context)
+        with get_tracer().start_as_current_span("evaluate.flags") as span:
+            span.set_attribute("flagsmith.single_feature", feature is not None)
+            evaluation_result = get_evaluation_result(context)
+            span.set_attribute(
+                "flagsmith.feature_count",
+                len(evaluation_result["flags"]),
+            )
 
         feature_types = self.cache.get_feature_types(environment_key)
         if feature_types is None:
@@ -146,7 +161,12 @@ class EnvironmentService:
             identifier=input_data.identifier,
             traits=convert_traits_to_dict(input_data.traits),
         )
-        evaluation_result = get_evaluation_result(context)
+        with get_tracer().start_as_current_span("evaluate.identity") as span:
+            evaluation_result = get_evaluation_result(context)
+            span.set_attribute(
+                "flagsmith.feature_count",
+                len(evaluation_result["flags"]),
+            )
 
         feature_types = self.cache.get_feature_types(environment_key)
         if feature_types is None:
@@ -179,40 +199,56 @@ class EnvironmentService:
         raise FlagsmithUnknownKeyError(environment_key)
 
     async def _fetch_document(self, key_pair: EnvironmentKeyPair) -> dict[str, Any]:
-        headers = {
-            "X-Environment-Key": key_pair.server_side_key,
-        }
-        environment_document = self.cache.get_environment(
-            environment_api_key=key_pair.client_side_key
-        )
-        if environment_document:
-            updated_at: str = environment_document.get("updated_at")
-            if updated_at:
-                try:
-                    epoch_seconds = datetime.fromisoformat(updated_at).timestamp()
-                    # Same implementation as https://docs.djangoproject.com/en/4.2/ref/utils/#django.utils.http.http_date
-                    headers["If-Modified-Since"] = formatdate(
-                        epoch_seconds, usegmt=True
-                    )
-                except ValueError:
-                    logger.warning(
-                        f"failed to parse updated_at, environment={key_pair.client_side_key} updated_at={updated_at}"
-                    )
-            else:
-                logger.warning(
-                    f"received environment with no updated_at: {key_pair.client_side_key}"
-                )
-        response = await self._client.get(
-            url=f"{self.settings.api_url}/environment-document/",
-            headers=headers,
-        )
-        if response.status_code == starlette.status.HTTP_304_NOT_MODIFIED:
-            assert environment_document, (
-                f"GET /environment-document returned 304 without a cached document. environment={key_pair.client_side_key}"
+        with get_tracer().start_as_current_span("poll.fetch_document") as span:
+            headers = {
+                "X-Environment-Key": key_pair.server_side_key,
+            }
+            environment_document = self.cache.get_environment(
+                environment_api_key=key_pair.client_side_key
             )
-            return environment_document
-        response.raise_for_status()
-        return orjson.loads(response.text)
+            if environment_document:
+                updated_at: str = environment_document.get("updated_at")
+                if updated_at:
+                    try:
+                        epoch_seconds = datetime.fromisoformat(
+                            updated_at,
+                        ).timestamp()
+                        # Same implementation as
+                        # https://docs.djangoproject.com/en/4.2/ref/utils/
+                        # #django.utils.http.http_date
+                        headers["If-Modified-Since"] = formatdate(
+                            epoch_seconds, usegmt=True
+                        )
+                    except ValueError:
+                        logger.warning(
+                            "failed to parse updated_at, "
+                            f"environment={key_pair.client_side_key} "
+                            f"updated_at={updated_at}"
+                        )
+                else:
+                    logger.warning(
+                        "received environment with no updated_at: "
+                        f"{key_pair.client_side_key}"
+                    )
+            try:
+                response = await self._client.get(
+                    url=f"{self.settings.api_url}/environment-document/",
+                    headers=headers,
+                )
+                span.set_attribute("http.status_code", response.status_code)
+                if response.status_code == starlette.status.HTTP_304_NOT_MODIFIED:
+                    span.set_attribute("flagsmith.cache_hit", True)
+                    assert environment_document, (
+                        "GET /environment-document returned 304 without a "
+                        f"cached document. environment={key_pair.client_side_key}"
+                    )
+                    return environment_document
+                span.set_attribute("flagsmith.cache_hit", False)
+                response.raise_for_status()
+                return orjson.loads(response.text)
+            except (httpx.HTTPError, orjson.JSONDecodeError) as exc:
+                span.record_exception(exc)
+                raise
 
     async def _clear_endpoint_caches(self):
         for func in (self.get_identity_response_data, self.get_flags_response_data):

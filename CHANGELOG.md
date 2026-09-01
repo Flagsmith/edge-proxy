@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Features
+
+* add opt-in OpenTelemetry trace export (HTTP, upstream polling, httpx)
+  ([#194](https://github.com/Flagsmith/edge-proxy/issues/194))
+
 ## [2.23.0](https://github.com/Flagsmith/edge-proxy/compare/v2.22.0...v2.23.0) (2026-05-15)
 
 

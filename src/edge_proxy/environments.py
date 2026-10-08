@@ -1,7 +1,9 @@
+import time
 from typing import Any
 from datetime import datetime
 from email.utils import formatdate
 from functools import lru_cache
+from urllib.parse import parse_qs, urlparse
 
 import httpx
 import starlette.status
@@ -36,6 +38,13 @@ SERVER_API_KEY_PREFIX = "ser."
 
 def _get_hide_disabled_flags(environment_document: dict[str, Any]) -> bool:
     return environment_document.get("project", {}).get("hide_disabled_flags", False)
+
+
+def _get_next_page_id(response: httpx.Response) -> str | None:
+    next_url = response.links.get("next", {}).get("url")
+    if not next_url:
+        return None
+    return parse_qs(urlparse(next_url).query).get("page_id", [None])[0]
 
 
 class EnvironmentService:
@@ -202,6 +211,7 @@ class EnvironmentService:
                 logger.warning(
                     f"received environment with no updated_at: {key_pair.client_side_key}"
                 )
+        started_at = time.monotonic()
         response = await self._client.get(
             url=f"{self.settings.api_url}/environment-document/",
             headers=headers,
@@ -212,7 +222,28 @@ class EnvironmentService:
             )
             return environment_document
         response.raise_for_status()
-        return orjson.loads(response.text)
+        environment_document = orjson.loads(response.text)
+
+        while page_id := _get_next_page_id(response):
+            response = await self._client.get(
+                url=f"{self.settings.api_url}/environment-document/",
+                headers={"X-Environment-Key": key_pair.server_side_key},
+                params={"page_id": page_id},
+            )
+            response.raise_for_status()
+            environment_document.setdefault("identity_overrides", []).extend(
+                orjson.loads(response.text).get("identity_overrides", [])
+            )
+
+        elapsed_seconds = time.monotonic() - started_at
+        if elapsed_seconds > self.settings.api_poll_frequency_seconds:
+            logger.warning(
+                "environment_document_fetch_slower_than_poll_frequency",
+                client_side_key=key_pair.client_side_key,
+                elapsed_seconds=round(elapsed_seconds, 1),
+                api_poll_frequency_seconds=self.settings.api_poll_frequency_seconds,
+            )
+        return environment_document
 
     async def _clear_endpoint_caches(self):
         for func in (self.get_identity_response_data, self.get_flags_response_data):

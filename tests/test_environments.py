@@ -4,6 +4,7 @@ from datetime import datetime
 
 import httpx
 import pytest
+import structlog
 from freezegun import freeze_time
 from orjson import orjson
 from pytest_mock import MockerFixture
@@ -39,8 +40,8 @@ async def test_refresh_makes_correct_http_call(mocker: MockerFixture):
     # Given
     mock_client = mocker.AsyncMock()
     mock_client.get.side_effect = [
-        unittest.mock.Mock(text='{"key1": "value1"}'),
-        unittest.mock.Mock(text='{"key2": "value2"}'),
+        unittest.mock.Mock(links={}, text='{"key1": "value1"}'),
+        unittest.mock.Mock(links={}, text='{"key2": "value2"}'),
     ]
 
     environment_service = EnvironmentService(client=mock_client, settings=settings)
@@ -80,7 +81,7 @@ async def test_refresh_does_not_update_last_updated_at_if_any_request_fails(
     mock_client = mocker.AsyncMock()
     mock_client.get.side_effect = [
         httpx.ConnectTimeout("timeout"),
-        unittest.mock.Mock(text='{"key2": "value2"}'),
+        unittest.mock.Mock(links={}, text='{"key2": "value2"}'),
     ]
     environment_service = EnvironmentService(client=mock_client, settings=settings)
 
@@ -98,8 +99,12 @@ async def test_get_environment_works_correctly(mocker: MockerFixture):
     doc_2 = {"key2": "value2"}
 
     mock_client.get.side_effect = [
-        mocker.MagicMock(text=orjson.dumps(doc_1), raise_for_status=lambda: None),
-        mocker.MagicMock(text=orjson.dumps(doc_2), raise_for_status=lambda: None),
+        mocker.MagicMock(
+            links={}, text=orjson.dumps(doc_1), raise_for_status=lambda: None
+        ),
+        mocker.MagicMock(
+            links={}, text=orjson.dumps(doc_2), raise_for_status=lambda: None
+        ),
     ]
 
     environment_service = EnvironmentService(settings=settings, client=mock_client)
@@ -132,6 +137,107 @@ async def test_get_environment_works_correctly(mocker: MockerFixture):
     assert mock_client.get.call_count == 2
 
 
+def _environment_document_response(
+    document: dict, next_page_id: str | None = None
+) -> httpx.Response:
+    headers = {}
+    if next_page_id:
+        headers["Link"] = (
+            f'</api/v1/environment-document/?page_id={next_page_id}>; rel="next"'
+        )
+    return httpx.Response(
+        200,
+        content=orjson.dumps(document),
+        headers=headers,
+        request=httpx.Request("GET", f"{settings.api_url}/environment-document/"),
+    )
+
+
+async def test_refresh_environment_caches_follows_environment_document_pages(
+    mocker: MockerFixture,
+):
+    # Given
+    single_environment_settings = AppSettings(
+        api_url=settings.api_url,
+        environment_key_pairs=settings.environment_key_pairs[:1],
+    )
+    first_page = {
+        **environment_1,
+        "identity_overrides": [{"identifier": "page-1-identity"}],
+    }
+    mock_client = mocker.AsyncMock()
+    mock_client.get.side_effect = [
+        _environment_document_response(
+            first_page, next_page_id="identity_override%3A1%3Apage-2"
+        ),
+        _environment_document_response(
+            {"identity_overrides": [{"identifier": "page-2-identity"}]},
+            next_page_id="identity_override%3A1%3Apage-3",
+        ),
+        _environment_document_response(
+            {"identity_overrides": [{"identifier": "page-3-identity"}]}
+        ),
+    ]
+    environment_service = EnvironmentService(
+        client=mock_client, settings=single_environment_settings
+    )
+
+    # When
+    await environment_service.refresh_environment_caches()
+
+    # Then
+    environment_document = environment_service.get_environment(
+        environment_key=environment_1_api_key
+    )
+    assert [
+        identity_override["identifier"]
+        for identity_override in environment_document["identity_overrides"]
+    ] == ["page-1-identity", "page-2-identity", "page-3-identity"]
+    assert environment_document["feature_states"] == environment_1["feature_states"]
+    assert mock_client.get.call_args_list[1:] == [
+        mocker.call(
+            url=f"{settings.api_url}/environment-document/",
+            headers={"X-Environment-Key": "ser.key1"},
+            params={"page_id": "identity_override:1:page-2"},
+        ),
+        mocker.call(
+            url=f"{settings.api_url}/environment-document/",
+            headers={"X-Environment-Key": "ser.key1"},
+            params={"page_id": "identity_override:1:page-3"},
+        ),
+    ]
+
+
+async def test_refresh_environment_caches_warns_when_fetch_exceeds_poll_frequency(
+    mocker: MockerFixture,
+):
+    # Given
+    single_environment_settings = AppSettings(
+        api_url=settings.api_url,
+        environment_key_pairs=settings.environment_key_pairs[:1],
+        api_poll_frequency_seconds=10,
+    )
+    mock_client = mocker.AsyncMock()
+    mock_client.get.return_value = _environment_document_response(environment_1)
+    mocker.patch("edge_proxy.environments.time").monotonic.side_effect = [100.0, 112.5]
+    environment_service = EnvironmentService(
+        client=mock_client, settings=single_environment_settings
+    )
+
+    # When
+    with structlog.testing.capture_logs() as logs:
+        await environment_service.refresh_environment_caches()
+
+    # Then
+    assert {
+        "event": "environment_document_fetch_slower_than_poll_frequency",
+        "log_level": "warning",
+        "client_side_key": environment_1_api_key,
+        "elapsed_seconds": 12.5,
+        "api_poll_frequency_seconds": 10,
+    } in logs
+
+
 def test_get_environment_raises_for_unknown_keys():
     environment_service = EnvironmentService(settings=settings)
     with pytest.raises(FlagsmithUnknownKeyError):
@@ -162,13 +268,15 @@ async def test_refresh_environment_caches_clears_endpoint_caches_if_environment_
     mocked_client = mocker.AsyncMock()
     mocked_client.get.side_effect = [
         mocker.MagicMock(
-            text=orjson.dumps(environment_1), raise_for_status=lambda: None
+            links={}, text=orjson.dumps(environment_1), raise_for_status=lambda: None
         ),
         mocker.MagicMock(
-            text=orjson.dumps(environment_1), raise_for_status=lambda: None
+            links={}, text=orjson.dumps(environment_1), raise_for_status=lambda: None
         ),
         mocker.MagicMock(
-            text=orjson.dumps(modified_document), raise_for_status=lambda: None
+            links={},
+            text=orjson.dumps(modified_document),
+            raise_for_status=lambda: None,
         ),
     ]
 
@@ -206,6 +314,7 @@ async def test_refresh_environment_caches_sets_last_modified_if_environment_was_
         if headers := kwargs.get("headers"):
             if_modified_since = headers.get("If-Modified-Since")
         return mocker.MagicMock(
+            links={},
             text=orjson.dumps(environment_1),
         )
 
@@ -238,10 +347,12 @@ async def test_refresh_environment_caches__deleted_identity_override__cached_exp
     mocked_client = mocker.AsyncMock()
     mocked_client.get.side_effect = [
         mocker.MagicMock(
-            text=orjson.dumps(environment_1), raise_for_status=lambda: None
+            links={}, text=orjson.dumps(environment_1), raise_for_status=lambda: None
         ),
         mocker.MagicMock(
-            text=orjson.dumps(modified_document), raise_for_status=lambda: None
+            links={},
+            text=orjson.dumps(modified_document),
+            raise_for_status=lambda: None,
         ),
     ]
 
@@ -332,7 +443,7 @@ async def test_get_identity_flags_response_skips_cache_for_different_identity(
 
     mocked_client = mocker.AsyncMock()
     mocked_client.get.return_value = mocker.MagicMock(
-        text=orjson.dumps(environment_1), raise_for_status=lambda: None
+        links={}, text=orjson.dumps(environment_1), raise_for_status=lambda: None
     )
 
     environment_service = EnvironmentService(settings=_settings, client=mocked_client)
@@ -366,7 +477,7 @@ async def test_get_flags_response_data_skips_filter_for_server_key(
 
     mocked_client = mocker.AsyncMock()
     mocked_client.get.return_value = mocker.MagicMock(
-        text=orjson.dumps(environment_1), raise_for_status=lambda: None
+        links={}, text=orjson.dumps(environment_1), raise_for_status=lambda: None
     )
 
     environment_service = EnvironmentService(settings=_settings, client=mocked_client)
@@ -397,7 +508,7 @@ async def test_get_flags_response_data_filters_server_side_features_for_client_k
 
     mocked_client = mocker.AsyncMock()
     mocked_client.get.return_value = mocker.MagicMock(
-        text=orjson.dumps(environment_1), raise_for_status=lambda: None
+        links={}, text=orjson.dumps(environment_1), raise_for_status=lambda: None
     )
 
     environment_service = EnvironmentService(settings=_settings, client=mocked_client)
@@ -426,7 +537,7 @@ async def test_get_identity_flags_response_skips_filter_for_server_key(
 
     mocked_client = mocker.AsyncMock()
     mocked_client.get.return_value = mocker.MagicMock(
-        text=orjson.dumps(environment_1), raise_for_status=lambda: None
+        links={}, text=orjson.dumps(environment_1), raise_for_status=lambda: None
     )
 
     environment_service = EnvironmentService(settings=_settings, client=mocked_client)

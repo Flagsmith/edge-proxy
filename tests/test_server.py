@@ -87,6 +87,16 @@ def test_get_flags_unknown_key(
     }
 
 
+def test_get_flags_missing_key(
+    client: TestClient,
+) -> None:
+    # When
+    response = client.get("/api/v1/flags")
+
+    # Then
+    assert response.status_code == 401
+
+
 def test_post_identity_with_traits(
     mocked_environment_cache,
     environment_1_feature_states_response_list_response_with_segment_override,
@@ -169,6 +179,19 @@ def test_post_identity__invalid_trait_data__expected_response(
         "trait_value",
     ]
     assert response.json()["detail"][-1]["type"] == "string_too_long"
+
+
+def test_post_identity_missing_key(
+    client: TestClient,
+) -> None:
+    # When
+    response = client.post(
+        "/api/v1/identities/",
+        content=orjson.dumps({"identifier": "test_identifier"}),
+    )
+
+    # Then
+    assert response.status_code == 401
 
 
 def test_get_identities(

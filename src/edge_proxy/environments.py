@@ -82,8 +82,11 @@ class EnvironmentService:
             self.last_updated_at = datetime.now()
 
     def get_flags_response_data(
-        self, environment_key: str, feature: str | None = None
+        self, environment_key: str | None, feature: str | None = None
     ) -> dict[str, Any] | list[dict[str, Any]]:
+        if not environment_key:
+            raise FlagsmithUnknownKeyError(environment_key)
+
         is_server_key = environment_key.startswith(SERVER_API_KEY_PREFIX)
         if is_server_key:
             environment_key = self._get_client_key_from_server_key(environment_key)
@@ -128,8 +131,11 @@ class EnvironmentService:
         return map_flag_results_to_response_data(flags, feature_types)
 
     def get_identity_response_data(
-        self, input_data: IdentityWithTraits, environment_key: str
+        self, input_data: IdentityWithTraits, environment_key: str | None
     ) -> dict[str, Any]:
+        if not environment_key:
+            raise FlagsmithUnknownKeyError(environment_key)
+
         is_server_key = environment_key.startswith(SERVER_API_KEY_PREFIX)
         if is_server_key:
             environment_key = self._get_client_key_from_server_key(environment_key)

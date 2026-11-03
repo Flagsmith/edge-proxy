@@ -27,7 +27,7 @@ fastapi==0.110.1
     # via edge-proxy
 flagsmith==6.2.2
     # via edge-proxy
-flagsmith-flag-engine==11.0.0
+flagsmith-flag-engine==11.1.1
     # via edge-proxy
     # via flagsmith
 h11==0.14.0

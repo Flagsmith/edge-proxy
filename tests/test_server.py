@@ -1,6 +1,8 @@
+import copy
 import typing
 
 import orjson
+import pytest
 from fastapi.testclient import TestClient
 from pytest_mock import MockerFixture
 
@@ -431,3 +433,218 @@ def test_get_flags__multivariate_feature__returns_correct_type(
 
     standard_flag = next(f for f in flags if f["feature"]["name"] == "feature_1")
     assert standard_flag["feature"]["type"] == "STANDARD"
+
+
+def test_get_flags__segment_needing_identity__returns_environment_default(
+    mocked_environment_cache,
+    client: TestClient,
+) -> None:
+    # Given
+    environment = copy.deepcopy(environment_1)
+    environment["project"]["segments"] = [
+        {
+            "id": 2,
+            "name": "without_plan",
+            "rules": [
+                {
+                    "type": "ALL",
+                    "rules": [],
+                    "conditions": [
+                        {"operator": "IS_NOT_SET", "property_": "plan", "value": None}
+                    ],
+                }
+            ],
+            "feature_states": [
+                {
+                    "multivariate_feature_state_values": [],
+                    "feature_state_value": "segment_override",
+                    "featurestate_uuid": "e0b3c5a2-1f4d-4c6e-9a8b-7d2f3e4a5b6c",
+                    "feature": {"name": "feature_2", "type": "STANDARD", "id": 2},
+                    "enabled": True,
+                }
+            ],
+        }
+    ]
+    mocked_environment_cache.get_environment.return_value = environment
+
+    # When
+    response = client.get(
+        "/api/v1/flags",
+        headers={"X-Environment-Key": "test_environment_key"},
+        params={"feature": "feature_2"},
+    )
+
+    # Then
+    assert response.status_code == 200
+    assert response.json()["feature_state_value"] == "2.3"
+
+
+@pytest.mark.parametrize(
+    "prerequisite_enabled, expected_enabled, expected_value",
+    [
+        (True, True, "segment_override"),
+        (False, False, "feature_1_value"),
+    ],
+)
+def test_get_flags__segment_depending_on_flag__serves_flag_by_prerequisite(
+    mocked_environment_cache,
+    client: TestClient,
+    prerequisite_enabled: bool,
+    expected_enabled: bool,
+    expected_value: str,
+) -> None:
+    # Given
+    environment = copy.deepcopy(environment_1)
+    environment["feature_states"][1]["enabled"] = prerequisite_enabled
+    environment["project"]["segments"] = [
+        {
+            "id": 2,
+            "name": "feature_2_on",
+            "rules": [
+                {
+                    "type": "ALL",
+                    "rules": [],
+                    "conditions": [
+                        {
+                            "operator": "EQUAL",
+                            "property_": '$.flags["feature_2"].enabled',
+                            "value": "true",
+                        }
+                    ],
+                }
+            ],
+            "feature_states": [
+                {
+                    "multivariate_feature_state_values": [],
+                    "feature_state_value": "segment_override",
+                    "featurestate_uuid": "b7c1d2e3-4f5a-4b6c-8d7e-9f0a1b2c3d4e",
+                    "feature": {"name": "feature_1", "type": "STANDARD", "id": 1},
+                    "enabled": True,
+                }
+            ],
+        }
+    ]
+    mocked_environment_cache.get_environment.return_value = environment
+
+    # When
+    response = client.get(
+        "/api/v1/flags",
+        headers={"X-Environment-Key": "test_environment_key"},
+        params={"feature": "feature_1"},
+    )
+
+    # Then
+    assert response.status_code == 200
+    assert response.json()["enabled"] is expected_enabled
+    assert response.json()["feature_state_value"] == expected_value
+
+
+def test_get_flags__segment_depending_on_environment__returns_segment_override(
+    mocked_environment_cache,
+    client: TestClient,
+) -> None:
+    # Given
+    environment = copy.deepcopy(environment_1)
+    environment["project"]["segments"] = [
+        {
+            "id": 2,
+            "name": "environment_1_only",
+            "rules": [
+                {
+                    "type": "ALL",
+                    "rules": [],
+                    "conditions": [
+                        {
+                            "operator": "EQUAL",
+                            "property_": "$.environment.name",
+                            "value": "environment_1",
+                        }
+                    ],
+                }
+            ],
+            "feature_states": [
+                {
+                    "multivariate_feature_state_values": [],
+                    "feature_state_value": "segment_override",
+                    "featurestate_uuid": "c8d2e3f4-5a6b-4c7d-9e8f-0a1b2c3d4e5f",
+                    "feature": {"name": "feature_2", "type": "STANDARD", "id": 2},
+                    "enabled": True,
+                }
+            ],
+        }
+    ]
+    mocked_environment_cache.get_environment.return_value = environment
+
+    # When
+    response = client.get(
+        "/api/v1/flags",
+        headers={"X-Environment-Key": "test_environment_key"},
+        params={"feature": "feature_2"},
+    )
+
+    # Then
+    assert response.status_code == 200
+    assert response.json()["feature_state_value"] == "segment_override"
+
+
+@pytest.mark.parametrize(
+    "identifier, expected_value",
+    [
+        ("overridden-id", "segment_override"),
+        ("test_identity", "2.3"),
+    ],
+)
+def test_post_identity__segment_depending_on_flag__serves_flag_by_identity_flag(
+    environment_service: "EnvironmentService",
+    client: TestClient,
+    identifier: str,
+    expected_value: str,
+) -> None:
+    # Given
+    environment_key = "test_environment_key"
+    environment = copy.deepcopy(environment_1)
+    environment["project"]["segments"] = [
+        {
+            "id": 2,
+            "name": "feature_1_on",
+            "rules": [
+                {
+                    "type": "ALL",
+                    "rules": [],
+                    "conditions": [
+                        {
+                            "operator": "EQUAL",
+                            "property_": "$.flags.feature_1.enabled",
+                            "value": "true",
+                        }
+                    ],
+                }
+            ],
+            "feature_states": [
+                {
+                    "multivariate_feature_state_values": [],
+                    "feature_state_value": "segment_override",
+                    "featurestate_uuid": "d9e3f4a5-6b7c-4d8e-8f9a-1b2c3d4e5f6a",
+                    "feature": {"name": "feature_2", "type": "STANDARD", "id": 2},
+                    "enabled": True,
+                }
+            ],
+        }
+    ]
+    environment_service.cache.put_environment(environment_key, environment)
+
+    # When
+    response = client.post(
+        "/api/v1/identities/",
+        headers={"X-Environment-Key": environment_key},
+        content=orjson.dumps({"identifier": identifier}),
+    )
+
+    # Then
+    assert response.status_code == 200
+    feature_2 = next(
+        flag
+        for flag in response.json()["flags"]
+        if flag["feature"]["name"] == "feature_2"
+    )
+    assert feature_2["feature_state_value"] == expected_value

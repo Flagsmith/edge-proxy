@@ -35,7 +35,7 @@ filelock==3.13.3
     # via virtualenv
 flagsmith==6.2.2
     # via edge-proxy
-flagsmith-flag-engine==11.0.0
+flagsmith-flag-engine==11.1.1
     # via edge-proxy
     # via flagsmith
 freezegun==1.4.0

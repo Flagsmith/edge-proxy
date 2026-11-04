@@ -2,6 +2,7 @@ from typing import Any
 from datetime import datetime
 from email.utils import formatdate
 from functools import lru_cache
+from importlib.metadata import PackageNotFoundError, version
 
 import httpx
 import starlette.status
@@ -32,6 +33,18 @@ from edge_proxy.settings import AppSettings, EnvironmentKeyPair
 logger = structlog.get_logger(__name__)
 
 SERVER_API_KEY_PREFIX = "ser."
+
+
+def _get_user_agent() -> str:
+    try:
+        edge_proxy_version = version("edge-proxy")
+    except PackageNotFoundError:
+        edge_proxy_version = "unknown"
+    return f"flagsmith-edge-proxy-python/{edge_proxy_version}"
+
+
+# Lets the Flagsmith API attribute usage to Edge Proxy.
+USER_AGENT = _get_user_agent()
 
 
 def _get_hide_disabled_flags(environment_document: dict[str, Any]) -> bool:
@@ -179,7 +192,9 @@ class EnvironmentService:
         raise FlagsmithUnknownKeyError(environment_key)
 
     async def _fetch_document(self, key_pair: EnvironmentKeyPair) -> dict[str, Any]:
+        # Set per request so injected clients also send it.
         headers = {
+            "User-Agent": USER_AGENT,
             "X-Environment-Key": key_pair.server_side_key,
         }
         environment_document = self.cache.get_environment(

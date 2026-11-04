@@ -1,6 +1,9 @@
 import copy
+import tomllib
 import unittest.mock
 from datetime import datetime
+from importlib.metadata import PackageNotFoundError
+from pathlib import Path
 
 import httpx
 import pytest
@@ -8,7 +11,7 @@ from freezegun import freeze_time
 from orjson import orjson
 from pytest_mock import MockerFixture
 
-from edge_proxy.environments import EnvironmentService
+from edge_proxy.environments import USER_AGENT, EnvironmentService, _get_user_agent
 from edge_proxy.exceptions import (
     FeatureNotFoundError,
     FlagsmithUnknownKeyError,
@@ -55,17 +58,19 @@ async def test_refresh_makes_correct_http_call(mocker: MockerFixture):
             mocker.call(
                 url=f"{settings.api_url}/environment-document/",
                 headers={
+                    "User-Agent": USER_AGENT,
                     "X-Environment-Key": settings.environment_key_pairs[
                         0
-                    ].server_side_key
+                    ].server_side_key,
                 },
             ),
             mocker.call(
                 url=f"{settings.api_url}/environment-document/",
                 headers={
+                    "User-Agent": USER_AGENT,
                     "X-Environment-Key": settings.environment_key_pairs[
                         1
-                    ].server_side_key
+                    ].server_side_key,
                 },
             ),
         ]
@@ -443,3 +448,53 @@ async def test_get_identity_flags_response_skips_filter_for_server_key(
     flags = result.get("flags")
     assert len(flags) == 3
     assert flags[2].get("feature").get("name") == "feature_3"
+
+
+async def test_user_agent__returns_edge_proxy_name_and_version() -> None:
+    # Given
+    pyproject = tomllib.loads(
+        (Path(__file__).parent.parent / "pyproject.toml").read_text()
+    )
+
+    # When
+    user_agent = _get_user_agent()
+
+    # Then
+    assert (
+        user_agent == f"flagsmith-edge-proxy-python/{pyproject['project']['version']}"
+    )
+    assert user_agent == USER_AGENT
+
+
+async def test_user_agent__version_not_found__returns_unknown(
+    mocker: MockerFixture,
+) -> None:
+    # Given
+    mocker.patch("edge_proxy.environments.version", side_effect=PackageNotFoundError)
+
+    # When
+    user_agent = _get_user_agent()
+
+    # Then
+    assert user_agent == "flagsmith-edge-proxy-python/unknown"
+
+
+async def test_refresh_environment_caches__sends_user_agent_header() -> None:
+    # Given
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(200, json={"api_key": "value"})
+
+    environment_service = EnvironmentService(
+        client=httpx.AsyncClient(transport=httpx.MockTransport(handler)),
+        settings=settings,
+    )
+
+    # When
+    await environment_service.refresh_environment_caches()
+
+    # Then
+    assert len(requests) == len(settings.environment_key_pairs)
+    assert all(request.headers["User-Agent"] == USER_AGENT for request in requests)

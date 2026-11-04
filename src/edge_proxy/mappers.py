@@ -21,6 +21,7 @@ def map_flag_result_to_response_data(
         },
         "enabled": flag_result["enabled"],
         "feature_state_value": flag_result["value"],
+        "reason": flag_result["reason"],
     }
 
 

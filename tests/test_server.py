@@ -477,13 +477,19 @@ def test_get_flags__segment_needing_identity__returns_environment_default(
     # Then
     assert response.status_code == 200
     assert response.json()["feature_state_value"] == "2.3"
+    assert response.json()["reason"] == "STATIC"
 
 
 @pytest.mark.parametrize(
-    "prerequisite_enabled, expected_enabled, expected_value",
+    "prerequisite_enabled, expected_enabled, expected_value, expected_reason",
     [
-        (True, True, "segment_override"),
-        (False, False, "feature_1_value"),
+        (
+            True,
+            True,
+            "segment_override",
+            "TARGETING_MATCH; segment=feature_2_on",
+        ),
+        (False, False, "feature_1_value", "DEFAULT"),
     ],
 )
 def test_get_flags__segment_depending_on_flag__serves_flag_by_prerequisite(
@@ -492,6 +498,7 @@ def test_get_flags__segment_depending_on_flag__serves_flag_by_prerequisite(
     prerequisite_enabled: bool,
     expected_enabled: bool,
     expected_value: str,
+    expected_reason: str,
 ) -> None:
     # Given
     environment = copy.deepcopy(environment_1)
@@ -537,6 +544,7 @@ def test_get_flags__segment_depending_on_flag__serves_flag_by_prerequisite(
     assert response.status_code == 200
     assert response.json()["enabled"] is expected_enabled
     assert response.json()["feature_state_value"] == expected_value
+    assert response.json()["reason"] == expected_reason
 
 
 def test_get_flags__segment_depending_on_environment__returns_segment_override(
@@ -585,13 +593,18 @@ def test_get_flags__segment_depending_on_environment__returns_segment_override(
     # Then
     assert response.status_code == 200
     assert response.json()["feature_state_value"] == "segment_override"
+    assert response.json()["reason"] == "TARGETING_MATCH; segment=environment_1_only"
 
 
 @pytest.mark.parametrize(
-    "identifier, expected_value",
+    "identifier, expected_value, expected_reason",
     [
-        ("overridden-id", "segment_override"),
-        ("test_identity", "2.3"),
+        (
+            "overridden-id",
+            "segment_override",
+            "TARGETING_MATCH; segment=feature_1_on",
+        ),
+        ("test_identity", "2.3", "DEFAULT"),
     ],
 )
 def test_post_identity__segment_depending_on_flag__serves_flag_by_identity_flag(
@@ -599,6 +612,7 @@ def test_post_identity__segment_depending_on_flag__serves_flag_by_identity_flag(
     client: TestClient,
     identifier: str,
     expected_value: str,
+    expected_reason: str,
 ) -> None:
     # Given
     environment_key = "test_environment_key"
@@ -648,3 +662,4 @@ def test_post_identity__segment_depending_on_flag__serves_flag_by_identity_flag(
         if flag["feature"]["name"] == "feature_2"
     )
     assert feature_2["feature_state_value"] == expected_value
+    assert feature_2["reason"] == expected_reason

@@ -17,6 +17,7 @@ def flag_result() -> dict[str, Any]:
         "name": "feature_1",
         "enabled": False,
         "value": "feature_1_value",
+        "reason": "DEFAULT",
         "metadata": {"id": 1},
     }
 
@@ -28,6 +29,7 @@ def multivariate_flag_result() -> dict[str, Any]:
         "name": "multivariate_feature",
         "enabled": False,
         "value": None,
+        "reason": "SPLIT; weight=50",
         "metadata": {"id": 4},
     }
 
@@ -72,6 +74,7 @@ def test_map_flag_result_to_response_data__return_expected(
             "type": "STANDARD",
         },
         "feature_state_value": None,
+        "reason": "SPLIT; weight=50",
     }
 
 
@@ -93,6 +96,7 @@ def test_map_flag_result_to_response_data__with_feature_types__return_expected(
             "type": "MULTIVARIATE",
         },
         "feature_state_value": None,
+        "reason": "SPLIT; weight=50",
     }
 
 
@@ -116,6 +120,7 @@ def test_map_flag_results_to_response_data__return_expected(
                 "type": "STANDARD",
             },
             "feature_state_value": "feature_1_value",
+            "reason": "DEFAULT",
         },
         {
             "enabled": False,
@@ -125,6 +130,7 @@ def test_map_flag_results_to_response_data__return_expected(
                 "type": "STANDARD",
             },
             "feature_state_value": None,
+            "reason": "SPLIT; weight=50",
         },
     ]
 
@@ -150,6 +156,7 @@ def test_map_flag_results_to_response_data__with_feature_types__return_expected(
                 "type": "STANDARD",
             },
             "feature_state_value": "feature_1_value",
+            "reason": "DEFAULT",
         },
         {
             "enabled": False,
@@ -159,6 +166,7 @@ def test_map_flag_results_to_response_data__with_feature_types__return_expected(
                 "type": "MULTIVARIATE",
             },
             "feature_state_value": None,
+            "reason": "SPLIT; weight=50",
         },
     ]
 

@@ -16,6 +16,7 @@ def environment_1_feature_states_response_list() -> typing.List[dict]:
             "feature_state_value": "feature_1_value",
             "feature": {"name": "feature_1", "type": "STANDARD", "id": 1},
             "enabled": False,
+            "reason": "STATIC",
         },
         {
             "feature_state_value": "2.3",
@@ -25,6 +26,7 @@ def environment_1_feature_states_response_list() -> typing.List[dict]:
                 "id": 2,
             },
             "enabled": True,
+            "reason": "STATIC",
         },
     ]
 
@@ -35,6 +37,10 @@ def environment_1_feature_states_response_list_response_with_segment_override(
 ):
     environment_1_feature_states_response_list[1]["feature_state_value"] = (
         "segment_override"
+    )
+    environment_1_feature_states_response_list[0]["reason"] = "DEFAULT"
+    environment_1_feature_states_response_list[1]["reason"] = (
+        "TARGETING_MATCH; segment=segment_1"
     )
     return environment_1_feature_states_response_list
 
@@ -47,6 +53,10 @@ def environment_1_feature_states_response_list_response_with_identity_override(
         "identity_override"
     )
     environment_1_feature_states_response_list[0]["enabled"] = True
+    environment_1_feature_states_response_list[0]["reason"] = (
+        "TARGETING_MATCH; segment=identity_overrides"
+    )
+    environment_1_feature_states_response_list[1]["reason"] = "DEFAULT"
     return environment_1_feature_states_response_list
 
 

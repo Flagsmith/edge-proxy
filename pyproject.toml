@@ -1,6 +1,6 @@
 [project]
-dynamic = ["version"]
 name = "edge-proxy"
+version = "2.23.0"
 license = { file = "LICENSE" }
 dependencies = [
     "fastapi",

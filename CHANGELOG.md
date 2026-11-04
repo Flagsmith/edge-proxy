@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.24.0](https://github.com/Flagsmith/edge-proxy/compare/v2.23.0...v2.24.0) (2026-11-04)
+
+
+### Features
+
+* **Flag Dependency:** Support `$.flags` context values in segment conditions ([#202](https://github.com/Flagsmith/edge-proxy/issues/202)) ([04794ae](https://github.com/Flagsmith/edge-proxy/commit/04794ae46bf8c6526faeb5b1df32a6d579502ef9))
+* **Flags:** Return the `reason` field for both `/flags` and `/identities` ([#205](https://github.com/Flagsmith/edge-proxy/issues/205)) ([40a9ea9](https://github.com/Flagsmith/edge-proxy/commit/40a9ea9f6df547604c8f526688e6c90d76840d1d))
+* Send Flagsmith-identifying User-Agent to the Flagsmith API ([#203](https://github.com/Flagsmith/edge-proxy/issues/203)) ([3182eac](https://github.com/Flagsmith/edge-proxy/commit/3182eac596f398310dd2c4403f1a2d66fa8f306f))
+
+
+### Dependency Updates
+
+* Bump flagsmith-flag-engine to 11.0.0 ([#198](https://github.com/Flagsmith/edge-proxy/issues/198)) ([2612bfd](https://github.com/Flagsmith/edge-proxy/commit/2612bfdb1a8a3689ca7581900e56aaf37d6e3c6d))
+
+
+### Other
+
+* **CI:** pre-commit autoupdate ([#191](https://github.com/Flagsmith/edge-proxy/issues/191)) ([137f311](https://github.com/Flagsmith/edge-proxy/commit/137f311a51401584328c645c941f0265a23b1023))
+
 ## [2.23.0](https://github.com/Flagsmith/edge-proxy/compare/v2.22.0...v2.23.0) (2026-05-15)
 
 

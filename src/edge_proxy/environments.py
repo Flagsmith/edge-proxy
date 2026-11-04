@@ -6,6 +6,7 @@ from functools import lru_cache
 import httpx
 import starlette.status
 import structlog
+from flag_engine.context.types import SegmentRule
 from flag_engine.engine import get_evaluation_result
 from flagsmith.mappers import (
     map_environment_document_to_context,
@@ -32,6 +33,13 @@ from edge_proxy.settings import AppSettings, EnvironmentKeyPair
 logger = structlog.get_logger(__name__)
 
 SERVER_API_KEY_PREFIX = "ser."
+
+IDENTITY_FREE_PROPERTY_PREFIXES = (
+    "$.environment.",
+    "$.environment[",
+    "$.flags.",
+    "$.flags[",
+)
 
 
 def _get_hide_disabled_flags(environment_document: dict[str, Any]) -> bool:
@@ -95,6 +103,12 @@ class EnvironmentService:
         hide_disabled_flags = _get_hide_disabled_flags(environment_document)
 
         context = map_environment_document_to_context(environment_document)
+        if segments := context.get("segments"):
+            context["segments"] = {
+                segment_key: segment_context
+                for segment_key, segment_context in segments.items()
+                if _is_identity_free(segment_context["rules"])
+            }
         evaluation_result = get_evaluation_result(context)
 
         feature_types = self.cache.get_feature_types(environment_key)
@@ -226,3 +240,14 @@ class EnvironmentService:
             if key_pair.server_side_key == server_key:
                 return key_pair.client_side_key
         raise FlagsmithUnknownKeyError(server_key)
+
+
+def _is_identity_free(rules: list[SegmentRule]) -> bool:
+    return all(
+        all(
+            condition["property"].startswith(IDENTITY_FREE_PROPERTY_PREFIXES)
+            for condition in rule.get("conditions") or ()
+        )
+        and _is_identity_free(rule.get("rules") or [])
+        for rule in rules
+    )
